@@ -30,11 +30,11 @@ julia>
 ```julia
 shell>
 ```
-Let's assume that we downloaded `InteractiveGeodynamics.jl` to the directory `/Users/kausb/Downloads/InteractiveGeodynamics.jl` and that we want to run the example in `RayleighTaylorInstability`:
+Let's assume that we downloaded `InteractiveGeodynamics.jl` to the directory `/Users/kausb/Downloads/InteractiveGeodynamics.jl` and that we want to run the example in `RayleighBenardConvection`:
 
 On linux/mac this is done with:
 ```julia
-shell>cd /Users/kausb/Downloads/InteractiveGeodynamics.jl/RayleighTaylorInstability
+shell>cd /Users/kausb/Downloads/InteractiveGeodynamics.jl/RayleighBenardConvection
 ```
 On windows this can be done with:
 ```
@@ -43,7 +43,7 @@ TO BE ADDED
 Return to the `REPL` with the backspace.
 
 
-6) Go to the package manager and activate the package. After that return to the `REPL` with a backspace 
+6) Go to the package manager and activate the package. After that, return to the `REPL` with a backspace 
 ```julia
 julia>]
 (@v1.8) pkg> activate ../.
@@ -57,9 +57,21 @@ Adding plotting routines of GeoParams through GLMakie
 Loading GLMakie plotting routines within GMG
 run_code (generic function with 1 method)
 ```
-It will take a bit (to precompile/download all required packages) but it will start a GUI that looks like this: 
-![GUI_RTI_start](./docs/src/assets/img/RTI_GUI_start.png)
-
-
+It will take a bit (to precompile/download all required packages) but it will start a GUI. After pushin `Run`, you'll get something that looks like this: 
+![GUI_RTI_start](./docs/src/assets/img/Convection_GUI.png)
+```julia
+julia> [ Info: Running LaMEM simulation
+[ Info: created marker setup
+Timestep 5
+Timestep 15
+Timestep 20
+Timestep 25
+Timestep 27
+Timestep 30
+Timestep 32x
+Timestep 35
+Timestep 37
+Timestep 40
+```
 
 ### Running the examples

@@ -131,7 +131,9 @@ function run_code(ParamFile, gui; wait=true)
     nstep_max_val = Int64(nstep_max)
 
     # command-line arguments
-    args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-H),$(H/10) -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
+    #args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-H),$(H/10) -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
+    args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-H),0 -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
+    
     
     @show args
     # Create the setup
