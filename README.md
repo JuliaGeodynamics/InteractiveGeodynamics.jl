@@ -48,7 +48,9 @@ Return to the `REPL` with the backspace.
 julia>]
 (@v1.8) pkg> activate ../.
   Activating project at `~/Downloads/InteractiveGeodynamics.jl`
+(@v1.8) pkg> instantiate
 ```
+The command `instantiate` downloads all you need. This can take some time the first time you do this.
 
 7) Start the GUI: 
 ```julia
@@ -57,7 +59,7 @@ Adding plotting routines of GeoParams through GLMakie
 Loading GLMakie plotting routines within GMG
 run_code (generic function with 1 method)
 ```
-It will take a bit (to precompile/download all required packages) but it will start a GUI. After pushin `Run`, you'll get something that looks like this: 
+It will take a bit of time (to precompile/download all required packages) but it will start a GUI. After pushing `Run`, you'll get something that looks like this: 
 ```julia
 julia> [ Info: Running LaMEM simulation
 args = "-nstep_max 250 -eta_fk[0] 1.0e21  -gamma_fk[0] 1.0e-9 -TRef_fk[0] 1000.0 -ch[0] 5.0e8 -nel_x 128 -nel_z 64 -coord_x -1000.0,1000.0 -coord_z -1000.0,0 -coord_y -8.0,8.0 -temp_bot 2000.0"
@@ -74,7 +76,7 @@ Timestep 30
 
 ### Running the examples
 
-Running the other examples is reasonably straightforward. Every directory contains a julia file, so change to that directory and run the julia file with `include`. For example, the Rayleigh-Taylor example can be started with:
+Running the other examples is reasonably straightforward. Every directory contains a julia file, so change to that directory and run the julia file with `include("NAME.jl")`. For example, the Rayleigh-Taylor example can be started with:
 ```julia
 shell>cd RayleighTaylorInstability/
 julia> include("RTI_LaMEM.jl")
