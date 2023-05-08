@@ -54,7 +54,7 @@ The command `instantiate` downloads all you need. This can take some time the fi
 
 7) Start the GUI: 
 ```julia
-julia> include("RTI_LaMEM.jl")
+julia> include("Convection_LaMEM.jl")
 Adding plotting routines of GeoParams through GLMakie 
 Loading GLMakie plotting routines within GMG
 run_code (generic function with 1 method)
