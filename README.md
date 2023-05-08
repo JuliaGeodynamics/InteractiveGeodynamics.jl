@@ -70,7 +70,7 @@ Timestep 20
 Timestep 25
 Timestep 30
 ```
-![GUI_RTI_start](./docs/src/assets/img/Convection_GUI.png)
+![GUI_Convection](./docs/src/assets/img/Convection_GUI.png)
 
 ### Running the examples
 
@@ -87,3 +87,4 @@ Timestep 15
 Timestep 20
 Timestep 25
 ```
+![GUI_RTI_start](./docs/src/assets/img/RTI_GUI_start.png)
