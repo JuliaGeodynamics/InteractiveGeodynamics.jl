@@ -4,6 +4,9 @@ This package provides a range of graphical user interfaces (GUI's) to study and 
 It uses [julia](https://julialang.org) and [makie](https://docs.makie.org/stable/) and automatically installs the required geodynamic software (such as [LaMEM](https://github.com/JuliaGeodynamics/LaMEM.jl)) in the background.
 This is particularly useful as part of teaching.
 
+![Convection_GUI](./docs/src/assets/img/Convection_GUI.gif)
+
+
 ### Getting started/requirements
 In order to use this, you do need to install some software on your machine. 
 Please follow these steps if you haven't done this yet:
