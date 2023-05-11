@@ -1,4 +1,5 @@
 using LaMEM, Revise, FileWatching, Interpolations
+using GLMakie
 using GLMakie: to_native
 using GLMakie.GLFW
 
@@ -207,10 +208,11 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = (2000,1200), fo
     dat = rand(11, 11)
     hm = heatmap!(ax, Vector(0.0:10.0),Vector(0.0:10.0),dat, colormap=colormap)
     cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0)) # colorbar
+    hm[3][] = zeros(11,11)
 
     # add arrows
     pt_arrow = Observable( [Makie.Point2f0(0,0)])
-    vel_arrow = Observable([Makie.Vec2f(0,0)])
+    vel_arrow = Observable([Makie.Vec2f0(0,0)])
     arr = arrows!(ax,pt_arrow, vel_arrow, color=:gray50, lengthscale = 2.0)
 
     # Store all GUI elements in a NamedTuple
