@@ -25,13 +25,13 @@ if Sys.isapple()
     
     fontsize   = 30
 else
-    fontsize   = 20
+    resolution = nothing
+    fontsize   = nothing
 end
-#width=160;
 
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, colormap=Reverse(:roma),
-                    size_total=(1:21, 1:7), size_ax=(2:20, 2:4));
+                    size_total=(1:22, 1:7), size_ax=(2:20, 2:4));
 ax.title =  ""
 gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"

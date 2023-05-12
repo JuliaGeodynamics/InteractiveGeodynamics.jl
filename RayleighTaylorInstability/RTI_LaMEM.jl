@@ -17,13 +17,15 @@ width =  round(Int,resolution[1]/11);
 
 if Sys.isapple()
     resolution = (1900,1400)
-    
     fontsize   = 30
 else
  #   resolution = (1200,800)
-    fontsize   = 20
+    # fontsize   = 20
+
 end
 #width=160;
+resolution=nothing
+fontsize=nothing
 
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width);
@@ -41,7 +43,7 @@ eta_lo_sl, _, _ = Slider_with_text_above(fig[12:13,6:7], L"\log_{10}(\eta_{\math
 
 # Toggle
 FreeSurf,_ = Toggle_with_label_left(fig[14, 6:7], L"\mathrm{FastErosionUpperBoundary}", false);
-Layers,_ = Toggle_with_label_left(fig[15, 6:7], L"\mathrm{LayeredOverburden}", false);
+Layers,_ = Toggle_with_label_left(fig[15, 6:7], L"\mathrm{LayeredOverburden}", true);
 
 # Create setup
 function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.1, ; args)

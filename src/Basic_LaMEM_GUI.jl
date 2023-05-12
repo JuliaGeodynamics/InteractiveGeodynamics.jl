@@ -163,12 +163,19 @@ Output arguments:
 
 
 """
-function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=30, colormap=:viridis, width=160, size_total=(1:21, 1:7), size_ax=(2:20, 1:5))
+function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, size_total=(1:22, 1:7), size_ax=(2:20, 1:5))
 
     # Generate general layout
-    if isnothing(resolution)
-        fig = Figure( fontsize=fontsize)        # default figure size (requires resizing)
+    if isnothing(resolution) & isnothing(fontsize)
+        fig = Figure()        # default figure size (requires resizing)
+    elseif isnothing(resolution) & !isnothing(fontsize)
+        fig = Figure(fontsize=fontsize) 
+
+    elseif !isnothing(resolution) & isnothing(fontsize)
+        fig = Figure(resolution=resolution) 
+        
     else
+
         fig = Figure( resolution=resolution, fontsize=fontsize)
     end
     
@@ -190,14 +197,14 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
     nel_z_tb,_ = Textbox_with_label_left(fig[4, size_total[2][end-1:end]], "# gridpoints [z]: ", nel_z, width=width);
     
     # Add buttons
-    fig[size_total[1][end], size_total[2][end   ]] = buttonplay = Button(fig, label = " ", width=Relative(1/1)) #GridLayout(tellwidth = false)
-    fig[size_total[1][end  ], size_total[2][end-1 ]] = buttonrun  = Button(fig, label = "Run", width=Relative(1/1)) #GridLayout(tellwidth = false)
+    fig[size_total[1][end-1], size_total[2][end   ]] = buttonplay = Button(fig, label = " ", width=Relative(1/1)) #GridLayout(tellwidth = false)
+    fig[size_total[1][end-1], size_total[2][end-1 ]] = buttonrun  = Button(fig, label = "Run", width=Relative(1/1)) #GridLayout(tellwidth = false)
 
     # Add velocity toggle
     velocity_toggle,_ = Toggle_with_label_left(fig[size_total[1][end-2], size_total[2][end-1:end]], "Show velocity", false);
 
     # add Menu with fields to show:
-    menu = Menu(fig[size_total[1][end-1], size_total[2][end-1]], options = ["phase","temperature"], default = "phase")
+    menu = Menu(fig[size_total[1][end-2], size_total[2][end-1]], options = ["phase","temperature"], default = "phase")
     if !isfile(OutFile*".pvd")
         # Create empty input file (as we are monitoring this)
         io = open(OutFile*".pvd", "w"); println(io, " "); close(io)
@@ -206,14 +213,14 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
         update_fields_menu(OutFile, menu)       
         buttonplay.label="Play"
     end
-    menu_comp = Textbox(fig[size_total[1][end-1], size_total[2][end]], placeholder = "1", stored_string="1")
+    menu_comp = Textbox(fig[size_total[1][end-2], size_total[2][end]], placeholder = "1", stored_string="1")
 
     # Create initial heatmap
     dat = rand(11, 11)
     hm = heatmap!(ax, Vector(0.0:10.0),Vector(0.0:10.0),dat, colormap=colormap)
     #cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0)) # colorbar
     #cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0), vertical=false) # colorbar
-    cb = Colorbar(fig[size_total[1][end], size_ax[2]],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0), vertical=false) # colorbar
+    cb = Colorbar(fig[size_total[1][end], size_ax[2]],  colormap=colormap, limits = (-1.0, 1.0), vertical=false) # colorbar
     
     hm[3][] = zeros(11,11)
 
