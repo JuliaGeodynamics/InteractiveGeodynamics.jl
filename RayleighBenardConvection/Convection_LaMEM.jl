@@ -12,7 +12,7 @@ clean_directory()
 # Define the simulation name & the output files: 
 OutFile  = "Convection"
 ParamFile  = "Convection.dat"
-FreeSurface = true
+FreeSurface = false
 if FreeSurface
     ParamFile  = "Convection_FreeSurf.dat"
 end
