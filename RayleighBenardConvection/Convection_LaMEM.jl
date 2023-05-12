@@ -10,17 +10,21 @@ include("../src/Basic_LaMEM_GUI.jl")
 clean_directory()
 
 # Define the simulation name & the output files: 
+OutFile  = "Convection"
 ParamFile  = "Convection.dat"
-OutFile    = "Convection"
+FreeSurface = true
+if FreeSurface
+    ParamFile  = "Convection_FreeSurf.dat"
+end
 resolution = primary_resolution()
 width =  round(Int,resolution[1]/11);
 
 if Sys.isapple()
     resolution = (2500,1500)
+    resolution = nothing
     
     fontsize   = 30
 else
- #   resolution = (1200,800)
     fontsize   = 20
 end
 #width=160;
@@ -32,19 +36,22 @@ ax.title =  ""
 gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"
 
-# add left plot
+# add left & top plots
 ax_T   = Axis(fig[2:20,1], xlabel="T[C]", ylabel="Depth[km]")
+linkyaxes!(ax,ax_T)
+
 ax_Vel = Axis(fig[2,2:5], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
+linkxaxes!(ax,ax_Vel)
 
 
 # Add textboxes:
 Height,_   = Textbox_with_label_left(fig[6, 6:7], L"\mathrm{Height [km]}", "1000", width=width);
-AspectR,_ = Textbox_with_label_left(fig[7, 6:7], L"\mathrm{AspectRatio}", "2", width=width);
+AspectR,_ = Textbox_with_label_left(fig[7, 6:7], L"\mathrm{AspectRatio}", "3", width=width);
 Tbot,_ = Textbox_with_label_left(fig[8, 6:7], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width);
 Yield,_ = Textbox_with_label_left(fig[9, 6:7], L"\mathrm{YieldStress[MPa]}", "500", width=width);
 
 # Add sliders:
-gamma_sl, _, _ = Slider_with_text_above(fig[10:11,6:7], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 1e-9);
+gamma_sl, _, _ = Slider_with_text_above(fig[10:11,6:7], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01   );
 eta_sl, _, _ = Slider_with_text_above(fig[12:13,6:7], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
 
 # Add toggle:
@@ -102,7 +109,14 @@ function update_plot_info(OutFile, gui::NamedTuple, t_step::Int64; last=false)
     if length(ax_Vel.scene.plots)>0
         delete!(ax_Vel.scene,ax_Vel.scene.plots[end])
     end
-    lines!(ax_Vel,x,Vx_field[:,end], color=:blue)
+    
+    if FreeSurface
+        iz = findmin(abs.(z .- 0.0))[2]      # close to zero
+    else
+        iz = length(z)
+    end
+
+    lines!(ax_Vel,x,Vx_field[:,iz], color=:blue)        # velocity around z=0
     xlims!(ax_Vel,minimum(x),maximum(x))
 
     return t_step, gui
@@ -131,9 +145,11 @@ function run_code(ParamFile, gui; wait=true)
     nstep_max_val = Int64(nstep_max)
 
     # command-line arguments
-    #args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-H),$(H/10) -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
     args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-H),0 -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
     
+    if FreeSurface
+        args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -coord_x $(-W/2),$(W/2) -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
+    end
     
     @show args
     # Create the setup

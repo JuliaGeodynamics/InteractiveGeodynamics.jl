@@ -140,7 +140,7 @@ end
 
 
 """
-    fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = (1800,1200), fontsize=30, colormap=:viridis, size_total=(1:20, 1:7), size_ax=(1:20, 1:4))
+    fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=30, colormap=:viridis, size_total=(1:20, 1:7), size_ax=(1:20, 1:4))
 
 Creates a basic LaMEM GUI that has a "run" and "play" button and the option to change the max. number of timesteps.
 
@@ -149,7 +149,7 @@ Input arguments:
 - `ParamFile`: the LaMEM input file (incluidng `*.dat`)
 
 Optional arguments:
-- `resolution`: resolution of the screen
+- `resolution`: resolution of the screen. by default this is set to `nothing` which produces a small figure tat require resizing
 - `fontsize`: fontsize 
 - `colormap`: colormap used
 - `width`: width of last row
@@ -163,11 +163,15 @@ Output arguments:
 
 
 """
-function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = (2000,1200), fontsize=30, colormap=:viridis, width=160, size_total=(1:21, 1:7), size_ax=(2:20, 1:4))
+function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=30, colormap=:viridis, width=160, size_total=(1:21, 1:7), size_ax=(2:20, 1:4))
 
     # Generate general layout
-    fig = Figure( resolution=resolution, fontsize=fontsize)
-
+    if isnothing(resolution)
+        fig = Figure( fontsize=fontsize)        # default figure size (requires resizing)
+    else
+        fig = Figure( resolution=resolution, fontsize=fontsize)
+    end
+    
     # main figure
     ax = Axis(fig[size_ax...], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
 
