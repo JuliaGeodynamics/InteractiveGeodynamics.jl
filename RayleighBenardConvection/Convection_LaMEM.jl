@@ -18,6 +18,7 @@ if FreeSurface
 end
 resolution = primary_resolution()
 width =  round(Int,resolution[1]/11);
+width=160
 
 if Sys.isapple()
     resolution = (2500,1500)
@@ -52,7 +53,7 @@ rowgap!(fig.layout, 10);
 #colgap!(ax, 10)
 
 ax_Vel = Axis(fig[2,1][1,1], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
-#ax_Vel.height = 100
+ax_Vel.height = 100
 linkxaxes!(ax,ax_Vel)
 hidexdecorations!(ax_Vel, grid = false)
 
@@ -116,6 +117,9 @@ function update_plot_info(OutFile, gui::NamedTuple, t_step::Int64; last=false)
     end
     lines!(ax_T,mean(T_field, dims=1)[:],z, color=:blue)
     ylims!(ax_T,minimum(z),0)
+
+    ΔT = get_values_textboxes((Tbot, ))
+    ax_T.xticks[] = [0, ΔT[1]]
 
     # Top Vx
     if length(ax_Vel.scene.plots)>0
