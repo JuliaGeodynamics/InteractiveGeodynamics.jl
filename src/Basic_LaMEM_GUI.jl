@@ -98,7 +98,7 @@ function update_plot_info_basic(OutFile, gui::NamedTuple, t_step::Int64; last=fa
     gui.hm[3] = data_field  
 
     aspect_ratio =  (data.x.val[end]- data.x.val[1]) / (data.z.val[end]- data.z.val[1])
-    ax.aspect = aspect_ratio
+   # ax.aspect = aspect_ratio
   #  gui.cb.height[] = Relative(1/aspect_ratio*0.9)
 
     # plot velocity arrows if requested
@@ -163,7 +163,7 @@ Output arguments:
 
 
 """
-function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, size_total=(1:18, 1:7), size_ax=(2:16, 1:5))
+function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, size_total=(1:18, 1:7), size_ax=(1,1))
 
     # Generate general layout
     if isnothing(resolution) & isnothing(fontsize)
@@ -181,9 +181,12 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
     
     # main figure
 #    ax = Axis(fig[size_ax...], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
-    ax = Axis(fig[2,1][1,1], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
+    #ax = Axis(fig[2,1][size_ax...], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
+    ax = Axis(fig[2,1][size_ax...], xlabel="Width [km]", ylabel="Depth [km]")
+    
 
     menu_file = Menu(fig[1, 1][1,1], options = ["File","Save animation", "Save plot", "Close window"], default = "File", selection_cell_color_inactive = GLMakie.RGB(1,1,1))
+    rowsize!(fig.layout, 1, 30)
 
     # info window
     #lb_time,_ = Textbox_with_label_left(fig[1, size_total[2][end-1:end]], "time [Myr]: ", 0.0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
@@ -224,11 +227,11 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
 
     # Create initial heatmap
     dat = rand(11, 11)
-    hm = heatmap!(ax, Vector(0.0:10.0),Vector(0.0:10.0),dat, colormap=colormap)
+    hm = heatmap!(ax, Vector(0.0:20.0),Vector(0.0:10.0),dat, colormap=colormap)
     #cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0)) # colorbar
     #cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0), vertical=false) # colorbar
     #cb = Colorbar(fig[size_total[1][end], size_ax[2]],  colormap=colormap, limits = (-1.0, 1.0), vertical=false) # colorbar
-    cb = Colorbar(fig[2,1][2,1],  colormap=colormap, width = Relative(1/2), limits = (-1.0, 1.0), vertical=false) # colorbar
+    cb = Colorbar(fig[2,1][size_ax[1]+1,size_ax[2]],  colormap=colormap, width = Relative(1/2), limits = (-1.0, 1.0), vertical=false) # colorbar
     #cb = Colorbar(fig[2,1][2,1],  hm,  width = Relative(1/2), vertical=false) # colorbar
     
     

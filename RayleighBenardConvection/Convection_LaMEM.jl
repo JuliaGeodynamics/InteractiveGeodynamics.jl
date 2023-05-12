@@ -31,31 +31,43 @@ end
 
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, colormap=Reverse(:roma),
-                    size_total=(1:22, 1:7), size_ax=(2:20, 2:4));
+                    size_total=(1:22, 1:7), size_ax=(2, 1));
 ax.title =  ""
 gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"
 
 # add left & top plots
-ax_T   = Axis(fig[3:20,1], xlabel="T[C]", ylabel="Depth[km]")
+ax_T   = Axis(fig[2,1][2,2], xlabel="T[C]", ylabel="Depth[km]", width=100)
+#ax_T.width = Relative(1/4)
+
 linkyaxes!(ax,ax_T)
+hideydecorations!(ax_T, grid = false)
 
-ax_Vel = Axis(fig[2,2:4], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
+#colsize!(fig.layout, 1, Relative(2 / 3))
+#rowsize!(fig.layout, 1, Relative(1 / 3))
+colgap!(fig.layout, 10)
+rowgap!(fig.layout, 10);
+
+
+#colgap!(ax, 10)
+
+ax_Vel = Axis(fig[2,1][1,1], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
+#ax_Vel.height = 100
 linkxaxes!(ax,ax_Vel)
-
+hidexdecorations!(ax_Vel, grid = false)
 
 # Add textboxes:
-Height,_   = Textbox_with_label_left(fig[6, 6:7], L"\mathrm{Height [km]}", "1000", width=width);
-AspectR,_ = Textbox_with_label_left(fig[7, 6:7], L"\mathrm{AspectRatio}", "3", width=width);
-Tbot,_ = Textbox_with_label_left(fig[8, 6:7], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width);
-Yield,_ = Textbox_with_label_left(fig[9, 6:7], L"\mathrm{YieldStress[MPa]}", "500", width=width);
+Height,_   = Textbox_with_label_left(fig[2,2][6, 1:2], L"\mathrm{Height [km]}", "1000", width=width);
+AspectR,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"\mathrm{AspectRatio}", "3", width=width);
+Tbot,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width);
+Yield,_ = Textbox_with_label_left(fig[2,2][9, 1:2], L"\mathrm{YieldStress[MPa]}", "500", width=width);
 
 # Add sliders:
-gamma_sl, _, _ = Slider_with_text_above(fig[10:11,6:7], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01   );
-eta_sl, _, _ = Slider_with_text_above(fig[12:13,6:7], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
+gamma_sl, _, _ = Slider_with_text_above(fig[2,2][10:11,1:2], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01   );
+eta_sl, _, _ = Slider_with_text_above(fig[2,2][12:13,1:2], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
 
 # Add toggle:
-temp_toggle,_ = Toggle_with_label_left(fig[18, 6:7], "Temperature isocontours", true);
+temp_toggle,_ = Toggle_with_label_left(fig[2,2][18, 1:2], "Temperature isocontours", true);
 
 
 # Create setup with random noise
