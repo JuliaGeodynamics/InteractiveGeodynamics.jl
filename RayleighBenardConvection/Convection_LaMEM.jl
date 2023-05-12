@@ -37,10 +37,10 @@ gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"
 
 # add left & top plots
-ax_T   = Axis(fig[2:20,1], xlabel="T[C]", ylabel="Depth[km]")
+ax_T   = Axis(fig[3:20,1], xlabel="T[C]", ylabel="Depth[km]")
 linkyaxes!(ax,ax_T)
 
-ax_Vel = Axis(fig[2,2:5], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
+ax_Vel = Axis(fig[2,2:4], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
 linkxaxes!(ax,ax_Vel)
 
 
