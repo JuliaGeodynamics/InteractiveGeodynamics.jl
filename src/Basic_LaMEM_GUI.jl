@@ -163,7 +163,7 @@ Output arguments:
 
 
 """
-function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, size_total=(1:22, 1:7), size_ax=(2:20, 1:5))
+function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, size_total=(1:18, 1:7), size_ax=(2:16, 1:5))
 
     # Generate general layout
     if isnothing(resolution) & isnothing(fontsize)
