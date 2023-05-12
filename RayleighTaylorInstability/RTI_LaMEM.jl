@@ -32,18 +32,28 @@ fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution,
 ax.title =  "Rayleigh Taylor Instability"
 
 # Add textboxes:
-rho_up,_ = Textbox_with_label_left(fig[6, 6:7], L"ρ_{\mathrm{upper}} \mathrm{  [kg/m³]}", "2800", width=width);
-rho_lo,_ = Textbox_with_label_left(fig[7, 6:7], L"ρ_{\mathrm{lower}} \mathrm{  [kg/m³]}", "2200", width=width);
-Hi,_ = Textbox_with_label_left(fig[8, 6:7], L"H_{\mathrm{interface}} \mathrm{  [km]}", "-3.5", width=width);
-Width,_ = Textbox_with_label_left(fig[9, 6:7], L"\mathrm{Width [km]}", "10", width=width);
+#rho_up,_ = Textbox_with_label_left(fig[6, 6:7], L"ρ_{\mathrm{upper}} \mathrm{  [kg/m³]}", "2800", width=width);
+#rho_lo,_ = Textbox_with_label_left(fig[7, 6:7], L"ρ_{\mathrm{lower}} \mathrm{  [kg/m³]}", "2200", width=width);
+#Hi,_ = Textbox_with_label_left(fig[8, 6:7], L"H_{\mathrm{interface}} \mathrm{  [km]}", "-3.5", width=width);
+#Width,_ = Textbox_with_label_left(fig[9, 6:7], L"\mathrm{Width [km]}", "10", width=width);
+
+rho_up,_ = Textbox_with_label_left(fig[2,2][6, 1:2], L"ρ_{\mathrm{upper}} \mathrm{  [kg/m³]}", "2800", width=width);
+rho_lo,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"ρ_{\mathrm{lower}} \mathrm{  [kg/m³]}", "2200", width=width);
+Hi,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"H_{\mathrm{interface}} \mathrm{  [km]}", "-3.5", width=width);
+Width,_ = Textbox_with_label_left(fig[2,2][9, 1:2], L"\mathrm{Width [km]}", "10", width=width);
 
 # Add sliders:
-eta_up_sl, _, _ = Slider_with_text_above(fig[10:11,6:7], L"\log_{10}(\eta_{\mathrm{upper}} \mathrm{  [Pas]})", 18:.1:22, 20);
-eta_lo_sl, _, _ = Slider_with_text_above(fig[12:13,6:7], L"\log_{10}(\eta_{\mathrm{lower}} \mathrm{  [Pas]})", 18:.1:22, 18);
+#eta_up_sl, _, _ = Slider_with_text_above(fig[10:11,6:7], L"\log_{10}(\eta_{\mathrm{upper}} \mathrm{  [Pas]})", 18:.1:22, 20);
+#eta_lo_sl, _, _ = Slider_with_text_above(fig[12:13,6:7], L"\log_{10}(\eta_{\mathrm{lower}} \mathrm{  [Pas]})", 18:.1:22, 18);
+eta_up_sl, _, _ = Slider_with_text_above(fig[2,2][10:11,1:2], L"\log_{10}(\eta_{\mathrm{upper}} \mathrm{  [Pas]})", 18:.1:22, 20);
+eta_lo_sl, _, _ = Slider_with_text_above(fig[2,2][12:13,1:2], L"\log_{10}(\eta_{\mathrm{lower}} \mathrm{  [Pas]})", 18:.1:22, 18);
 
 # Toggle
-FreeSurf,_ = Toggle_with_label_left(fig[14, 6:7], L"\mathrm{FastErosionUpperBoundary}", false);
-Layers,_ = Toggle_with_label_left(fig[15, 6:7], L"\mathrm{LayeredOverburden}", true);
+#FreeSurf,_ = Toggle_with_label_left(fig[14, 6:7], L"\mathrm{FastErosionUpperBoundary}", false);
+#Layers,_ = Toggle_with_label_left(fig[15, 6:7], L"\mathrm{LayeredOverburden}", true);
+FreeSurf,_ = Toggle_with_label_left(fig[2,2][14, 1:2], L"\mathrm{FastErosionUpperBoundary}", false);
+Layers,_ = Toggle_with_label_left(fig[2,2][15, 1:2], L"\mathrm{LayeredOverburden}", true);
+
 
 # Create setup
 function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.1, ; args)

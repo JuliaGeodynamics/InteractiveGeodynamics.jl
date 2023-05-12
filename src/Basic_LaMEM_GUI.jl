@@ -99,7 +99,7 @@ function update_plot_info_basic(OutFile, gui::NamedTuple, t_step::Int64; last=fa
 
     aspect_ratio =  (data.x.val[end]- data.x.val[1]) / (data.z.val[end]- data.z.val[1])
     ax.aspect = aspect_ratio
-    gui.cb.height[] = Relative(1/aspect_ratio*0.9)
+  #  gui.cb.height[] = Relative(1/aspect_ratio*0.9)
 
     # plot velocity arrows if requested
     if gui.velocity_toggle.active[]
@@ -173,38 +173,45 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
 
     elseif !isnothing(resolution) & isnothing(fontsize)
         fig = Figure(resolution=resolution) 
-        
+
     else
 
         fig = Figure( resolution=resolution, fontsize=fontsize)
     end
     
     # main figure
-    ax = Axis(fig[size_ax...], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
+#    ax = Axis(fig[size_ax...], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
+    ax = Axis(fig[2,1][1,1], xlabel="Width [km]", ylabel="Depth [km]", aspect = 1)
 
-    menu_file = Menu(fig[1, 1], options = ["File","Save animation", "Save plot", "Close window"], default = "File", selection_cell_color_inactive = GLMakie.RGB(1,1,1))
+    menu_file = Menu(fig[1, 1][1,1], options = ["File","Save animation", "Save plot", "Close window"], default = "File", selection_cell_color_inactive = GLMakie.RGB(1,1,1))
 
     # info window
-    lb_time,_ = Textbox_with_label_left(fig[1, size_total[2][end-1:end]], "time [Myr]: ", 0.0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
-    lb_timestep,_ = Textbox_with_label_left(fig[2, size_total[2][end-1:end]], "timestep: ", 0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
+    #lb_time,_ = Textbox_with_label_left(fig[1, size_total[2][end-1:end]], "time [Myr]: ", 0.0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
+    #lb_timestep,_ = Textbox_with_label_left(fig[2, size_total[2][end-1:end]], "timestep: ", 0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
+    lb_time,_ = Textbox_with_label_left(fig[2,2][1,1:2], "time [Myr]: ", 0.0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
+    lb_timestep,_ = Textbox_with_label_left(fig[2,2][2,1:2], "timestep: ", 0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width)
     
     # retrieve maximum # of timestep
     nstep_max = keyword_LaMEM_inputfile(ParamFile,"nstep_max", Int64);
-    nstep_max_tb,_ = Textbox_with_label_left(fig[3, size_total[2][end-1:end]], "max. # timesteps: ", nstep_max, width=width);
+#    nstep_max_tb,_ = Textbox_with_label_left(fig[3, size_total[2][end-1:end]], "max. # timesteps: ", nstep_max, width=width);
+    nstep_max_tb,_ = Textbox_with_label_left(fig[2,2][3,1:2], "max. # timesteps: ", nstep_max, width=width);
 
     # Grid resolution
     nel_z = keyword_LaMEM_inputfile(ParamFile,"nel_z", Int64);
-    nel_z_tb,_ = Textbox_with_label_left(fig[4, size_total[2][end-1:end]], "# gridpoints [z]: ", nel_z, width=width);
+    #nel_z_tb,_ = Textbox_with_label_left(fig[4, size_total[2][end-1:end]], "# gridpoints [z]: ", nel_z, width=width);
+    nel_z_tb,_ = Textbox_with_label_left(fig[2,2][4,1:2], "# gridpoints [z]: ", nel_z, width=width);
     
     # Add buttons
-    fig[size_total[1][end-1], size_total[2][end   ]] = buttonplay = Button(fig, label = " ", width=Relative(1/1)) #GridLayout(tellwidth = false)
-    fig[size_total[1][end-1], size_total[2][end-1 ]] = buttonrun  = Button(fig, label = "Run", width=Relative(1/1)) #GridLayout(tellwidth = false)
+    #fig[size_total[1][end-1], size_total[2][end   ]] = buttonplay = Button(fig, label = " ", width=Relative(1/1)) #GridLayout(tellwidth = false)
+    #fig[size_total[1][end-1], size_total[2][end-1 ]] = buttonrun  = Button(fig, label = "Run", width=Relative(1/1)) #GridLayout(tellwidth = false)
+    fig[2,2][size_total[1][end-1], 1]  = buttonrun  = Button(fig, label = "Run", width=Relative(1/1)) #GridLayout(tellwidth = false)
+    fig[2,2][size_total[1][end-1], 2] = buttonplay = Button(fig, label = " ", width=Relative(1/1)) #GridLayout(tellwidth = false)
 
     # Add velocity toggle
-    velocity_toggle,_ = Toggle_with_label_left(fig[size_total[1][end-2], size_total[2][end-1:end]], "Show velocity", false);
+    velocity_toggle,_ = Toggle_with_label_left(fig[2,2][size_total[1][end-3], 1:2], "Show velocity", false);
 
     # add Menu with fields to show:
-    menu = Menu(fig[size_total[1][end-2], size_total[2][end-1]], options = ["phase","temperature"], default = "phase")
+    menu = Menu(fig[2,2][size_total[1][end-2], 1], options = ["phase","temperature"], default = "phase")
     if !isfile(OutFile*".pvd")
         # Create empty input file (as we are monitoring this)
         io = open(OutFile*".pvd", "w"); println(io, " "); close(io)
@@ -213,14 +220,17 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
         update_fields_menu(OutFile, menu)       
         buttonplay.label="Play"
     end
-    menu_comp = Textbox(fig[size_total[1][end-2], size_total[2][end]], placeholder = "1", stored_string="1")
+    menu_comp = Textbox(fig[2,2][size_total[1][end-2], 2], placeholder = "1", stored_string="1")
 
     # Create initial heatmap
     dat = rand(11, 11)
     hm = heatmap!(ax, Vector(0.0:10.0),Vector(0.0:10.0),dat, colormap=colormap)
     #cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0)) # colorbar
     #cb = Colorbar(fig[1:20, 5],  colormap=colormap, height = Relative(3/4), limits = (-1.0, 1.0), vertical=false) # colorbar
-    cb = Colorbar(fig[size_total[1][end], size_ax[2]],  colormap=colormap, limits = (-1.0, 1.0), vertical=false) # colorbar
+    #cb = Colorbar(fig[size_total[1][end], size_ax[2]],  colormap=colormap, limits = (-1.0, 1.0), vertical=false) # colorbar
+    cb = Colorbar(fig[2,1][2,1],  colormap=colormap, width = Relative(1/2), limits = (-1.0, 1.0), vertical=false) # colorbar
+    #cb = Colorbar(fig[2,1][2,1],  hm,  width = Relative(1/2), vertical=false) # colorbar
+    
     
     hm[3][] = zeros(11,11)
 
