@@ -18,32 +18,37 @@ width =  round(Int,resolution[1]/11);
 if Sys.isapple()
     resolution = (1900,1400)
     fontsize   = 30
+    height_widgets = Auto();
+elseif Sys.iswindows()
+    fontsize   = 15
+    height_widgets = Auto();
+    resolution=nothing
+
 else
  #   resolution = (1200,800)
     fontsize   = 10
+    height_widgets = Auto();
+    resolution=nothing
 
 end
-#width=160;
-resolution=nothing
-#fontsize=nothing
 
 # Create Basic GUI
-fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width);
+fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, height=height_widgets);
 ax.title =  "Rayleigh Taylor Instability"
 
 # Add textboxes:
-rho_up,_ = Textbox_with_label_left(fig[2,2][5, 1:2], L"ρ_{\mathrm{upper}} \mathrm{  [kg/m³]}", "2800", width=width);
-rho_lo,_ = Textbox_with_label_left(fig[2,2][6, 1:2], L"ρ_{\mathrm{lower}} \mathrm{  [kg/m³]}", "2200", width=width);
-Hi,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"H_{\mathrm{interface}} \mathrm{  [km]}", "-3.5", width=width);
-Width,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"\mathrm{Width [km]}", "10", width=width);
+rho_up,_ = Textbox_with_label_left(fig[2,2][5, 1:2], L"ρ_{\mathrm{upper}} \mathrm{  [kg/m³]}", "2800", width=width, height=height_widgets);
+rho_lo,_ = Textbox_with_label_left(fig[2,2][6, 1:2], L"ρ_{\mathrm{lower}} \mathrm{  [kg/m³]}", "2200", width=width, height=height_widgets);
+Hi,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"H_{\mathrm{interface}} \mathrm{  [km]}", "-3.5", width=width, height=height_widgets);
+Width,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"\mathrm{Width [km]}", "10", width=width, height=height_widgets);
 
 # Add sliders:
-eta_up_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\log_{10}(\eta_{\mathrm{upper}} \mathrm{  [Pas]})", 18:.1:22, 20);
-eta_lo_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\mathrm{lower}} \mathrm{  [Pas]})", 18:.1:22, 18);
+eta_up_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\log_{10}(\eta_{\mathrm{upper}} \mathrm{  [Pas]})", 18:.1:22, 20, height=height_widgets);
+eta_lo_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\mathrm{lower}} \mathrm{  [Pas]})", 18:.1:22, 18, height=height_widgets);
 
 # Toggle
-FreeSurf,_ = Toggle_with_label_left(fig[2,2][13, 1:2], L"\mathrm{FastErosionUpperBoundary}", false);
-Layers,_ = Toggle_with_label_left(fig[2,2][14, 1:2], L"\mathrm{LayeredOverburden}", true);
+FreeSurf,_ = Toggle_with_label_left(fig[2,2][13, 1:2], L"\mathrm{FastErosionUpperBoundary}", false, height=height_widgets);
+Layers,_ = Toggle_with_label_left(fig[2,2][14, 1:2], L"\mathrm{LayeredOverburden}", true, height=height_widgets);
 
 
 # Create setup
@@ -101,6 +106,7 @@ function run_code(ParamFile, gui; wait=true)
     @info "created marker setup"
 
     # Run LaMEM with these parameters
+    @show args
     run_lamem(ParamFile, 1, args, wait=wait)
 end
 
