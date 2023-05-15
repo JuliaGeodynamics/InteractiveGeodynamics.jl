@@ -20,9 +20,9 @@ if Sys.isapple()
     fontsize   = 30
     height_widgets = Auto();
 elseif Sys.iswindows()
-    fontsize   = 15
-    height_widgets = Auto();
-    resolution=nothing
+    fontsize   = 10
+    height_widgets = 25;
+    resolution=(1300,900)
 
 else
  #   resolution = (1200,800)
