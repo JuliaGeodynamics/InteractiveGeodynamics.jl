@@ -18,44 +18,61 @@ if FreeSurface
 end
 resolution = primary_resolution()
 width =  round(Int,resolution[1]/11);
+width=160
 
 if Sys.isapple()
     resolution = (2500,1500)
-    resolution = nothing
     
     fontsize   = 30
+    height_widgets = Auto();
+
+elseif Sys.iswindows()
+    fontsize   = 15
+    height_widgets = 25;
+    resolution=(1500,900)
+
 else
     resolution = nothing
-    fontsize   = nothing
+    fontsize   = nothing 
 end
+
 
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, colormap=Reverse(:roma),
-                    size_total=(1:22, 1:7), size_ax=(2:20, 2:4));
+                    size_total=(1:17, 1:7), size_ax=(2, 1), height=Auto());
 ax.title =  ""
 gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"
 
 # add left & top plots
-ax_T   = Axis(fig[3:20,1], xlabel="T[C]", ylabel="Depth[km]")
+ax_T   = Axis(fig[2,1][2,2], xlabel=L"T[^o\mathrm{C}]", ylabel="Depth[km]", width=100, xaxisposition=:top)
+
 linkyaxes!(ax,ax_T)
+hideydecorations!(ax_T, grid = false)
+colgap!(fig.layout, 10)
+rowgap!(fig.layout, 10);
 
-ax_Vel = Axis(fig[2,2:4], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
+ax_Vel = Axis(fig[2,1][1,1], title="Rayleigh Benard Convection", ylabel=L"v_x[\mathrm{cm yr}^{-1}]", xlabel="Width[km]")
+ax_Vel.height = 100
 linkxaxes!(ax,ax_Vel)
-
+hidexdecorations!(ax_Vel, grid = false)
 
 # Add textboxes:
-Height,_   = Textbox_with_label_left(fig[6, 6:7], L"\mathrm{Height [km]}", "1000", width=width);
-AspectR,_ = Textbox_with_label_left(fig[7, 6:7], L"\mathrm{AspectRatio}", "3", width=width);
-Tbot,_ = Textbox_with_label_left(fig[8, 6:7], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width);
-Yield,_ = Textbox_with_label_left(fig[9, 6:7], L"\mathrm{YieldStress[MPa]}", "500", width=width);
+Height,_   = Textbox_with_label_left(fig[2,2][5, 1:2], L"\mathrm{Height [km]}", "1000", width=width, height=height_widgets);
+AspectR,_ = Textbox_with_label_left(fig[2,2][6, 1:2], L"\mathrm{AspectRatio}", "3", width=width, height=height_widgets);
+Tbot,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width, height=height_widgets);
+Yield,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"\mathrm{YieldStress[MPa]}", "500", width=width, height=height_widgets);
 
 # Add sliders:
-gamma_sl, _, _ = Slider_with_text_above(fig[10:11,6:7], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01   );
-eta_sl, _, _ = Slider_with_text_above(fig[12:13,6:7], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
+gamma_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01, height=height_widgets)
+eta_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
 
 # Add toggle:
-temp_toggle,_ = Toggle_with_label_left(fig[18, 6:7], "Temperature isocontours", true);
+temp_toggle,_ = Toggle_with_label_left(fig[2,2][13, 1:2], "Temperature isocontours", true, height=height_widgets);
+
+if FreeSurface
+    gui.nel_z.displayed_string[]="64"
+end
 
 
 # Create setup with random noise
@@ -104,6 +121,9 @@ function update_plot_info(OutFile, gui::NamedTuple, t_step::Int64; last=false)
     end
     lines!(ax_T,mean(T_field, dims=1)[:],z, color=:blue)
     ylims!(ax_T,minimum(z),0)
+
+    ΔT = get_values_textboxes((Tbot, ))
+    ax_T.xticks[] = [0, ΔT[1]]
 
     # Top Vx
     if length(ax_Vel.scene.plots)>0
