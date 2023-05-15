@@ -29,10 +29,11 @@ else
     resolution = nothing
     fontsize   = nothing
 end
+height_widgets = 30;
 
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, colormap=Reverse(:roma),
-                    size_total=(1:22, 1:7), size_ax=(2, 1));
+                    size_total=(1:15, 1:7), size_ax=(2, 1), height=height_widgets);
 ax.title =  ""
 gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"
@@ -58,17 +59,15 @@ linkxaxes!(ax,ax_Vel)
 hidexdecorations!(ax_Vel, grid = false)
 
 # Add textboxes:
-Height,_   = Textbox_with_label_left(fig[2,2][6, 1:2], L"\mathrm{Height [km]}", "1000", width=width);
-AspectR,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"\mathrm{AspectRatio}", "3", width=width);
-Tbot,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width);
-Yield,_ = Textbox_with_label_left(fig[2,2][9, 1:2], L"\mathrm{YieldStress[MPa]}", "500", width=width);
+Height,_   = Textbox_with_label_left(fig[2,2][5, 1:2], L"\mathrm{Height [km]}", "1000", width=width, height=height_widgets);
+AspectR,_ = Textbox_with_label_left(fig[2,2][6, 1:2], L"\mathrm{AspectRatio}", "3", width=width, height=height_widgets);
+Tbot,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"T_\mathrm{bottom} [^o\mathrm{C}]", "2000", width=width, height=height_widgets);
+Yield,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"\mathrm{YieldStress[MPa]}", "500", width=width, height=height_widgets);
 
 # Add sliders:
-gamma_sl, _, _ = Slider_with_text_above(fig[2,2][10:11,1:2], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01   );
-eta_sl, _, _ = Slider_with_text_above(fig[2,2][12:13,1:2], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
-
+gamma_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01, height=height_widgets)
 # Add toggle:
-temp_toggle,_ = Toggle_with_label_left(fig[2,2][18, 1:2], "Temperature isocontours", true);
+temp_toggle,_ = Toggle_with_label_left(fig[2,2][11, 1:2], "Temperature isocontours", true, height=height_widgets);
 
 
 # Create setup with random noise
