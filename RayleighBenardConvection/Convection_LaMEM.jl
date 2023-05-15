@@ -22,24 +22,27 @@ width=160
 
 if Sys.isapple()
     resolution = (2500,1500)
-    resolution = nothing
     
     fontsize   = 30
+    height_widgets = Auto();
+elseif Sys.iswindows()
+    fontsize   = 30
+    height_widgets = Auto();
 else
     resolution = nothing
-    fontsize   = nothing
+    fontsize   = nothing 
 end
-height_widgets = 30;
+
 
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, colormap=Reverse(:roma),
-                    size_total=(1:15, 1:7), size_ax=(2, 1), height=height_widgets);
+                    size_total=(1:17, 1:7), size_ax=(2, 1), height=Auto());
 ax.title =  ""
 gui.menu.i_selected=2       # T
 gui.menu.selection="temperature"
 
 # add left & top plots
-ax_T   = Axis(fig[2,1][2,2], xlabel="T[C]", ylabel="Depth[km]", width=100)
+ax_T   = Axis(fig[2,1][2,2], xlabel=L"T[^o\mathrm{C}]", ylabel="Depth[km]", width=100, xaxisposition=:top)
 #ax_T.width = Relative(1/4)
 
 linkyaxes!(ax,ax_T)
@@ -53,7 +56,7 @@ rowgap!(fig.layout, 10);
 
 #colgap!(ax, 10)
 
-ax_Vel = Axis(fig[2,1][1,1], title="Rayleigh Benard Convection", ylabel="Vx[cm/yr]", xlabel="Width[km]")
+ax_Vel = Axis(fig[2,1][1,1], title="Rayleigh Benard Convection", ylabel=L"v_x[\mathrm{cm yr}^{-1}]", xlabel="Width[km]")
 ax_Vel.height = 100
 linkxaxes!(ax,ax_Vel)
 hidexdecorations!(ax_Vel, grid = false)
@@ -66,9 +69,10 @@ Yield,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"\mathrm{YieldStress[MPa]}"
 
 # Add sliders:
 gamma_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\eta=\eta_\mathrm{0}\exp\left(-\gamma T \right), \hspace \gamma=", 0:.001:.01, 0.01, height=height_widgets)
-# Add toggle:
-temp_toggle,_ = Toggle_with_label_left(fig[2,2][11, 1:2], "Temperature isocontours", true, height=height_widgets);
+eta_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\mathrm{0}} \mathrm{  [Pas]})", 15:.25:25, 21);
 
+# Add toggle:
+temp_toggle,_ = Toggle_with_label_left(fig[2,2][13, 1:2], "Temperature isocontours", true, height=height_widgets);
 
 # Create setup with random noise
 function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100 ; args)
