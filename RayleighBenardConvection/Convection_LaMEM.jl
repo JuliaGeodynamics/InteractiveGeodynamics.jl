@@ -25,11 +25,11 @@ if Sys.isapple()
     
     fontsize   = 30
     height_widgets = Auto();
+
 elseif Sys.iswindows()
     fontsize   = 15
     height_widgets = 25;
-    resolution=(15
-    00,900)
+    resolution=(1500,900)
 
 else
     resolution = nothing
@@ -46,18 +46,11 @@ gui.menu.selection="temperature"
 
 # add left & top plots
 ax_T   = Axis(fig[2,1][2,2], xlabel=L"T[^o\mathrm{C}]", ylabel="Depth[km]", width=100, xaxisposition=:top)
-#ax_T.width = Relative(1/4)
 
 linkyaxes!(ax,ax_T)
 hideydecorations!(ax_T, grid = false)
-
-#colsize!(fig.layout, 1, Relative(2 / 3))
-#rowsize!(fig.layout, 1, Relative(1 / 3))
 colgap!(fig.layout, 10)
 rowgap!(fig.layout, 10);
-
-
-#colgap!(ax, 10)
 
 ax_Vel = Axis(fig[2,1][1,1], title="Rayleigh Benard Convection", ylabel=L"v_x[\mathrm{cm yr}^{-1}]", xlabel="Width[km]")
 ax_Vel.height = 100
