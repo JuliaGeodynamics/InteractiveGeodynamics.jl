@@ -16,9 +16,15 @@ function retrieve_resolution(ParamFile, gui)
 
     nel_x_file = GeophysicalModelGenerator.ParseValue_LaMEM_InputFile(ParamFile,"nel_x", Int64);
     nel_z_file = GeophysicalModelGenerator.ParseValue_LaMEM_InputFile(ParamFile,"nel_z", Int64);
-    Aspect     = nel_x_file/nel_z_file
+    Aspect     = nel_x_file/sum(nel_z_file)
     nel_z      = parse(Int64,gui.nel_z.displayed_string[])
-    nel_x      = round(Int64,nel_x_file*Aspect)
+    
+    if length(nel_z_file)==1
+        nel_x      = round(Int64,nel_z*Aspect)
+    else
+        nel_x      = round(Int64,nel_z*Aspect)
+    end
+
     #nel_z      = round(Int64,nel_z_file/nel_x_file*nel_x)
 
     return nel_x, nel_z

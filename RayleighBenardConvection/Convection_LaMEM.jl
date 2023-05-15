@@ -70,6 +70,11 @@ eta_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\ma
 # Add toggle:
 temp_toggle,_ = Toggle_with_label_left(fig[2,2][13, 1:2], "Temperature isocontours", true, height=height_widgets);
 
+if FreeSurface
+    gui.nel_z.displayed_string[]="64"
+end
+
+
 # Create setup with random noise
 function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100 ; args)
     Grid        =   ReadLaMEM_InputFile(ParamFile, args=args)
