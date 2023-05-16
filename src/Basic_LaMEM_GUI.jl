@@ -246,13 +246,14 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
            
 
             if (it==0) && (length(gui.menu.options[])==2)
+                sleep(2.0)
                 update_fields_menu(OutFile, gui.menu)   
             end
          
             
             # Update the plots etc.
-            sleep(0.5)
             if (it>0)
+                sleep(0.5)
                 t_step, gui = update_plot_info(OutFile, gui, t_step, last=true)
             end
 

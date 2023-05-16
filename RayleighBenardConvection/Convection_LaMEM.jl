@@ -12,7 +12,7 @@ clean_directory()
 # Define the simulation name & the output files: 
 OutFile  = "Convection"
 ParamFile  = "Convection.dat"
-FreeSurface = false
+FreeSurface = true
 if FreeSurface
     ParamFile  = "Convection_FreeSurf.dat"
 end
@@ -95,16 +95,15 @@ end
 
 # Update plot info to include contours
 function update_plot_info(OutFile, gui::NamedTuple, t_step::Int64; last=false)
-        
     t_step, data = update_plot_info_basic(OutFile, gui, t_step; last=last)
-    
+
     ifield = findall(contains.(gui.menu.options[],"temperature"))[]
     x,z = data.x.val[:,1,1], data.z.val[1,1,:];
     T_field = Read_data_field(ifield, data, 1)
 
     ifield = findall(contains.(gui.menu.options[],"velocity"))[]
     Vx_field = Read_data_field(ifield, data, 1)
-    
+
     temp_toggle.active[] ?    iso_con = true :   iso_con = false
 
     # optionally plot isocontours for T
@@ -129,7 +128,8 @@ function update_plot_info(OutFile, gui::NamedTuple, t_step::Int64; last=false)
     if length(ax_Vel.scene.plots)>0
         delete!(ax_Vel.scene,ax_Vel.scene.plots[end])
     end
-    
+
+
     if FreeSurface
         iz = findmin(abs.(z .- 0.0))[2]      # close to zero
     else
