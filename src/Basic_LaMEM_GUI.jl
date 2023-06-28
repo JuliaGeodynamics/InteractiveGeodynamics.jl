@@ -1,4 +1,4 @@
-using LaMEM, Revise, Interpolations
+using LaMEM, Revise, FileWatching, Interpolations
 using GLMakie
 using GLMakie: to_native
 using GLMakie.GLFW
@@ -140,7 +140,7 @@ end
 
 
 """
-    fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=30, colormap=:viridis, size_total=(1:20, 1:7), size_ax=(1:20, 1:4))
+    fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=30, colormap=:viridis, size_total=(1:20, 1:7), size_ax=(1:20, 1:4), show_velocity_toggle=true)
 
 Creates a basic LaMEM GUI that has a "run" and "play" button and the option to change the max. number of timesteps.
 
@@ -163,7 +163,8 @@ Output arguments:
 
 
 """
-function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, height=Auto(), size_total=(1:18, 1:7), size_ax=(1,1))
+function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsize=nothing, colormap=:viridis, width=160, height=Auto(), size_total=(1:18, 1:7), size_ax=(1,1),
+    show_velocity_toggle=true)
 
     # Generate general layout
     if isnothing(resolution) & isnothing(fontsize)
@@ -186,8 +187,8 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
     rowsize!(fig.layout, 1, 30)
 
     # info window
-    lb_time,_ = Textbox_with_label_left(fig[2,2][1,1:2], "time [Myr]: ", 0.0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width, height=height)
-    lb_timestep,_ = Textbox_with_label_left(fig[2,2][2,1:2], "timestep: ", 0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width, height=height)
+    lb_time,txt_time = Textbox_with_label_left(fig[2,2][1,1:2], "time [Myr]: ", 0.0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width, height=height)
+    lb_timestep,txt_timestep = Textbox_with_label_left(fig[2,2][2,1:2], "timestep: ", 0, bordercolor_hover=:white, bordercolor=:white, boxcolor_hover=:white, width=width, height=height)
     
     # retrieve maximum # of timestep
     nstep_max = keyword_LaMEM_inputfile(ParamFile,"nstep_max", Int64);
@@ -202,8 +203,11 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
     fig[2,2][size_total[1][end-1], 2] = buttonplay = Button(fig, label = " ", width=Relative(1/1), height=height) #GridLayout(tellwidth = false)
 
     # Add velocity toggle
-    velocity_toggle,_ = Toggle_with_label_left(fig[2,2][size_total[1][end-3], 1:2], "Show velocity", false, height=height);
-
+    if show_velocity_toggle
+        velocity_toggle,txt_velocity_toggle = Toggle_with_label_left(fig[2,2][size_total[1][end-3], 1:2], "Show velocity", false, height=height);
+    else
+        velocity_toggle,txt_velocity_toggle = nothing, nothing
+    end
     # add Menu with fields to show:
     menu = Menu(fig[2,2][size_total[1][end-2], 1], options = ["phase","temperature"], default = "phase", height=height)
     if !isfile(OutFile*".pvd")
@@ -231,7 +235,8 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
     # Store all GUI elements in a NamedTuple
     gui = ( timestep=lb_timestep, time=lb_time, hm=hm, cb=cb, menu_comp=menu_comp, menu=menu,
             nstep_max_tb=nstep_max_tb, buttonplay=buttonplay, buttonrun=buttonrun, velocity_toggle=velocity_toggle, 
-            pt_arrow=pt_arrow, vel_arrow=vel_arrow, arrows=arr, menu_file=menu_file, nel_z=nel_z_tb); 
+            pt_arrow=pt_arrow, vel_arrow=vel_arrow, arrows=arr, menu_file=menu_file, nel_z=nel_z_tb,
+            txt_time=txt_time, txt_timestep = txt_timestep, txt_velocity_toggle = txt_velocity_toggle); 
     
     # Read LaMEM results & update the plots
     function start_anim(OutFile, gui, hm, ax, fig)
@@ -239,7 +244,6 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
         t_step=0
         it = 0
         nstep_max = parse(Int,gui.nstep_max_tb.stored_string[])
-
         while t_step<nstep_max
             watch_file(OutFile*".pvd");
             revise()

@@ -10,7 +10,7 @@ include("../src/Basic_LaMEM_GUI.jl")
 clean_directory()
 
 # Define the simulation name & the output files: 
-ParamFile  = "FallingSphere.dat"
+ParamFile  = "RisingSphere.dat"
 OutFile    = "RiseSphere"
 resolution = primary_resolution()
 width =  round(Int,resolution[1]/11);
