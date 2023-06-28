@@ -41,12 +41,12 @@ gui.txt_time.text[]="maximum z velocity [cm/yr]: "
 # Add textboxes:
 rho_m,_ = Textbox_with_label_left(fig[2,2][5, 1:2], L"ρ_{\mathrm{matrix}} \mathrm{  [kg/m³]}", "3000", width=width, height=height_widgets);
 rho_s,_ = Textbox_with_label_left(fig[2,2][6, 1:2], L"ρ_{\mathrm{sphere}} \mathrm{  [kg/m³]}", "2800", width=width, height=height_widgets);
-R,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"\mathrm{Radius [km]}", "0.1", width=width, height=height_widgets);
+Radius,_ = Textbox_with_label_left(fig[2,2][7, 1:2], L"\mathrm{Radius [km]}", "0.1", width=width, height=height_widgets);
 Width,_ = Textbox_with_label_left(fig[2,2][8, 1:2], L"\mathrm{Width [km]}", "2", width=width, height=height_widgets);
 
 # Add sliders:
-eta_m_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\log_{10}(\eta_{\mathrm{matrix}} \mathrm{  [Pas]})", 16:.1:20, 18, height=height_widgets);
-eta_s_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\mathrm{sphere}} \mathrm{  [Pas]})", 19:.1:25, 22, height=height_widgets);
+eta_m_sl, _, _ = Slider_with_text_above(fig[2,2][9:10,1:2], L"\log_{10}(\eta_{\mathrm{matrix}} \mathrm{  [Pas]})", 16:.5:20, 18, height=height_widgets);
+eta_s_sl, _, _ = Slider_with_text_above(fig[2,2][11:12,1:2], L"\log_{10}(\eta_{\mathrm{sphere}} \mathrm{  [Pas]})", 17:.5:25, 22, height=height_widgets);
 
 # Toggle
 vel_sl, _, _ = Slider_with_text_above(fig[2,2][14:15,1:2], "Arrow length", 0.1:1:50, 10, height=height_widgets);
@@ -87,7 +87,6 @@ function update_plot_info_basic(OutFile, gui::NamedTuple, t_step::Int64; last=fa
     component =  parse(Int,gui.menu_comp.stored_string[])
     data_field = Read_data_field(ifield, data, component)
     
-
     # set label of colorbar
     gui.cb.label= Read_LaMEM_fieldnames(OutFile)[ifield]
 
@@ -140,8 +139,8 @@ function run_code(ParamFile, gui; wait=true)
 
     nel_x,nel_z = retrieve_resolution(ParamFile, gui)
     
-    W        =  parse(Float64,Width.displayed_string[])
-
+    W   =  parse(Float64,Width.displayed_string[])
+    R   =  parse(Float64, Radius.displayed_string[])
     η_m =  10.0^eta_m_sl.value[]
     η_s =  10.0^eta_s_sl.value[]
     ρ_m  =  parse(Float64,rho_m.displayed_string[])
@@ -153,10 +152,11 @@ function run_code(ParamFile, gui; wait=true)
     nstep_max_val = parse(Int64,gui.nstep_max_tb.displayed_string[])
     
     # command-line arguments
-    args = "-nstep_max $(nstep_max_val) -eta[0] $η_m -eta[1] $η_s -rho[0] $ρ_m -rho[1] $ρ_s  -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-W/2),$(W/2)"
+    args = "-nstep_max $(nstep_max_val) -radius[0] $R -eta[0] $η_m -eta[1] $η_s -rho[0] $ρ_m -rho[1] $ρ_s  -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-W/2),$(W/2)"
 
     # Run LaMEM with these parameters
     @show args
+    wait=false;
     run_lamem(ParamFile, 1, args, wait=wait)
 end
 

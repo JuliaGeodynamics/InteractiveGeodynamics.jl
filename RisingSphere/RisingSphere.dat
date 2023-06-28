@@ -69,8 +69,8 @@
 	gravity        = 0.0 0.0 -10.0   # gravity vector
 	FSSA           = 1.0             # free surface stabilization parameter [0 - 1]
 	init_guess     = 0               # initial guess flag
-	eta_min        = 1e18            # viscosity upper bound
-	eta_max        = 1e22            # viscosity lower limit
+	eta_min        = 1e14            # viscosity upper bound
+	eta_max        = 1e24            # viscosity lower limit
 
 #===============================================================================
 # Solver options
