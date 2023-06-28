@@ -1,4 +1,4 @@
-using LaMEM, Revise, FileWatching, Interpolations
+using LaMEM, Revise, Interpolations
 using GLMakie
 using GLMakie: to_native
 using GLMakie.GLFW
@@ -224,8 +224,8 @@ function Create_Basic_LaMEM_GUI(OutFile, ParamFile; resolution = nothing, fontsi
     hm[3][] = zeros(11,11)
 
     # add arrows
-    pt_arrow = Observable( [Makie.Point2f0(0,0)])
-    vel_arrow = Observable([Makie.Vec2f0(0,0)])
+    pt_arrow = Observable( [Makie.Point2f(0,0)])
+    vel_arrow = Observable([Makie.Vec2f(0,0)])
     arr = arrows!(ax,pt_arrow, vel_arrow, color=:gray50, lengthscale = 2.0)
 
     # Store all GUI elements in a NamedTuple
