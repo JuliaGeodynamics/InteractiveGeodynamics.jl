@@ -79,6 +79,7 @@ function update_plot_info_basic(OutFile, gui::NamedTuple, t_step::Int64; last=fa
 
     # update info window
     values = (t_step=t_step, time=time, maxVz=maximum(Vz));
+    @info "Max. vertical velocity [cm/yr]=$(maximum(Vz))"
     update_info(gui, values)
 
     # Read the field from the LaMEM dataset
@@ -139,7 +140,6 @@ function run_code(ParamFile, gui; wait=true)
 
     nel_x,nel_z = retrieve_resolution(ParamFile, gui)
     
-    Hi_value =  parse(Float64,Hi.displayed_string[])
     W        =  parse(Float64,Width.displayed_string[])
 
     η_m =  10.0^eta_m_sl.value[]
