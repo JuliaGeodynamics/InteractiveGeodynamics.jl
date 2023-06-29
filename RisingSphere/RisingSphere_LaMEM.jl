@@ -79,7 +79,7 @@ function update_plot_info_basic(OutFile, gui::NamedTuple, t_step::Int64; last=fa
 
     # update info window
     values = (t_step=t_step, time=time, maxVz=maximum(Vz));
-    @info "Max. vertical velocity [cm/yr]=$(maximum(Vz))"
+    @info "Max. vertical velocity [cm/yr] = $(maximum(Vz))"
     update_info(gui, values)
 
     # Read the field from the LaMEM dataset
