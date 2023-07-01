@@ -35,6 +35,7 @@ end
 # Create Basic GUI
 fig, ax, gui = Create_Basic_LaMEM_GUI(OutFile, ParamFile, resolution=resolution, fontsize=fontsize, width=width, height=height_widgets, show_velocity_toggle=false);
 ax.title =  "Rising Sphere Setup"
+ax.aspect =1 #  fix aspect ratio
 gui.txt_time.text[]="maximum z velocity [cm/yr]: "
 
 
