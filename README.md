@@ -39,22 +39,34 @@ On linux/mac this is done with:
 ```julia
 shell>cd /Users/kausb/Downloads/InteractiveGeodynamics.jl/RayleighBenardConvection
 ```
-On windows this can be done with:
+On the windows powershell (accessible through VSCode) this can be done with:
 ```
-TO BE ADDED
+PS> cd C:\Users\boris\julia\dev\InteractiveGeodynamics.jl
 ```
+(Note that the directory will likely be different on your machine, so please adapt that)
 Return to the `REPL` with the backspace.
 
 
-6) Go to the package manager and activate the package. After that, return to the `REPL` with a backspace 
+6) Go to the package manager by pressing `]`. 
 ```julia
 julia>]
-(@v1.8) pkg> activate ../.
-  Activating project at `~/Downloads/InteractiveGeodynamics.jl`
-(@v1.8) pkg> instantiate
-```
-The command `instantiate` downloads all you need. This can take some time the first time you do this.
+(@v1.9) pkg>
+ ```
+Then activate the package by typing `activate ../.` and hitting return:
 
+```julia
+(@v1.9) pkg> activate ../.
+  Activating project at `~/Downloads/InteractiveGeodynamics.jl`
+(@v1.9) pkg> instantiate
+ ```
+After that, type `instantiate` which will download the required packages you need. This can take some time the first time you do this.
+```julia
+(@v1.9) pkg> instantiate
+ ``` 
+Now return to the REPL by pressing `backspace`.
+```julia
+julia> 
+ ``` 
 7) Start the GUI: 
 ```julia
 julia> include("Convection_LaMEM.jl")
