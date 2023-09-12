@@ -1,3 +1,2 @@
-*/Timestep*
-*/*.pvd
-*/*.vts
+.vscode
+Manifest.toml

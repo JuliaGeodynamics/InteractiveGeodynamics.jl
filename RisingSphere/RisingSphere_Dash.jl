@@ -51,16 +51,16 @@ app.layout = html_div() do
                             
                             dbc_card([
                                     dbc_col(dbc_label("Density of Sphere", id="density_sphere_label")),
-                                    dbc_col(dbc_input(id="sphere_density", placeholder="Type something...", type="text"))]),
+                                    dbc_col(dbc_input(id="sphere_density", placeholder="Insert the sphere density", type="number"))]),
                             dbc_card([
                                     dbc_col(dbc_label("Density of Matrix", id="density_matrix_label")),
-                                    dbc_col(dbc_input(id="matrix_density", placeholder="Type something...", type="text"))]),
+                                    dbc_col(dbc_input(id="matrix_density", placeholder="Insert the matrix density", type="number"))]),
                             dbc_card([
                                     dbc_col(dbc_label("Radius of Sphere", id="sphere_radius_label")),
-                                    dbc_col(dbc_input(id="sphere_radius", placeholder="Type something...", type="text"))]),
+                                    dbc_col(dbc_input(id="sphere_radius", placeholder="Insert the radius of the sphere", type="number"))]),
                             dbc_card([
                                     dbc_col(dbc_label("Width of Domain", id="domain_width_label")),
-                                    dbc_col(dbc_input(id="domain_width", placeholder="Type something...", type="text"))]),
+                                    dbc_col(dbc_input(id="domain_width", placeholder="Insert the width of the domain", type="number"))]),
                             dbc_col(dbc_button("RUN", id="button-run", size="lg")),
                                     ],
 
@@ -94,14 +94,15 @@ end
 
 # Save state
 callback!(app,
-    Output("label-timestep", "children"), 
+    Output("label-timestep", "children"),
     Input("button-run", "n_clicks"),
+    State("sphere_density", "value"),
+    State("matrix_density", "value"),
+    State("sphere_radius", "value"),
+    State("domain_width", "value"),
     prevent_initial_call=true
-) do n_run
-    
-
-
-
+) do n_run, input_density, input_matrix, input_radius, input_width
+    @show n_run, input_density, input_matrix, input_radius, input_width
     str = "$n_run"
     
     return str
