@@ -1,5 +1,6 @@
 using Dash, DashBootstrapComponents
 using PlotlyJS
+using LaMEM
 
 
 # this is the main figure window
@@ -22,9 +23,14 @@ function create_main_figure()
     return fig
 end
 
+function run_code(ParamFile; wait = true)
 
+   #nel_x,nel_z = retrieve_resolution(ParamFile)
+
+end
 
 title_app = "Rising Sphere example"
+ParamFile = "RisingSphere.dat"
 
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
@@ -41,9 +47,23 @@ app.layout = html_div() do
                 # right side menu
                 dbc_col([   dbc_card([dbc_col(dbc_label("Time: 0Myrs", id="label-time")),
                                       dbc_col(dbc_label("Timestep: 0", id="label-timestep"))]),
+                            dbc_card([
+                                    dbc_col(dbc_label("Density of Sphere", id="density_sphere_label")),
+                                    dbc_col(dbc_input(id="sphere_density", placeholder="Type something...", type="text"))]),
+                            dbc_card([
+                                    dbc_col(dbc_label("Density of Matrix", id="density_matrix_label")),
+                                    dbc_col(dbc_input(id="matrix_density", placeholder="Type something...", type="text"))]),
+                            dbc_card([
+                                    dbc_col(dbc_label("Radius of Sphere", id="sphere_radius_label")),
+                                    dbc_col(dbc_input(id="sphere_radius", placeholder="Type something...", type="text"))]),
+                            dbc_card([
+                                    dbc_col(dbc_label("Width of Domain", id="domain_width_label")),
+                                    dbc_col(dbc_input(id="domain_width", placeholder="Type something...", type="text"))]),
+                            dbc_col(dbc_button("RUN", id="button-run", size="lg")),
+                                    ],
 
-                            dbc_col(dbc_button("RUN", id="button-run", size="lg"))]
-                            ,width=2)
+                            
+                            width=2)
         
         ])
 
@@ -57,7 +77,7 @@ callback!(app,
     Input("button-run", "n_clicks"),
     prevent_initial_call=true
 ) do n_run
-    @show n_run
+    
 
 
     
