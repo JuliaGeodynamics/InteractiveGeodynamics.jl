@@ -163,7 +163,7 @@ callback!(app,
 end
 
 
-# Check if disk changed; if yes 
+# Check if *.pvd file on disk changed and a new timestep is available
 callback!(app,
     Output("session-interval", "n_intervals"),
     Output("label-timestep", "children"),
@@ -185,9 +185,19 @@ callback!(app,
     return n_inter, label_timestep, label_time
 end
 
+#=
+callback!(app,
+    Output("session-interval", "n_intervals"),
+    Input("current_timestep-interval", "data"),
+    prevent_initial_call=true
+) do current_timestep_plot
+    @show "triggered current_timestep_plot", current_timestep_plot
 
 
-
-
+    # Create new figure based on LaMEM output
+    data = 1
+    return data
+end
+=#
 
 run_server(app, debug=false)
