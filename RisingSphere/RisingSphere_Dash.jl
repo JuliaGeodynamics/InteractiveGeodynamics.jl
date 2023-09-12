@@ -61,7 +61,7 @@ app.layout = html_div() do
                             dbc_card([
                                     dbc_col(dbc_label("Width of Domain", id="domain_width_label")),
                                     dbc_col(dbc_input(id="domain_width", placeholder="Insert the width of the domain", type="number"))]),
-                            dbc_col(dbc_button("RUN", id="button-run", size="lg", className="d-grid gap-2 col-12 mx-auto")),
+                            dbc_col(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto")),
                                     ],
 
                             
