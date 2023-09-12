@@ -72,7 +72,10 @@ app.layout = html_div() do
         ]),
 
         # Store a unique number of our session in the webpage
-        dcc_store(id="session-id", data =  "")     
+        dcc_store(id="session-id", data =  ""),     
+
+        # Start an interval that updates the number every second
+        dcc_interval(id="session-interval", interval=1000, n_intervals=0, disabled=true)     
 
     ])
 
@@ -92,9 +95,10 @@ callback!(app,  Output("session-id", "data"),
     return String("$(session_id)"), str
 end
 
-# Save state
+# Call run button
 callback!(app,
     Output("label-timestep", "children"),
+    Output("session-interval","disabled"),
     Input("button-run", "n_clicks"),
     State("sphere_density", "value"),
     State("matrix_density", "value"),
@@ -104,10 +108,27 @@ callback!(app,
 ) do n_run, input_density, input_matrix, input_radius, input_width
     @show n_run, input_density, input_matrix, input_radius, input_width
     str = "$n_run"
+
     
-    return str
+    disable_interval = false
+    return str, disable_interval
 end
 
+
+# Check if disk changed
+callback!(app,
+    Output("session-interval", "n_intervals"),
+    Input("session-interval", "n_intervals"),
+) do n_inter
+    @show n_inter
+
+    # Read lamem output
+
+
+    # Create new figure
+
+    return n_inter
+end
 
 
 
