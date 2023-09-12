@@ -116,9 +116,10 @@ app.layout = html_div() do
         # Store a unique number of our session in the webpage
         dcc_store(id="session-id", data=""),
         dcc_store(id="current_timestep", data="0"),
+        dcc_store(id="last_timestep", data="0"),
 
         # Start an interval that updates the number every second
-        dcc_interval(id="session-interval", interval=100, n_intervals=0, disabled=true)
+        dcc_interval(id="session-interval", interval=1000, n_intervals=0, disabled=true)
         
         # Store the time steps that have been executed
         # dcc_store(id="all-current-timesteps", Timestep)
@@ -126,6 +127,8 @@ app.layout = html_div() do
     ])
 
 end
+
+
 
 # This creates an initial session id that is unique for this session
 # it will run on first start 
@@ -139,6 +142,7 @@ callback!(app,  Output("session-id", "data"),
     
     return String("$(session_id)"), str
 end
+
 
 # Call run button
 callback!(app,
@@ -156,10 +160,10 @@ callback!(app,
     @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width
 
     args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
-    run_lamem(ParamFile, 1, args, wait=true)
+   # run_lamem(ParamFile, 1, args, wait=false)
 
     disable_interval = false
-    return args
+    return disable_interval
 end
 
 
@@ -168,23 +172,31 @@ callback!(app,
     Output("session-interval", "n_intervals"),
     Output("label-timestep", "children"),
     Output("label-time", "children"),
+    Output("last_timestep", "data"),
     Input("session-interval", "n_intervals"),
-    State("label-time","data"),
-    State("label-timestep","data"),
+    State("current_timestep","data"),
+    State("session-id", "data"),
     prevent_initial_call=true
-) do n_inter, label_time, label_timestep
-    @show n_inter, session_id, current_timestep_plot
+) do n_inter, current_timestep, session_id
+    @show n_inter, current_timestep
 
-    # Read lamem output
+    # Read LaMEM *.pvd file
+    Timestep, _, Time = Read_LaMEM_simulation(OutFile)
 
-    Timestep, label_timestep, label_time, Vz = read_simulation(OutFile, true)
+    # Update the labels and data stored in webpage about the last timestep
+    last_time = "$(Timestep[end])"
+    label_timestep = "Timestep: $last_time"
+    label_time="Time: $(Time[end]) Myrs"
+    
+    # create the figure
 
-    # Create new figure
-
-
-    return n_inter, label_timestep, label_time
+    return n_inter, label_timestep, label_time, last_time
 end
 
+
+
+
+#=
 #=
 callback!(app,
     Output("session-interval", "n_intervals"),
@@ -198,6 +210,7 @@ callback!(app,
     data = 1
     return data
 end
+=#
 =#
 
 run_server(app, debug=false)
