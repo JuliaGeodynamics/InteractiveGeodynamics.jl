@@ -25,10 +25,24 @@ function create_main_figure()
     return fig
 end
 
+function read_simulation(OutFile, last = true)
+
+    if last
+        Timestep, _, _ = Read_LaMEM_simulation(OutFile)
+        t_step = Timestep[end]
+    end
+
+    data, time = Read_LaMEM_timestep(OutFile, t_step, last=last);
+    vel  =  data.fields.velocity; #velocity
+    Vz   =  vel[3,:,:,:] # Vz
+
+    return Timestep,  t_step, time, Vz 
+end
+
 
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
-
+OutFile = "RiseSphere"
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
@@ -61,6 +75,16 @@ app.layout = html_div() do
                             dbc_card([
                                     dbc_col(dbc_label("Width of Domain", id="domain_width_label")),
                                     dbc_col(dbc_input(id="domain_width", placeholder="Insert the width of the domain", type="number"))]),
+                            dbc_card([
+                                    dbc_col(dbc_label("nel_x", id="nel_x_label")),
+                                    dbc_col(dbc_input(id="input_nel_x", placeholder="Insert the # of elements", type="number")),
+                                    dbc_col(dbc_label("nel_z", id="nel_z_label")),
+                                    dbc_col(dbc_input(id="input_nel_z", placeholder="Insert the # of elements", type="number")),
+                                    dbc_col(dbc_label("nt", id="nt_label")),
+                                    dbc_col(dbc_input(id="input_nt", placeholder="Insert the # of timesteps", type="number"))]),
+                            
+
+
                             dbc_col(dbc_button("RUN", id="button-run", size="lg")),
                                     ],
 
@@ -75,7 +99,10 @@ app.layout = html_div() do
         dcc_store(id="session-id", data =  ""),     
 
         # Start an interval that updates the number every second
-        dcc_interval(id="session-interval", interval=1000, n_intervals=0, disabled=true)     
+        dcc_interval(id="session-interval", interval=1000, n_intervals=0, disabled=true)
+        
+        # Store the time steps that have been executed
+        # dcc_store(id="all-current-timesteps", Timestep)
 
     ])
 
@@ -97,37 +124,47 @@ end
 
 # Call run button
 callback!(app,
-    Output("label-timestep", "children"),
     Output("session-interval","disabled"),
     Input("button-run", "n_clicks"),
     State("sphere_density", "value"),
     State("matrix_density", "value"),
     State("sphere_radius", "value"),
     State("domain_width", "value"),
+    State("input_nel_x", "value"),
+    State("input_nel_z", "value"),
+    State("input_nt", "value"),
     prevent_initial_call=true
-) do n_run, input_density, input_matrix, input_radius, input_width
-    @show n_run, input_density, input_matrix, input_radius, input_width
-    str = "$n_run"
+) do n_run, input_density, input_matrix, input_radius, input_width, input_nel_x, input_nel_z, input_nt
+    @show n_run, input_density, input_matrix, input_radius, input_width, input_nel_x, input_nel_z, input_nt
 
-    
+    #run_code(ParamFile; wait = true)
+
+    args = "-nstep_max $(input_nt) -radius[0] $input_radius -rho[0] $input_matrix -rho[1] $input_density  -nel_x $input_nel_x -nel_z $input_nel_z -coord_x $(-input_width/2),$(input_width/2) -coord_z $(-input_width/2),$(input_width/2)"
+    run_lamem(ParamFile, 1, args, wait=false)
+
     disable_interval = false
-    return str, disable_interval
+    return disable_interval
 end
 
 
 # Check if disk changed
 callback!(app,
     Output("session-interval", "n_intervals"),
+    Output("label-timestep", "children"),
+    Output("label-time", "children"),
     Input("session-interval", "n_intervals"),
+    prevent_initial_call=true
 ) do n_inter
     @show n_inter
 
     # Read lamem output
 
+    Timestep, label_timestep, label_time, Vz = read_simulation(OutFile, true)
 
     # Create new figure
 
-    return n_inter
+
+    return n_inter, label_timestep, label_time
 end
 
 
