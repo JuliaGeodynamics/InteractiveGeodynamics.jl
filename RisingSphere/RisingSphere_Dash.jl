@@ -37,7 +37,12 @@ app.layout = html_div() do
                 dbc_col(create_main_figure())      # main figure window
 
                 # right side menu
-                dbc_col(dbc_button("RUN", id="button-run"),width=2)
+
+                dbc_col([   dbc_card([dbc_col(dbc_label("Time: 0Myrs", id="label-time")),
+                                      dbc_col(dbc_label("Timestep: 0", id="label-timestep"))]),
+
+                            dbc_col(dbc_button("RUN", id="button-run"))]
+                            ,width=2)
         
         ])
 
@@ -45,6 +50,4 @@ app.layout = html_div() do
 end
 
 
-#app.layout = main_layout()
-    
 run_server(app, debug=false)
