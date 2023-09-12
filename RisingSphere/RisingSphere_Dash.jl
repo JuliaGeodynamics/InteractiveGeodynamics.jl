@@ -1,7 +1,9 @@
 using Dash, DashBootstrapComponents
 using PlotlyJS
 using LaMEM
+using UUIDs
 
+GUI_version = "0.1.0"
 
 # this is the main figure window
 function create_main_figure()
@@ -23,11 +25,6 @@ function create_main_figure()
     return fig
 end
 
-function run_code(ParamFile; wait = true)
-
-   #nel_x,nel_z = retrieve_resolution(ParamFile)
-
-end
 
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
@@ -35,6 +32,7 @@ ParamFile = "RisingSphere.dat"
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
+app.title = title_app
 
 # Main code layout
 app.layout = html_div() do
@@ -42,11 +40,13 @@ app.layout = html_div() do
         dbc_col(html_h1(title_app), style = Dict("margin-top" => 0, "textAlign" => "center")),
         
         dbc_row([
-                dbc_col(create_main_figure())      # main figure window
+                dbc_col([dbc_col(create_main_figure()),
+                        dbc_col(dbc_label("", id="label-id"))]),      # main figure window
 
                 # right side menu
                 dbc_col([   dbc_card([dbc_col(dbc_label("Time: 0Myrs", id="label-time")),
                                       dbc_col(dbc_label("Timestep: 0", id="label-timestep"))]),
+
                             dbc_card([
                                     dbc_col(dbc_label("Density of Sphere", id="density_sphere_label")),
                                     dbc_col(dbc_input(id="sphere_density", placeholder="Type something...", type="text"))]),
@@ -64,12 +64,31 @@ app.layout = html_div() do
 
                             
                             width=2)
+                        
+
         
-        ])
+        ]),
+
+        # Store a unique number of our session in the webpage
+        dcc_store(id="session-id", data =  "")     
 
     ])
+
 end
 
+
+# This creates an initial session id that is unique for this session
+# it will run on first start 
+callback!(app,  Output("session-id", "data"),
+                Output("label-id","children"),
+                Input("session-id", "data")
+                ) do session_id
+    
+    session_id = UUIDs.uuid4()
+    str = "id=$(session_id), v=$(GUI_version)"
+    
+    return String("$(session_id)"), str
+end
 
 # Save state
 callback!(app,
@@ -80,11 +99,13 @@ callback!(app,
     
 
 
-    
+
     str = "$n_run"
     
     return str
 end
+
+
 
 
 
