@@ -44,7 +44,7 @@ app.layout = html_div() do
                         dbc_col(dbc_label("", id="label-id"))]),      # main figure window
 
                 # right side menu
-                dbc_col([   dbc_card([dbc_col(dbc_label("Time: 0Myrs", id="label-time")),
+                dbc_col([   dbc_card([dbc_col(dbc_label("Time: 0 Myrs", id="label-time")),
                                       dbc_col(dbc_label("Timestep: 0", id="label-timestep"))]),
 
                             dbc_card(dbc_label("Parameters", id="Parameters", size="lg")),
@@ -61,7 +61,7 @@ app.layout = html_div() do
                             dbc_card([
                                     dbc_col(dbc_label("Width of Domain", id="domain_width_label")),
                                     dbc_col(dbc_input(id="domain_width", placeholder="Insert the width of the domain", type="number"))]),
-                            dbc_col(dbc_button("RUN", id="button-run", size="lg")),
+                            dbc_col(dbc_button("RUN", id="button-run", size="lg", className="d-grid gap-2 col-12 mx-auto")),
                                     ],
 
                             
@@ -108,7 +108,7 @@ callback!(app,
     prevent_initial_call=true
 ) do n_run, input_density, input_matrix, input_radius, input_width
     @show n_run, input_density, input_matrix, input_radius, input_width
-    str = "$n_run"
+    str = "Timestep: $n_run"
 
 
     disable_interval = false
