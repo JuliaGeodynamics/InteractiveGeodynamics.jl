@@ -20,7 +20,7 @@ function create_main_figure()
         #responsive=false,
         #clickData = true,
         #config = PlotConfig(displayModeBar=false, scrollZoom = false),
-        style = attr(width="70vw", height="70vh",padding_left="0vw",)
+        style = attr(width="80vw", height="80vh",padding_left="0vw",)
         )
     return fig
 end
@@ -94,7 +94,6 @@ app.layout = html_div() do
                     dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10))
                 ]),
                 dbc_row(html_p()),
-                dbc_row(html_hr()),
                 dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
                 
             ]) 
