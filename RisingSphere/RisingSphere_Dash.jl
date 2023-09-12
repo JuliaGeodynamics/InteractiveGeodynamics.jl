@@ -52,68 +52,53 @@ app.layout = html_div() do
                     color="secondary", 
                     outline=true)
                 ]),
+                dbc_row(html_p()),
                 dbc_row([ # domain width
                     dbc_col(dbc_label("Domain width (km): ", id="domain_width_label")),
                     dbc_col(dbc_input(id="domain_width", placeholder="1.0", value=1.0, type="number", min=1.0e-10))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row([ # n elements in x-direction
                     dbc_col(dbc_label("# of elements in the x-direction: ", id="nel_x_label")),
                     dbc_col(dbc_input(id="nel_x", placeholder="16", value=16, type="number", min=2))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row([ # n elements in z-direction
                     dbc_col(dbc_label("# of elements in the z-direction: ", id="nel_z_label")),
                     dbc_col(dbc_input(id="nel_z", placeholder="16", value=16, type="number", min=2))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row([ # n of timesteps
                     dbc_col(dbc_label("# of timesteps: ", id="n_timesteps_label")),
                     dbc_col(dbc_input(id="n_timesteps", placeholder="10", value=10, type="number", min=1))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row([ # density of the sphere
                     dbc_col(dbc_label("Density of the sphere (kg/m³): ", id="density_sphere_label")),
                     dbc_col(dbc_input(id="density_sphere", placeholder="3400", value=3400, type="number", min=1.0e-10))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row([ # density of the matrix
                     dbc_col(dbc_label("Density of the matrix (kg/m³): ", id="density_matrix_label")),
                     dbc_col(dbc_input(id="density_matrix", placeholder="3000", value=3000, type="number", min=1.0e-10))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row([ # radius of the sphere
                     dbc_col(dbc_label("Radius of the sphere (km): ", id="radius_sphere_label")),
                     dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10))
                 ]),
+                dbc_row(html_p()),
+                dbc_row(html_hr()),
                 dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
                 
             ]) 
         ]),
-        # dbc_col(html_h1(title_app), style=Dict("margin-top" => 0, "textAlign" => "center")), dbc_row([
-        #     dbc_col([dbc_col(create_main_figure()),
-        #         dbc_col(dbc_label("", id="label-id"))]),      # main figure window
-
-        #     # right side menu
-        #     dbc_col([dbc_card([dbc_label(" Time: 0 Myrs", id="label-time"),
-        #                     dbc_label(" Timestep: 0", id="label-timestep")], color="secondary", outline=true),
-        #             dbc_card(dbc_label("Parameters", id="Parameters", size="lg"), color="white", outline=true),
-    
-
-
-        #             dbc_card([
-        #                     dbc_label("Density of Sphere: ", id="density_sphere_label"),
-        #                     dbc_input(id="sphere_density", placeholder="Insert the sphere density", type="number", min=1
-        #                     )], color="white", outline=true),
-        #             dbc_card([
-        #                     dbc_label("Density of Matrix: ", id="density_matrix_label"),
-        #                     dbc_input(id="matrix_density", placeholder="Insert the matrix density", type="number", min=1)
-        #                 ], color="white", outline=true),
-        #             dbc_card([
-        #                     dbc_label("Radius of Sphere: ", id="sphere_radius_label"),
-        #                     dbc_input(id="sphere_radius", placeholder="Insert the radius of the sphere", type="number")
-        #                 ], color="white", outline=true),
-        #             dbc_card([
-        #                     dbc_label("Width of Domain: ", id="domain_width_label"),
-        #                     dbc_input(id="domain_width", placeholder="Insert the width of the domain", type="number")
-        #                 ], color="white", outline=true),
-        #             dbc_col(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
-        #         ],
-        #         width=2)]),
 
         # Store a unique number of our session in the webpage
         dcc_store(id="session-id", data=""),
