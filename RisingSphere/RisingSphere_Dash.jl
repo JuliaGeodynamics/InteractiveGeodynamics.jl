@@ -47,6 +47,8 @@ app.layout = html_div() do
                 dbc_col([   dbc_card([dbc_col(dbc_label("Time: 0Myrs", id="label-time")),
                                       dbc_col(dbc_label("Timestep: 0", id="label-timestep"))]),
 
+                            dbc_card(dbc_label("Parameters", id="Parameters", size="lg")),
+                            
                             dbc_card([
                                     dbc_col(dbc_label("Density of Sphere", id="density_sphere_label")),
                                     dbc_col(dbc_input(id="sphere_density", placeholder="Type something...", type="text"))]),
