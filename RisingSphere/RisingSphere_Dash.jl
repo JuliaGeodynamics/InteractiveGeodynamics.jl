@@ -2,6 +2,27 @@ using Dash, DashBootstrapComponents
 using PlotlyJS
 
 
+# this is the main figure windown
+function create_main_figure()
+    fig =  dcc_graph(
+        id = "example-graph-1",
+        figure = (
+            data = [
+                (x = ["giraffes", "orangutans", "monkeys"], y = [20, 14, 23], type = "bar", name = "SF"),
+                (x = ["giraffes", "orangutans", "monkeys"], y = [12, 18, 29], type = "bar", name = "Montreal"),
+            ],
+            layout = (title = "Dash Data Visualization", barmode="group")
+        ),
+        #animate   = false,
+        #responsive=false,
+        #clickData = true,
+        #config = PlotConfig(displayModeBar=false, scrollZoom = false),
+        style = attr(width="80vw", height="80vh",padding_left="0vw",)
+        )
+    return fig
+end
+
+
 
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
@@ -12,24 +33,11 @@ app.layout = html_div() do
         dbc_col(html_h1("Rising Sphere example"), style = Dict("margin-top" => 0, "textAlign" => "center")),
         
         
-        dbc_row([dbc_col(
-            dcc_graph(
-                id = "example-graph-1",
-                figure = (
-                    data = [
-                        (x = ["giraffes", "orangutans", "monkeys"], y = [20, 14, 23], type = "bar", name = "SF"),
-                        (x = ["giraffes", "orangutans", "monkeys"], y = [12, 18, 29], type = "bar", name = "Montreal"),
-                    ],
-                    layout = (title = "Dash Data Visualization", barmode="group")
-                ),
-                #animate   = false,
-                #responsive=false,
-                #clickData = true,
-                #config = PlotConfig(displayModeBar=false, scrollZoom = false),
-                style = attr(width="80vw", height="80vh",padding_left="0vw",)
+        dbc_row([
+                dbc_col(create_main_figure())      # main figure window
 
-                )),
-            dbc_col(dbc_button("RUN", id="button-run"),width=2)
+                # right side menu
+                dbc_col(dbc_button("RUN", id="button-run"),width=2)
         
         ])
 
