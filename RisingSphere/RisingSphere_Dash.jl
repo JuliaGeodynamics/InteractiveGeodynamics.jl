@@ -10,11 +10,30 @@ function create_main_figure()
     fig =  dcc_graph(
         id = "figure_main",
         figure = (
-            data = [
-                (x = ["giraffes", "orangutans", "monkeys"], y = [20, 14, 23], type = "bar", name = "SF"),
-                (x = ["giraffes", "orangutans", "monkeys"], y = [12, 18, 29], type = "bar", name = "Montreal"),
-            ],
-            layout = (title = "Dash Data Visualization", barmode="group")
+            pl = (  id = "fig_cross",
+            data = [heatmap(x = [i for i in 1:10], 
+                            y = [i for i in 1:10], 
+                            z = randn(10,10),
+                            colorscale   = "Viridis",
+                            colorbar=attr(thickness=5),
+                            #zmin=zmin, zmax=zmax
+                            )
+                    ],                            
+            colorbar=Dict("orientation"=>"v", "len"=>0.5, "thickness"=>10,"title"=>"elevat"),
+            layout = (  title = "Cross-section",
+                        xaxis=attr(
+                            title="Length along cross-section [km]",
+                            tickfont_size= 14,
+                            tickfont_color="rgb(100, 100, 100)"
+                        ),
+                        yaxis=attr(
+                            title="Depth [km]",
+                            tickfont_size= 14,
+                            tickfont_color="rgb(10, 10, 10)"
+                        ),
+                        ),
+            config = (edits    = (shapePosition =  true,)),  
+        )
         ),
         #animate   = false,
         #responsive=false,
