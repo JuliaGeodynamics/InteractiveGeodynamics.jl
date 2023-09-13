@@ -197,7 +197,7 @@ callback!(app,
         
         clean_directory()   # removes all existing LaMEM files
         run_lamem(ParamFile, 1, args, wait=false)
-
+        println("started new run")
         disable_interval = false
 
     elseif trigger == "current_timestep.data"
@@ -218,24 +218,33 @@ callback!(app,
     Output("last_timestep", "data"),
     Output("update_fig","data"),
     Input("session-interval", "n_intervals"),
+    Input("button-run", "n_clicks"),
     State("current_timestep","data"),    
     State("update_fig","data"),
     State("session-id", "data"),
     prevent_initial_call=true
-) do n_inter, current_timestep, update_fig, session_id
+) do n_inter, n_run, current_timestep, update_fig, session_id
     @show n_inter, current_timestep
 
-    if isfile(OutFile*".pvd")
-        # Read LaMEM *.pvd file
-        Timestep, _, Time = Read_LaMEM_simulation(OutFile)
+    trigger = get_trigger()
+    @show trigger
+    if trigger == "session-interval.n_intervals"
+        if isfile(OutFile*".pvd")
+            # Read LaMEM *.pvd file
+            Timestep, _, Time = Read_LaMEM_simulation(OutFile)
 
-        # Update the labels and data stored in webpage about the last timestep
-        last_time  = "$(Timestep[end])"
-        
-        update_fig = "$(parse(Int,update_fig)+1)"
-        @show Timestep
+            # Update the labels and data stored in webpage about the last timestep
+            last_time  = "$(Timestep[end])"
+            
+            update_fig = "$(parse(Int,update_fig)+1)"
+            @show Timestep
 
-    else
+        else
+            last_time = "0"
+            update_fig = "0"
+        end
+    elseif trigger == "button-run.n_clicks"
+
         last_time = "0"
         update_fig = "0"
     end
@@ -251,10 +260,11 @@ callback!(app,
     Output("current_timestep","data"),
     Input("update_fig","data"),
     Input("current_timestep","data"),
+    Input("button-run", "n_clicks"),
     State("last_timestep","data"),
     State("session-id", "data"),
     prevent_initial_call=true
-) do update_fig, current_timestep, last_timestep, session_id
+) do update_fig, current_timestep,  n_run, last_timestep, session_id
     @show update_fig, current_timestep
 
     trigger = get_trigger()
@@ -263,23 +273,35 @@ callback!(app,
     # Get info about timesteps
     cur_t = parse(Int, current_timestep)                    # current timestep
     last_t = parse(Int, last_timestep)                      # last timestep available on disk
-    Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
-    id = findall(Timestep .== cur_t)[1]
 
-    @show cur_t, last_t, id, Time[id]
+    if trigger == "current_timestep.data" || 
+        trigger == "update_fig.data"
+
+        Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
+        id = findall(Timestep .== cur_t)[1]
+        time = Time[id]
+        @show cur_t, last_t, id, Time[id]
+
+       
+        # create the figure
+        # - TBD - 
+
+        if cur_t < last_t
+            cur_t = Timestep[id+1]      # update current timestep
+        end
+
+        
+    elseif trigger == "button-run.n_clicks"
+        cur_t = 0
+        time = 0.0
+    end
+
 
     # update the labels
     label_timestep = "Timestep: $cur_t"
-    label_time="Time: $(Time[id]) Myrs"
-    
-    # create the figure
-    # - TBD - 
-
-    if cur_t < last_t
-        cur_t = Timestep[id+1]      # update current timestep
-    end
-
+    label_time="Time: $time Myrs"
     current_timestep = "$cur_t"
+    @show current_timestep
 
     return label_timestep, label_time, current_timestep
 end
