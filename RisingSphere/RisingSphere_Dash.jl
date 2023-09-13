@@ -89,11 +89,11 @@ app.layout = html_div() do
                 dbc_row([
                     dbc_col([]),
                     dbc_col([
-                        dbc_button("⏮", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏴", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏯", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏵", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏭", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("<<", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
+                        dbc_button("<", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
+                        dbc_button("Play/Pause", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-3"),
+                        dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
+                        dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
                         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
                     dbc_col([
                         dbc_dropdownmenu(
@@ -112,29 +112,44 @@ app.layout = html_div() do
                 dbc_row([ # information card
                     dbc_card([
                         dbc_label(" Time: 0 Myrs", id="label-time"), 
-                        dbc_label(" Timestep: 0", id="label-timestep"
+                        dbc_label(" Timestep: 0", id="label-timestep",
                         )], 
                     color="secondary", 
+                    class_name="d-grid gap-2 col-11 mx-auto",
                     outline=true)
                 ]),
                 dbc_row(html_p()),
                 dbc_accordion(always_open=true, [
                     dbc_accordionitem(title="Simulation Parameters", [
                         dbc_row([ # domain width
-                            dbc_col(dbc_label("Domain width (km): ", id="domain_width_label", size="sm")),
+                            dbc_col([
+                                dbc_label("Lₓ (km): ", id="domain_width_label", size="sm"),
+                                dbc_tooltip("Width of the domain, given in kilometers.", target="domain_width_label")
+                            ]),
                             dbc_col(dbc_input(id="domain_width", placeholder="1.0", value=1.0, type="number", min=1.0e-10, size="sm"))
                         ]),
+                        dbc_row(html_p()),
                         dbc_row([ # n elements in x-direction
-                            dbc_col(dbc_label("# of elements in the x-direction: ", id="nel_x_label", size="sm")),
+                            dbc_col([
+                                dbc_label("nx: ", id="nel_x_label", size="sm"),
+                                dbc_tooltip(target="nel_x_label", "Number of elements in the x-direction. Must be an integer greater than 2.")
+                            ]),
                             dbc_col(dbc_input(id="nel_x", placeholder="32", value=32, type="number", min=2, size="sm"))
                         ]),
+                        dbc_row(html_p()),
                         dbc_row([ # n elements in z-direction
-                            dbc_col(dbc_label("# of elements in the z-direction: ", id="nel_z_label", size="sm")),
+                            dbc_col([
+                                dbc_label("nz: ", id="nel_z_label", size="sm"),
+                                dbc_tooltip(target="nel_z_label", "Number of elements in the z-direction. Must be an integer greater than 2.")
+                            ]),
                             dbc_col(dbc_input(id="nel_z", placeholder="32", value=32, type="number", min=2, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # n of timesteps
-                            dbc_col(dbc_label("# of timesteps: ", id="n_timesteps_label", size="sm")),
+                            dbc_col([
+                                dbc_label("nt: ", id="n_timesteps_label", size="sm"),
+                                dbc_tooltip(target="n_timesteps_label", "Maximum number of timesteps. Must be an integer greater than 1.")
+                            ]),
                             dbc_col(dbc_input(id="n_timesteps", placeholder="10", value=10, type="number", min=1, size="sm"))
                         ]),
                     ]),
@@ -142,24 +157,36 @@ app.layout = html_div() do
                         # dbc_row(html_p()),
                         # dbc_row(html_hr()),
                         dbc_row([ # density of the sphere
-                            dbc_col(dbc_label("Density of the sphere (kg/m³): ", id="density_sphere_label", size="sm")),
+                            dbc_col([
+                                dbc_label("ρₛ (kg/m³): ", id="density_sphere_label", size="sm"),
+                                dbc_tooltip(target="density_sphere_label", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).")
+                            ]),
                             dbc_col(dbc_input(id="density_sphere", placeholder="3400", value=3400, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         # dbc_row(html_hr()),
                         dbc_row([ # density of the matrix
-                            dbc_col(dbc_label("Density of the matrix (kg/m³): ", id="density_matrix_label", size="sm")),
+                            dbc_col([
+                                dbc_label("ρₘ (kg/m³): ", id="density_matrix_label", size="sm"),
+                                dbc_tooltip(target="density_matrix_label", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).")
+                            ]),
                             dbc_col(dbc_input(id="density_matrix", placeholder="3000", value=3000, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         # dbc_row(html_hr()),
                         dbc_row([ # radius of the sphere
-                            dbc_col(dbc_label("Radius of the sphere (km): ", id="radius_sphere_label", size="sm")),
+                            dbc_col([
+                                dbc_label("rₛ (km): ", id="radius_sphere_label", size="sm"),
+                                dbc_tooltip(target="radius_sphere_label", "Radius of the sphere in kilometers (0 < rₛ ≤ Lₓ).")
+                            ]),
                             dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # viscosity
-                            dbc_col(dbc_label("Viscosity (log(Pa⋅s))", id="viscosity_label", size="sm")),
+                            dbc_col([
+                                dbc_label("ηₘ (log(Pa⋅s))", id="viscosity_label", size="sm"),
+                                dbc_tooltip(target="viscosity_label", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).")
+                            ]),
                             dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="sm"))
                         ]), 
                         ])
@@ -177,7 +204,7 @@ app.layout = html_div() do
                 #     dbc_col(dbc_button("Play", id="button-play", size="lg", class_name="d-grid gap-2 col-6 mx-auto"))
                 # ]),
                 dbc_row(html_p()),
-                dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
+                dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-11 mx-auto"))
                 
             ]) 
         ]),
