@@ -177,13 +177,7 @@ app.layout = html_div() do
                         dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
                         dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
                         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
-                    dbc_col([
-                        dbc_row([
-                            # dbc_col(dcc_textarea("Select field to plot: ")),
-                            dbc_col(dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-8"))
-                        ])
-                        
-                    ]),
+                    dbc_col([]),
                 ]),
                 dbc_col(dbc_label("", id="label-id"))
             ]),
@@ -270,6 +264,11 @@ app.layout = html_div() do
                         ]), 
                     ]),
                     dbc_accordionitem(title="Plotting Parameters", [
+                        dbc_row([
+                            # dbc_col(dcc_textarea("Select field to plot: ")),
+                            dbc_col(dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-12"))
+                        ]),
+                        dbc_row(html_p()),
                         dbc_row([ # plot type
                             dbc_col([
                                 dbc_label("Plot type:", id="plot_type", size="sm"),
@@ -285,6 +284,21 @@ app.layout = html_div() do
                             ]),
                             dbc_col(dcc_dropdown(id="color_map_option", options = ["Viridis", "Jet"], value="Viridis"))
                         ]), 
+                        dbc_row(html_p()),
+                        dbc_row([
+                            dbc_checklist(options=["Overlap plot with contour:"],
+                                    id="switch-contour",
+                                    switch=true,
+                            ),
+                            dbc_col(dcc_dropdown(id="contour_option", options = ["Phase", "Temperature"], value="Phase", disabled=true))
+                        ]),
+                        dbc_row(html_p()),
+                        dbc_row([
+                            dbc_checklist(options=["Overlap velocity"],
+                                    id="switch-velocity",
+                                    switch=true,
+                            )
+                        ]),
                     ]),
                 ]),
                 dbc_row(html_p()),
