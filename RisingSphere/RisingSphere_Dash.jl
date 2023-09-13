@@ -5,6 +5,9 @@ using UUIDs
 
 GUI_version = "0.1.0"
 
+include("utils.jl")
+cmaps = read_colormaps()
+
 # this is the main figure window
 function create_main_figure(x=1:10,y=1:10,data=rand(10,10), x_contour=x, y_contour=y, data_contour=data; colorscale="Viridis", field="phase", contours = true)
     data_plot = [heatmap(x = x, 
@@ -194,74 +197,22 @@ app.layout = html_div() do
                 dbc_row(html_p()),
                 dbc_accordion(always_open=true, [
                     dbc_accordionitem(title="Simulation Parameters", [
-                        dbc_row([ # domain width
-                            dbc_col([
-                                dbc_label("Lₓ (km): ", id="domain_width_label", size="md"),
-                                dbc_tooltip("Width of the domain, given in kilometers.", target="domain_width_label")
-                            ]),
-                            dbc_col(dbc_input(id="domain_width", placeholder="1.0", value=1.0, type="number", min=1.0e-10, size="md"))
-                        ]),
+                        make_accordion_item("Lₓ (km):", "domain_width", "Width of the domain, given in kilometers.", 1.0, 1.0e-10),
                         dbc_row(html_p()),
-                        dbc_row([ # n elements in x-direction
-                            dbc_col([
-                                dbc_label("nx: ", id="nel_x_label", size="md"),
-                                dbc_tooltip(target="nel_x_label", "Number of elements in the x-direction. Must be an integer greater than 2.")
-                            ]),
-                            dbc_col(dbc_input(id="nel_x", placeholder="32", value=32, type="number", min=2, size="md"))
-                        ]),
+                        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 32, 2),
                         dbc_row(html_p()),
-                        dbc_row([ # n elements in z-direction
-                            dbc_col([
-                                dbc_label("nz : ", id="nel_z_label", size="md"),
-                                dbc_tooltip(target="nel_z_label", "Number of elements in the z-direction. Must be an integer greater than 2.")
-                            ]),
-                            dbc_col(dbc_input(id="nel_z", placeholder="32", value=32, type="number", min=2, size="md"))
-                        ]),
+                        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 32, 2),
                         dbc_row(html_p()),
-                        dbc_row([ # n of timesteps
-                            dbc_col([
-                                dbc_label("nt: ", id="n_timesteps_label", size="md"),
-                                dbc_tooltip(target="n_timesteps_label", "Maximum number of timesteps. Must be an integer greater than 1.")
-                            ]),
-                            dbc_col(dbc_input(id="n_timesteps", placeholder="10", value=10, type="number", min=1, size="md"))
-                        ]),
+                        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 30, 1),
                     ]),
                     dbc_accordionitem(title="Rheological Parameters", [
-                        # dbc_row(html_p()),
-                        # dbc_row(html_hr()),
-                        dbc_row([ # density of the sphere
-                            dbc_col([
-                                dbc_label("ρₛ (kg/m³): ", id="density_sphere_label", size="md"),
-                                dbc_tooltip(target="density_sphere_label", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).")
-                            ]),
-                            dbc_col(dbc_input(id="density_sphere", placeholder="3000", value=3000, type="number", min=1.0e-10, size="sm"))
-                        ]),
+                        make_accordion_item("ρₛ (kg/m³):", "density_sphere", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).", 3000.0, 1.0e-10),
                         dbc_row(html_p()),
-                        # dbc_row(html_hr()),
-                        dbc_row([ # density of the matrix
-                            dbc_col([
-                                dbc_label("ρₘ (kg/m³): ", id="density_matrix_label", size="md"),
-                                dbc_tooltip(target="density_matrix_label", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).")
-                            ]),
-                            dbc_col(dbc_input(id="density_matrix", placeholder="3400", value=3400, type="number", min=1.0e-10, size="sm"))
-                        ]),
+                        make_accordion_item("ρₘ (kg/m³):", "density_matrix", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).", 3400.0, 1.0e-10),
                         dbc_row(html_p()),
-                        # dbc_row(html_hr()),
-                        dbc_row([ # radius of the sphere
-                            dbc_col([
-                                dbc_label("rₛ (km): ", id="radius_sphere_label", size="md"),
-                                dbc_tooltip(target="radius_sphere_label", "Radius of the sphere in kilometers (0 < rₛ ≤ Lₓ).")
-                            ]),
-                            dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10, size="md"))
-                        ]),
+                        make_accordion_item("rₛ (km):", "radius_sphere", "Radius of the sphere in kilometers (0 < rₛ ≤ Lₓ).", 0.1, 1.0e-10),
                         dbc_row(html_p()),
-                        dbc_row([ # viscosity
-                            dbc_col([
-                                dbc_label("ηₘ (log₁₀(Pa⋅s))", id="viscosity_label", size="sm"),
-                                dbc_tooltip(target="viscosity_label", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).")
-                            ]),
-                            dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="md"))
-                        ]), 
+                        make_accordion_item("ηₘ (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).", 25.0, 15.0, 25.0),
                     ]),
                     dbc_accordionitem(title="Plotting Parameters", [
                         dbc_row([
@@ -283,7 +234,7 @@ app.layout = html_div() do
                                 dbc_label("Color map:", id="cmap", size="md"),
                                 dbc_tooltip(target="cmap", "Choose the colormap of the plot")
                             ]),
-                            dbc_col(dcc_dropdown(id="color_map_option", options = ["Viridis", "Jet"], value="Viridis"))
+                            dbc_col(dcc_dropdown(id="color_map_option", options = ["Viridis", "Jet", "Rainbow"], value="Viridis"))
                         ]), 
                         dbc_row(html_p()),
                         dbc_row(html_hr()),
@@ -466,12 +417,12 @@ callback!(app,
     Input("button-forward", "n_clicks"),
     Input("button-back", "n_clicks"),
     Input("button-play", "n_clicks"),
-
+    State("color_map_option", "value"),
     State("last_timestep","data"),
     State("session-id", "data"),
     State("plot_field","value"),
     prevent_initial_call=true
-) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id, plot_field
+) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, cmap, last_timestep, session_id, plot_field
     trigger = get_trigger()
     @show trigger
     # Get info about timesteps
@@ -509,7 +460,7 @@ callback!(app,
             @show time
 
             # update the plot
-            fig_cross = create_main_figure(x,y,data, field=plot_field; contours = true)
+            fig_cross = create_main_figure(x, y, data, field=plot_field; contours=true, colorscale=cmap)
 
             if trigger == "current_timestep.data" ||  trigger == "update_fig.data" ||  trigger == "button-play.n_clicks"
                 if cur_t < last_t 
