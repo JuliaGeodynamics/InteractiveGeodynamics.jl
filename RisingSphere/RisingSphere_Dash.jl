@@ -38,6 +38,8 @@ function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis"
 end
 
 
+
+
 """
  x,z,data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
 This loads the timestep `tstep` from a LaMEM simulation with field `field`.
@@ -45,8 +47,12 @@ This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
     
     data,time = Read_LaMEM_timestep(OutFile, tstep)
-    value = data.fields[Symbol(field)]
-    fields_available= String.(keys(data.fields))
+
+    value = extract_data_fields(data, field)        # get field; can handle tensors & vectors as well
+
+
+    fields= String.(keys(data.fields))
+    fields_available = get_fields(fields)
     
     x = data.x.val[:,1,1]
     z = data.z.val[1,1,:]
@@ -66,6 +72,61 @@ function get_trigger()
         trigger = trigger[1]
     end
     return trigger
+end
+
+
+#add-ons to names for vector & tensors (used in dropdown menu)
+function vector_tensor()
+    vector = [ "_$a" for a in ["x","y","z"]]
+    tensor = [ "_$(b)$(a)" for a in ["x","y","z"], b in ["x","y","z"] ][:]
+    scalar = [""]
+    return scalar, vector, tensor
+end
+
+
+"""
+
+This extracts a LaMEM datafield and in case it is a tensor or scalar (and has _x, _z or so at the end), 
+"""
+function extract_data_fields(data, field)
+
+    _, vector, tensor = vector_tensor()
+    if hasfield(typeof(data.fields),Symbol(field))  # scalar
+        value = data.fields[Symbol(field)]  
+    else                                            # vector/tensor
+        extension = split(field,"_")[end]
+        n         = length(extension)
+        name      = field[1:end-n-1]
+      
+        if n==1
+            id = findall(vector.=="_"*extension)[1]
+        else
+            id = findall(tensor.=="_"*extension)[1]
+        end
+        value     = data.fields[Symbol(name)][id,:,:,:] 
+    end
+    return value
+end
+
+# returns a list with fields. in case the LaMEM field is a vector field, it adds _x, _y etc; im case of tensor, _xx,_xy etyc
+function get_fields(fields)
+
+    scalar, vector, tensor = vector_tensor()
+
+    fields_available= []
+    for f in fields
+        if  f=="velocity"
+            add = vector
+        elseif f=="strain_rate" || f=="stress"
+            add = tensor
+        else
+            add = scalar
+        end
+        for a in add
+            push!(fields_available, f*a)
+        end
+    end
+    return fields_available
 end
 
 title_app = "Rising Sphere example"
