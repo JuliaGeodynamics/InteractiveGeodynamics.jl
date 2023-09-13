@@ -34,20 +34,23 @@ function create_main_figure()
     return pl
 end
 
-function read_simulation(OutFile, last = true)
 
-    if last
-        Timestep, _, _ = Read_LaMEM_simulation(OutFile)
-        t_step = Timestep[end]
-    end
+"""
+ x,z,data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+This loads the timestep `tstep` from a LaMEM simulation with field `field`.
+"""
+function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+    
+    data,time = Read_LaMEM_timestep(OutFile, tstep)
+    value = data.fields[Symbol(field)]
+    
+    x = data.x.val[:,1,1]
+    z = data.z.val[1,1,:]
+    
+    data2D = value[:,1,:]
 
-    data, time = Read_LaMEM_timestep(OutFile, t_step, last=last);
-    vel  =  data.fields.velocity; #velocity
-    Vz   =  vel[3,:,:,:] # Vz
-
-    return Timestep,  t_step, time, Vz 
+    return x,z,data2D
 end
-
 
 #returns the trigger callback (simplifies code)
 function get_trigger()
@@ -213,13 +216,8 @@ end
 # Call run button
 callback!(app,
     Output("session-interval","disabled"),
+    Input("button-run", "n_clicks"),
     Input("button-run", "disabled"),
-    Input("button-start", "n_clicks"),
-    Input("button-back", "n_clicks"),
-    Input("button-play", "n_clicks"),
-    Input("button-forward", "n_clicks"),
-    Input("button-end", "n_clicks"),
-    Input("plot_field", "children"),
     State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
@@ -229,14 +227,14 @@ callback!(app,
     State("radius_sphere", "value"),
     State("viscosity", "value"),
     State("last_timestep","data"),
-    State("last_timestep","data"),
+
     prevent_initial_call=true
-) do    n_run, active_run, n_start, n_back, n_play, n_forward, n_end, plot_item,
+) do    n_run, active_run,
         domain_width, nel_x, nel_z, n_timesteps, 
         sphere_density, matrix_density, sphere_radius, viscosity, 
         last_timestep
 
-    @show n_run, n_start, n_back, n_play, n_forward, n_end, plot_item, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
+    @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
     trigger = get_trigger()
     disable_interval = true
@@ -383,7 +381,7 @@ end
 
 
 
-
+#=
 # check every few milliseconds if the last timestep changed
 callback!(app,
     Output("label-timestep", "children"),
@@ -397,10 +395,6 @@ callback!(app,
     # Read LaMEM *.pvd file
     Timestep, _, Time = Read_LaMEM_simulation(OutFile)
 
-    # read the data
-    x,z,data = get_data(OutFile, tstep=0, field="phase")
-    # input the physical name you want
-   
     # Update the labels and data stored in webpage about the last timestep
     last_time = "$(Timestep[end])"
     label_timestep = "Timestep: $last_time"
@@ -412,22 +406,6 @@ callback!(app,
 end
 
 
-"""
- x,z,data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
-This loads the timestep `tstep` from a LaMEM simulation with field `field`.
-"""
-function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
-    
-    data,time = Read_LaMEM_timestep(OutFile, tstep)
-    value = data.fields[Symbol(field)]
-    
-    x = data.x.val[:,1,1]
-    z = data.z.val[1,1,:]
-    
-    data2D = value[:,1,:]
-
-    return x,z,data2D
-end
 
 #=
 #=
@@ -445,6 +423,6 @@ callback!(app,
 end
 =#
 =#
-
+=#
 
 run_server(app, debug=false)
