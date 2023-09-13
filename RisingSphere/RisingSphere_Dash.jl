@@ -6,7 +6,7 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase")
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase", contours=true)
             pl = (  id = "fig_cross",
             data = [heatmap(x = x, 
                             y = y, 
@@ -225,7 +225,7 @@ app.layout = html_div() do
                                 dbc_label("ρₛ (kg/m³): ", id="density_sphere_label", size="sm"),
                                 dbc_tooltip(target="density_sphere_label", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).")
                             ]),
-                            dbc_col(dbc_input(id="density_sphere", placeholder="3400", value=3400, type="number", min=1.0e-10, size="sm"))
+                            dbc_col(dbc_input(id="density_sphere", placeholder="3000", value=3000, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         # dbc_row(html_hr()),
@@ -234,7 +234,7 @@ app.layout = html_div() do
                                 dbc_label("ρₘ (kg/m³): ", id="density_matrix_label", size="sm"),
                                 dbc_tooltip(target="density_matrix_label", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).")
                             ]),
-                            dbc_col(dbc_input(id="density_matrix", placeholder="3000", value=3000, type="number", min=1.0e-10, size="sm"))
+                            dbc_col(dbc_input(id="density_matrix", placeholder="3400", value=3400, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         # dbc_row(html_hr()),
@@ -248,7 +248,7 @@ app.layout = html_div() do
                         dbc_row(html_p()),
                         dbc_row([ # viscosity
                             dbc_col([
-                                dbc_label("ηₘ (log(Pa⋅s))", id="viscosity_label", size="sm"),
+                                dbc_label("ηₘ (log₁₀(Pa⋅s))", id="viscosity_label", size="sm"),
                                 dbc_tooltip(target="viscosity_label", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).")
                             ]),
                             dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="sm"))
@@ -287,7 +287,7 @@ app.layout = html_div() do
         dcc_store(id="update_fig", data="0"),
 
         # Start an interval that updates the number every second
-        dcc_interval(id="session-interval", interval=200, n_intervals=0, disabled=true)
+        dcc_interval(id="session-interval", interval=100, n_intervals=0, disabled=true)
 
     ])
 
@@ -314,6 +314,8 @@ callback!(app,
     Output("session-interval","disabled"),
     Input("button-run", "n_clicks"),
     Input("button-run", "disabled"),
+    Input("button-play", "n_clicks"),
+    
     State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
@@ -325,12 +327,10 @@ callback!(app,
     State("last_timestep","data"),
     State("plot_field","value"),
     prevent_initial_call=true
-) do    n_run, active_run,
+) do    n_run, active_run, n_play,
         domain_width, nel_x, nel_z, n_timesteps, 
         sphere_density, matrix_density, sphere_radius, viscosity, 
         last_timestep, plot_field
-
-    @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
     trigger = get_trigger()
     disable_interval = true
@@ -347,6 +347,11 @@ callback!(app,
         if active_run==true || last_t<n_timesteps
             disable_interval = false
         end
+
+    elseif trigger == "button-play.n_clicks"
+        last_t = parse(Int,last_timestep )
+        @show last_t
+        disable_interval = false
     end    
 
     return disable_interval
@@ -367,11 +372,9 @@ callback!(app,
     cur_t = parse(Int, current_timestep)    # current timestep
     last_t = parse(Int, last_timestep)      # last timestep available on disk
     if cur_t<last_t 
-        println("running lamem")
         button_run_disable = true
         button_color = "danger"
     else
-        println("finished lamem")
         button_run_disable = false
         button_color = "primary"
     end
@@ -425,38 +428,62 @@ callback!(app,
     Input("update_fig","data"),
     Input("current_timestep","data"),
     Input("button-run", "n_clicks"),
+    Input("button-start", "n_clicks"),
+    Input("button-last", "n_clicks"),
+    Input("button-forward", "n_clicks"),
+    Input("button-back", "n_clicks"),
+    Input("button-play", "n_clicks"),
+
     State("last_timestep","data"),
     State("session-id", "data"),
     State("plot_field","value"),
     prevent_initial_call=true
-) do update_fig, current_timestep,  n_run, last_timestep, session_id, plot_field
-    @show update_fig, current_timestep
-
+) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id, plot_field
     trigger = get_trigger()
     @show trigger
-
     # Get info about timesteps
     cur_t = parse(Int, current_timestep)                    # current timestep
     last_t = parse(Int, last_timestep)                      # last timestep available on disk
     fig_cross = []
     fields_available = ["phase"]
     if trigger == "current_timestep.data" || 
-        trigger == "update_fig.data"
+        trigger == "update_fig.data" ||
+        trigger == "button-start.n_clicks" ||
+        trigger == "button-last.n_clicks" ||
+        trigger == "button-back.n_clicks" ||
+        trigger == "button-forward.n_clicks" ||
+        trigger == "button-play.n_clicks"
+
         if isfile(OutFile*".pvd")
             Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
             id = findall(Timestep .== cur_t)[1]
-          
+            if trigger == "button-start.n_clicks" || trigger == "button-play.n_clicks"
+                cur_t = 0
+                id = 1
+            elseif trigger == "button-last.n_clicks"
+                cur_t = Timestep[end]
+                id = length(Timestep)
+            elseif (trigger == "button-forward.n_clicks") && (id<length(Timestep))
+                cur_t = Timestep[id+1]
+                id = id+1
+            elseif (trigger == "button-back.n_clicks") && (id>1)
+                cur_t = Timestep[id-1]
+                id = id-1
+            end
+
             # Load data 
             x,y,data, time, fields_available = get_data(OutFile, cur_t, plot_field)
+            @show time
 
             # update the plot
             fig_cross = create_main_figure(x,y,data, field=plot_field)
 
-            if cur_t < last_t
-                cur_t = Timestep[id+1]      # update current timestep
+            if trigger == "current_timestep.data" ||  trigger == "update_fig.data" ||  trigger == "button-play.n_clicks"
+                if cur_t < last_t 
+                    cur_t = Timestep[id+1]      # update current timestep
+                end
             end
 
-            
         else
             time = 0
         end
@@ -466,15 +493,12 @@ callback!(app,
         time = 0.0
     end
 
-
     # update the labels
     label_timestep = "Timestep: $cur_t"
     label_time="Time: $time Myrs"
     current_timestep = "$cur_t"
+    
     @show current_timestep
-
-   
-
     return label_timestep, label_time, current_timestep, fig_cross, fields_available
 end
 
