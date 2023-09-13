@@ -40,6 +40,18 @@ function read_simulation(OutFile, last = true)
 end
 
 
+#returns the trigger callback (simplifies code)
+function get_trigger()
+
+    tr = callback_context().triggered;
+    trigger = []
+    if !isempty(tr)
+        trigger = callback_context().triggered[1]
+        trigger = trigger[1]
+    end
+    return trigger
+end
+
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
 OutFile = "RiseSphere"
@@ -194,67 +206,58 @@ callback!(app,
         Timestep, _, Time = Read_LaMEM_simulation(OutFile)
 
         # Update the labels and data stored in webpage about the last timestep
-        last_time = "$(Timestep[end])"
-        # label_timestep = "Timestep: $last_time"
-        #  label_time="Time: $(Time[end]) Myrs"
+        last_time  = "$(Timestep[end])"
         
         update_fig = "$(parse(Int,update_fig)+1)"
         @show Timestep
 
     else
         last_time = "0"
-     #   label_timestep = "Timestep: 0"
-     #   label_time="Time: 0 Myrs"
-        create_plot = "0"
+        update_fig = "0"
     end
-
-    # create the figure
 
     return last_time, update_fig
 end
 
 
-# Update the figure if the signal is given
+# Update the figure if the signal is given to do so
 callback!(app,
     Output("label-timestep", "children"),
     Output("label-time", "children"),
+    Output("current_timestep","data"),
     Input("update_fig","data"),
-    State("current_timestep","data"),
+    Input("current_timestep","data"),
     State("last_timestep","data"),
     State("session-id", "data"),
     prevent_initial_call=true
 ) do update_fig, current_timestep, last_timestep, session_id
     @show update_fig, current_timestep
 
-    #=
-    if isfile(OutFile*".pvd")
-        # Read LaMEM *.pvd file
-        Timestep, _, Time = Read_LaMEM_simulation(OutFile)
+    trigger = get_trigger()
+    @show trigger
 
-        # Update the labels and data stored in webpage about the last timestep
-        last_time = "$(Timestep[end])"
-       
-        
-        update_fig = "$(parse(Int,update_fig)+1)"
-        @show Timestep
+    # Get info about timesteps
+    cur_t = parse(Int, current_timestep)                    # current timestep
+    last_t = parse(Int, last_timestep)                      # last timestep available on disk
+    Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
+    id = findall(Timestep .== cur_t)[1]
 
-    else
-        last_time = "0"
-     #   label_timestep = "Timestep: 0"
-     #   label_time="Time: 0 Myrs"
-        create_plot = "0"
-    end
-=#  
+    @show cur_t, last_t, id, Time[id]
 
-    #label_timestep = "Timestep: $last_time"
-    #label_time="Time: $(Time[end]) Myrs"
-
-    label_timestep = "Timestep: 0"
-    label_time="Time: 0 Myrs"
-
+    # update the labels
+    label_timestep = "Timestep: $cur_t"
+    label_time="Time: $(Time[id]) Myrs"
+    
     # create the figure
+    # - TBD - 
 
-    return label_timestep, label_time
+    if cur_t < last_t
+        cur_t = Timestep[id+1]  # update current timestep
+    end
+
+    current_timestep = "$cur_t"
+
+    return label_timestep, label_time, current_timestep
 end
 
 
