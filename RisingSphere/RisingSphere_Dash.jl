@@ -193,9 +193,7 @@ callback!(app,
     State("density_matrix", "value"),
     State("radius_sphere", "value"),
     State("viscosity", "value"),
-   
     State("last_timestep","data"),
-
     prevent_initial_call=true
 ) do    n_run,
         domain_width, nel_x, nel_z, n_timesteps, 
@@ -217,6 +215,33 @@ callback!(app,
     end    
 
     return disable_interval
+end
+
+
+# deactivate the button 
+callback!(app,
+    Output("button-run","disabled"),
+    Output("button-run","color"),
+    Input("button-run", "n_clicks"),
+    Input("session-interval", "n_intervals"),
+    State("last_timestep","data"),
+    State("current_timestep","data"),
+    prevent_initial_call=true
+) do n_run, n_inter, last_timestep, current_timestep
+
+    cur_t = parse(Int, current_timestep)    # current timestep
+    last_t = parse(Int, last_timestep)      # last timestep available on disk
+    if cur_t<last_t 
+        println("running lamem")
+        button_run_disable = true
+        button_color = "danger"
+    else
+        println("finished lamem")
+        button_run_disable = false
+        button_color = "primary"
+    end
+
+    return button_run_disable, button_color
 end
 
 
