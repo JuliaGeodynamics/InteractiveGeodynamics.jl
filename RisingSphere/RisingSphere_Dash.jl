@@ -167,6 +167,7 @@ end
 callback!(app,
     Output("session-interval","disabled"),
     Input("button-run", "n_clicks"),
+    Input("current_timestep","data"),
     State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
@@ -175,16 +176,39 @@ callback!(app,
     State("density_matrix", "value"),
     State("radius_sphere", "value"),
     State("viscosity", "value"),
+   
+    State("last_timestep","data"),
+
     prevent_initial_call=true
-) do n_run, domain_width, nel_x, nel_z, n_timesteps, density_sphere, density_matrix, radius_sphere, viscosity
-    @show n_run, domain_width, nel_x, nel_z, n_timesteps, density_sphere, density_matrix, radius_sphere, viscosity
+) do    n_run, current_timestep,
+        domain_width, nel_x, nel_z, n_timesteps, 
+        sphere_density, matrix_density, sphere_radius, viscosity, 
+        last_timestep
 
-    args = "-nstep_max $(n_timesteps) -radius[0] $radius_sphere -rho[0] $density_matrix -rho[1] $density_sphere  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
-    
-    clean_directory()   # removes all existing LaMEM files
-    run_lamem(ParamFile, 1, args, wait=false)
+    @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
-    disable_interval = false
+    trigger = get_trigger()
+    @show trigger
+
+    disable_interval = true
+    if trigger == "button-run.n_clicks"
+        # We clicked the run button
+        args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
+        
+        clean_directory()   # removes all existing LaMEM files
+        run_lamem(ParamFile, 1, args, wait=false)
+
+        disable_interval = false
+
+    elseif trigger == "current_timestep.data"
+        cur_t = parse(Int, current_timestep)                    # current timestep
+        last_t = parse(Int, last_timestep)                      # last timestep available on disk
+
+        if cur_t<last_t
+            disable_interval = false
+        end
+    end    
+
     return disable_interval
 end
 
@@ -194,7 +218,7 @@ callback!(app,
     Output("last_timestep", "data"),
     Output("update_fig","data"),
     Input("session-interval", "n_intervals"),
-    State("current_timestep","data"),
+    State("current_timestep","data"),    
     State("update_fig","data"),
     State("session-id", "data"),
     prevent_initial_call=true
@@ -252,7 +276,7 @@ callback!(app,
     # - TBD - 
 
     if cur_t < last_t
-        cur_t = Timestep[id+1]  # update current timestep
+        cur_t = Timestep[id+1]      # update current timestep
     end
 
     current_timestep = "$cur_t"
