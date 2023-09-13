@@ -259,21 +259,21 @@ callback!(app,
 
     if trigger == "current_timestep.data" || 
         trigger == "update_fig.data"
+        if isfile(OutFile*".pvd")
+            Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
+            id = findall(Timestep .== cur_t)[1]
+            time = Time[id]
+            @show cur_t, last_t, id, Time[id]
 
-        Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
-        id = findall(Timestep .== cur_t)[1]
-        time = Time[id]
-        @show cur_t, last_t, id, Time[id]
+                
+            # create the figure
+            # - TBD - 
 
-       
-        # create the figure
-        # - TBD - 
-
-        if cur_t < last_t
-            cur_t = Timestep[id+1]      # update current timestep
+            if cur_t < last_t
+                cur_t = Timestep[id+1]      # update current timestep
+            end
         end
 
-        
     elseif trigger == "button-run.n_clicks"
         cur_t = 0
         time = 0.0
