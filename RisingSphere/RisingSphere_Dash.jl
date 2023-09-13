@@ -21,14 +21,16 @@ function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis"
                             xaxis=attr(
                             title="Width",
                             tickfont_size= 14,
-                            tickfont_color="rgb(100, 100, 100)"
+                            tickfont_color="rgb(100, 100, 100)",
+                            automargin=true, 
+                            
                         ),
                         yaxis=attr(
                             title="Depth",
                             tickfont_size= 14,
                             tickfont_color="rgb(10, 10, 10)",
                             scaleanchor="x", scaleratio=1
-                        ),
+                        ), margin = Dict([("l",350),("r",350)])
                         ),
             config = (edits    = (shapePosition =  true,)),  
         )
@@ -86,8 +88,8 @@ app.layout = html_div() do
                     #responsive=false,
                     #clickData = true,
                     #config = PlotConfig(displayModeBar=false, scrollZoom = false),
-                style = attr(width="80vw", height="80vh",padding_left="0vw",)
-                )),
+                style = attr(width="80vw", height="80vh")
+                ),),
                 dbc_row([
                     dbc_col([]),
                     dbc_col([
