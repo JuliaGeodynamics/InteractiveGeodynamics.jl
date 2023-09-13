@@ -6,16 +6,31 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase", contours=true)
-            pl = (  id = "fig_cross",
-            data = [heatmap(x = x, 
-                            y = y, 
-                            z = data,
-                            colorscale   = colorscale,
-                            colorbar= attr(thickness=5, title=field),
-                            #zmin=zmin, zmax=zmax
-                            )
-                    ],                            
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10), x_contour=x, y_contour=y, data_contour=data; colorscale="Viridis", field="phase", contours = true)
+    data_plot = [heatmap(x = x, 
+                    y = y, 
+                    z = data,
+                    colorscale   = colorscale,
+                    colorbar= attr(thickness=5, title=field),
+                    #zmin=zmin, zmax=zmax
+                    )
+                ]
+    if contours == true
+        push!(data_plot, (
+            contour(x = x_contour, 
+            y = y_contour, 
+            z = data_contour,
+            colorscale   = colorscale,
+            contours_coloring="lines",
+            line_width = 2,
+            colorbar= attr(thickness=5, title=field, x=1.2, yanchor = 0.5),
+            #zmin=zmin, zmax=zmax
+            )))
+    end
+    
+
+        pl = (  id = "fig_cross",
+                    data = data_plot,
             colorbar=Dict("orientation"=>"v", "len"=>0.5),
             layout = (  
                             xaxis=attr(
@@ -162,13 +177,7 @@ app.layout = html_div() do
                         dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
                         dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
                         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
-                    dbc_col([
-                        dbc_row([
-                            # dbc_col(dcc_textarea("Select field to plot: ")),
-                            dbc_col(dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-8"))
-                        ])
-                        
-                    ]),
+                    dbc_col([]),
                 ]),
                 dbc_col(dbc_label("", id="label-id"))
             ]),
@@ -187,34 +196,34 @@ app.layout = html_div() do
                     dbc_accordionitem(title="Simulation Parameters", [
                         dbc_row([ # domain width
                             dbc_col([
-                                dbc_label("Lₓ (km): ", id="domain_width_label", size="sm"),
+                                dbc_label("Lₓ (km): ", id="domain_width_label", size="md"),
                                 dbc_tooltip("Width of the domain, given in kilometers.", target="domain_width_label")
                             ]),
-                            dbc_col(dbc_input(id="domain_width", placeholder="1.0", value=1.0, type="number", min=1.0e-10, size="sm"))
+                            dbc_col(dbc_input(id="domain_width", placeholder="1.0", value=1.0, type="number", min=1.0e-10, size="md"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # n elements in x-direction
                             dbc_col([
-                                dbc_label("nx: ", id="nel_x_label", size="sm"),
+                                dbc_label("nx: ", id="nel_x_label", size="md"),
                                 dbc_tooltip(target="nel_x_label", "Number of elements in the x-direction. Must be an integer greater than 2.")
                             ]),
-                            dbc_col(dbc_input(id="nel_x", placeholder="32", value=32, type="number", min=2, size="sm"))
+                            dbc_col(dbc_input(id="nel_x", placeholder="32", value=32, type="number", min=2, size="md"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # n elements in z-direction
                             dbc_col([
-                                dbc_label("nz : ", id="nel_z_label", size="sm"),
+                                dbc_label("nz : ", id="nel_z_label", size="md"),
                                 dbc_tooltip(target="nel_z_label", "Number of elements in the z-direction. Must be an integer greater than 2.")
                             ]),
-                            dbc_col(dbc_input(id="nel_z", placeholder="32", value=32, type="number", min=2, size="sm"))
+                            dbc_col(dbc_input(id="nel_z", placeholder="32", value=32, type="number", min=2, size="md"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # n of timesteps
                             dbc_col([
-                                dbc_label("nt: ", id="n_timesteps_label", size="sm"),
+                                dbc_label("nt: ", id="n_timesteps_label", size="md"),
                                 dbc_tooltip(target="n_timesteps_label", "Maximum number of timesteps. Must be an integer greater than 1.")
                             ]),
-                            dbc_col(dbc_input(id="n_timesteps", placeholder="10", value=10, type="number", min=1, size="sm"))
+                            dbc_col(dbc_input(id="n_timesteps", placeholder="10", value=10, type="number", min=1, size="md"))
                         ]),
                     ]),
                     dbc_accordionitem(title="Rheological Parameters", [
@@ -222,7 +231,7 @@ app.layout = html_div() do
                         # dbc_row(html_hr()),
                         dbc_row([ # density of the sphere
                             dbc_col([
-                                dbc_label("ρₛ (kg/m³): ", id="density_sphere_label", size="sm"),
+                                dbc_label("ρₛ (kg/m³): ", id="density_sphere_label", size="md"),
                                 dbc_tooltip(target="density_sphere_label", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).")
                             ]),
                             dbc_col(dbc_input(id="density_sphere", placeholder="3000", value=3000, type="number", min=1.0e-10, size="sm"))
@@ -231,7 +240,7 @@ app.layout = html_div() do
                         # dbc_row(html_hr()),
                         dbc_row([ # density of the matrix
                             dbc_col([
-                                dbc_label("ρₘ (kg/m³): ", id="density_matrix_label", size="sm"),
+                                dbc_label("ρₘ (kg/m³): ", id="density_matrix_label", size="md"),
                                 dbc_tooltip(target="density_matrix_label", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).")
                             ]),
                             dbc_col(dbc_input(id="density_matrix", placeholder="3400", value=3400, type="number", min=1.0e-10, size="sm"))
@@ -240,10 +249,10 @@ app.layout = html_div() do
                         # dbc_row(html_hr()),
                         dbc_row([ # radius of the sphere
                             dbc_col([
-                                dbc_label("rₛ (km): ", id="radius_sphere_label", size="sm"),
+                                dbc_label("rₛ (km): ", id="radius_sphere_label", size="md"),
                                 dbc_tooltip(target="radius_sphere_label", "Radius of the sphere in kilometers (0 < rₛ ≤ Lₓ).")
                             ]),
-                            dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10, size="sm"))
+                            dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10, size="md"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # viscosity
@@ -251,13 +260,19 @@ app.layout = html_div() do
                                 dbc_label("ηₘ (log₁₀(Pa⋅s))", id="viscosity_label", size="sm"),
                                 dbc_tooltip(target="viscosity_label", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).")
                             ]),
-                            dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="sm"))
+                            dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="md"))
                         ]), 
                     ]),
                     dbc_accordionitem(title="Plotting Parameters", [
+                        dbc_row([
+                            dbc_label("Select field to plot: ", size="md"),
+                            dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-12")
+                        ]),
+                        dbc_row(html_p()),
+                        dbc_row(html_hr()),
                         dbc_row([ # plot type
                             dbc_col([
-                                dbc_label("Plot type:", id="plot_type", size="sm"),
+                                dbc_label("Plot type:", id="plot_type", size="md"),
                                 dbc_tooltip(target="plot_type", "Choose the type of plot")
                             ]),
                             dbc_col(dcc_dropdown(id="plot_type_option", options = ["Surface", "Contour"], value="Surface"))
@@ -265,11 +280,29 @@ app.layout = html_div() do
                         dbc_row(html_p()),
                         dbc_row([ # color map
                             dbc_col([
-                                dbc_label("Color map:", id="cmap", size="sm"),
+                                dbc_label("Color map:", id="cmap", size="md"),
                                 dbc_tooltip(target="cmap", "Choose the colormap of the plot")
                             ]),
                             dbc_col(dcc_dropdown(id="color_map_option", options = ["Viridis", "Jet"], value="Viridis"))
                         ]), 
+                        dbc_row(html_p()),
+                        dbc_row(html_hr()),
+                        dbc_row([
+                            dbc_checklist(options=["Overlap plot with contour:"],
+                                    id="switch-contour",
+                                    switch=true,
+                            ),
+                            dbc_row(html_p()),
+                            dbc_col(dcc_dropdown(id="contour_option" ,options = ["Phase", "Temperature"], value="Phase", disabled=true))
+                        ]),
+                        dbc_row(html_p()),
+                        dbc_row(html_hr()),
+                        dbc_row([
+                            dbc_checklist(options=["Overlap velocity"],
+                                    id="switch-velocity",
+                                    switch=true,
+                            )
+                        ]),
                     ]),
                 ]),
                 dbc_row(html_p()),
@@ -476,7 +509,7 @@ callback!(app,
             @show time
 
             # update the plot
-            fig_cross = create_main_figure(x,y,data, field=plot_field)
+            fig_cross = create_main_figure(x,y,data, field=plot_field; contours = true)
 
             if trigger == "current_timestep.data" ||  trigger == "update_fig.data" ||  trigger == "button-play.n_clicks"
                 if cur_t < last_t 
