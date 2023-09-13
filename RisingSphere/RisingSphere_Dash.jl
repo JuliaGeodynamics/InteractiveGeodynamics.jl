@@ -91,7 +91,9 @@ app.layout = html_div() do
                 style = attr(width="80vw", height="80vh")
                 ),),
                 dbc_row([
-                    dbc_col([]),
+                    dbc_col([
+                        dbc_button("Save figure", id="button-save-fig", color="secondary", size="sg", class_name="col-4")
+                    ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"),
                     dbc_col([
                         dbc_button("<<", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
                         dbc_button("<", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
@@ -100,12 +102,12 @@ app.layout = html_div() do
                         dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
                         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
                     dbc_col([
-                        # dbc_row([
-                            # dbc_label("Plot field:"),
-                            dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="justified-end col-6")
-                        # ])
+                        dbc_row([
+                            # dbc_col(dcc_textarea("Select field to plot: ")),
+                            dbc_col(dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-8"))
+                        ])
                         
-                    ], class_name="d-grid gap-2"),
+                    ]),
                 ]),
                 dbc_col(dbc_label("", id="label-id"))
             ]),
@@ -190,7 +192,24 @@ app.layout = html_div() do
                             ]),
                             dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="sm"))
                         ]), 
-                        ])
+                    ]),
+                    dbc_accordionitem(title="Plotting Parameters", [
+                        dbc_row([ # plot type
+                            dbc_col([
+                                dbc_label("Plot type:", id="plot_type", size="sm"),
+                                dbc_tooltip(target="plot_type", "Choose the type of plot")
+                            ]),
+                            dbc_col(dcc_dropdown(id="plot_type_option", options = ["Surface", "Contour"], value="Surface"))
+                        ]), 
+                        dbc_row(html_p()),
+                        dbc_row([ # color map
+                            dbc_col([
+                                dbc_label("Color map:", id="cmap", size="sm"),
+                                dbc_tooltip(target="cmap", "Choose the colormap of the plot")
+                            ]),
+                            dbc_col(dcc_dropdown(id="color_map_option", options = ["Viridis", "Jet"], value="Viridis"))
+                        ]), 
+                    ]),
                 ]),
                 dbc_row(html_p()),
                 dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="col-11 mx-auto"))
