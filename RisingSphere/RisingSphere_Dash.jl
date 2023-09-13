@@ -6,7 +6,9 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10), x_contour=x, y_contour=y, data_contour=data; colorscale="Viridis", field="phase", contours = true)
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10), 
+                            x_con=1:10,y_con=1:10,data_con=rand(10,10); 
+                            colorscale="Viridis", field="phase", add_contours = true, add_velocity=false, contour_field="phase")
     data_plot = [heatmap(x = x, 
                     y = y, 
                     z = data,
@@ -15,40 +17,44 @@ function create_main_figure(x=1:10,y=1:10,data=rand(10,10), x_contour=x, y_conto
                     #zmin=zmin, zmax=zmax
                     )
                 ]
-    if contours == true
+    if add_contours == true
         push!(data_plot, (
-            contour(x = x_contour, 
-            y = y_contour, 
-            z = data_contour,
+            contour(x = x_con, 
+            y = y_con, 
+            z = data_con,
             colorscale   = colorscale,
             contours_coloring="lines",
             line_width = 2,
-            colorbar= attr(thickness=5, title=field, x=1.2, yanchor = 0.5),
+            colorbar= attr(thickness=5, title=contour_field, x=1.2, yanchor = 0.5),
             #zmin=zmin, zmax=zmax
             )))
     end
+    if add_velocity
+        
+
+    end
     
 
-        pl = (  id = "fig_cross",
-                    data = data_plot,
-            colorbar=Dict("orientation"=>"v", "len"=>0.5),
-            layout = (  
-                            xaxis=attr(
-                            title="Width",
-                            tickfont_size= 14,
-                            tickfont_color="rgb(100, 100, 100)",
-                            automargin=true, 
-                            
-                        ),
-                        yaxis=attr(
-                            title="Depth",
-                            tickfont_size= 14,
-                            tickfont_color="rgb(10, 10, 10)",
-                            scaleanchor="x", scaleratio=1
-                        ), margin = Dict([("l",350),("r",350)])
-                        ),
-            config = (edits    = (shapePosition =  true,)),  
-        )
+    pl = (  id = "fig_cross",
+                data = data_plot,
+        colorbar=Dict("orientation"=>"v", "len"=>0.5),
+        layout = (  
+                        xaxis=attr(
+                        title="Width",
+                        tickfont_size= 14,
+                        tickfont_color="rgb(100, 100, 100)",
+                        automargin=true, 
+                        
+                    ),
+                    yaxis=attr(
+                        title="Depth",
+                        tickfont_size= 14,
+                        tickfont_color="rgb(10, 10, 10)",
+                        scaleanchor="x", scaleratio=1
+                    ), margin = Dict([("l",350),("r",350)])
+                    ),
+        config = (edits    = (shapePosition =  true,)),  
+    )
     return pl
 end
 
@@ -293,7 +299,7 @@ app.layout = html_div() do
                                     switch=true,
                             ),
                             dbc_row(html_p()),
-                            dbc_col(dcc_dropdown(id="contour_option" ,options = ["Phase", "Temperature"], value="Phase", disabled=true))
+                            dbc_col(dcc_dropdown(id="contour_option" ,options = ["phase"], value="phase", disabled=true))
                         ]),
                         dbc_row(html_p()),
                         dbc_row(html_hr()),
@@ -458,6 +464,7 @@ callback!(app,
     Output("current_timestep","data"),
     Output("figure_main", "figure"),
     Output("plot_field","options"),
+    Output("contour_option", "options"),
     Input("update_fig","data"),
     Input("current_timestep","data"),
     Input("button-run", "n_clicks"),
@@ -470,8 +477,12 @@ callback!(app,
     State("last_timestep","data"),
     State("session-id", "data"),
     State("plot_field","value"),
+    State("switch-contour","value"),
+    State("contour_option","value"),
     prevent_initial_call=true
-) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id, plot_field
+) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id, 
+    plot_field, switch_contour, contour_field
+
     trigger = get_trigger()
     @show trigger
     # Get info about timesteps
@@ -506,10 +517,24 @@ callback!(app,
 
             # Load data 
             x,y,data, time, fields_available = get_data(OutFile, cur_t, plot_field)
-            @show time
-
+            if !isnothing(switch_contour)
+                add_contours = true
+                x_con,y_con,data_con, _, _ = get_data(OutFile, cur_t, contour_field)
+            else
+                x_con, y_con, data_con = x,y,data
+                add_contours = false
+            end    
             # update the plot
-            fig_cross = create_main_figure(x,y,data, field=plot_field; contours = true)
+    
+          #  @show contour_field
+            colorscale="Viridis" 
+            add_velocity = true
+
+
+            fig_cross = create_main_figure(x,y,data, x_con, y_con, data_con, field=plot_field; 
+                            add_contours = add_contours, contour_field = contour_field,
+                            add_velocity = add_velocity,
+                            colorscale   = colorscale)
 
             if trigger == "current_timestep.data" ||  trigger == "update_fig.data" ||  trigger == "button-play.n_clicks"
                 if cur_t < last_t 
@@ -532,8 +557,25 @@ callback!(app,
     current_timestep = "$cur_t"
     
     @show current_timestep
-    return label_timestep, label_time, current_timestep, fig_cross, fields_available
+    return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
 end
+
+# 
+callback!(app,
+    Output("contour_option", "disabled"),
+    Input("switch-contour", "value")) do  switch_contour
+    if !isnothing(switch_contour)
+        if isempty(switch_contour)
+            disable_contours = true    
+        else
+            disable_contours = false    
+        end
+    else
+        disable_contours = true    
+    end
+    return disable_contours    
+end
+
 
 
 run_server(app, debug=false)
