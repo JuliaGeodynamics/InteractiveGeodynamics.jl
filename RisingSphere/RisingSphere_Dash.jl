@@ -90,15 +90,19 @@ app.layout = html_div() do
                 dbc_row([
                     dbc_col([]),
                     dbc_col([
-                        dbc_button("⏮", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏴", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏯", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏵", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
-                        dbc_button("⏭", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("<<", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
+                        dbc_button("<", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
+                        dbc_button("Play/Pause", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-3"),
+                        dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
+                        dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
                         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
                     dbc_col([
-                        dcc_dropdown(id="plot_field",options = ["phase"], value="phase"),
-                    ], class_name="d-grid gap-2 justify-content-md-end col-12"),
+                        # dbc_row([
+                            # dbc_label("Plot field:"),
+                            dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="justified-end col-6")
+                        # ])
+                        
+                    ], class_name="d-grid gap-2"),
                 ]),
                 dbc_col(dbc_label("", id="label-id"))
             ]),
@@ -109,6 +113,7 @@ app.layout = html_div() do
                         dbc_label(" Timestep: 0", id="label-timestep"
                         )], 
                     color="secondary", 
+                    class_name="mx-auto col-11",
                     outline=true)
                 ]),
                 dbc_row(html_p()),
@@ -171,7 +176,7 @@ app.layout = html_div() do
                 #     dbc_col(dbc_button("Play", id="button-play", size="lg", class_name="d-grid gap-2 col-6 mx-auto"))
                 # ]),
                 dbc_row(html_p()),
-                dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
+                dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="col-11 mx-auto"))
                 
             ]) 
         ]),
