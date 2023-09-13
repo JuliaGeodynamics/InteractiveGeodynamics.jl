@@ -6,13 +6,13 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure()
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis")
             pl = (  id = "fig_cross",
-            data = [heatmap(x = [i for i in 1:10], 
-                            y = [i for i in 1:10], 
-                            z = randn(10,10),
-                            colorscale   = "Viridis",
-                            colorbar=attr(thickness=15),
+            data = [heatmap(x = x, 
+                            y = y, 
+                            z = data,
+                            colorscale   = colorscale,
+                            colorbar= attr(thickness=5),
                             #zmin=zmin, zmax=zmax
                             )
                     ],                            
