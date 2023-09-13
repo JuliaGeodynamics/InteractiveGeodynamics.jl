@@ -176,10 +176,10 @@ callback!(app,
     State("radius_sphere", "value"),
     State("viscosity", "value"),
     prevent_initial_call=true
-) do n_run, domain_width, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, viscosity
-    @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
+) do n_run, domain_width, nel_x, nel_z, n_timesteps, density_sphere, density_matrix, radius_sphere, viscosity
+    @show n_run, domain_width, nel_x, nel_z, n_timesteps, density_sphere, density_matrix, radius_sphere, viscosity
 
-    args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
+    args = "-nstep_max $(n_timesteps) -radius[0] $radius_sphere -rho[0] $density_matrix -rho[1] $density_sphere  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
     
     clean_directory()   # removes all existing LaMEM files
     run_lamem(ParamFile, 1, args, wait=false)
