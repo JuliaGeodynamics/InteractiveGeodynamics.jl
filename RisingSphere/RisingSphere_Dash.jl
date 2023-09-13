@@ -479,9 +479,10 @@ callback!(app,
     State("plot_field","value"),
     State("switch-contour","value"),
     State("contour_option","value"),
+    State("switch-velocity","value"),
     prevent_initial_call=true
 ) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id, 
-    plot_field, switch_contour, contour_field
+    plot_field, switch_contour, contour_field, switch_velocity
 
     trigger = get_trigger()
     @show trigger
@@ -528,7 +529,12 @@ callback!(app,
     
           #  @show contour_field
             colorscale="Viridis" 
-            add_velocity = true
+            
+            if isnothing(switch_velocity)
+                add_velocity = false
+            else
+                add_velocity = true
+            end
 
 
             fig_cross = create_main_figure(x,y,data, x_con, y_con, data_con, field=plot_field; 
