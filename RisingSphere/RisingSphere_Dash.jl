@@ -6,16 +6,30 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase")
-            pl = (  id = "fig_cross",
-            data = [heatmap(x = x, 
-                            y = y, 
-                            z = data,
-                            colorscale   = colorscale,
-                            colorbar= attr(thickness=5, title=field),
-                            #zmin=zmin, zmax=zmax
-                            )
-                    ],                            
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase", contours = true)
+    data_plot = [heatmap(x = x, 
+                    y = y, 
+                    z = data,
+                    colorscale   = colorscale,
+                    colorbar= attr(thickness=5, title=field),
+                    #zmin=zmin, zmax=zmax
+                    )
+                ]
+    if contours == true
+        push!(data_plot, (
+            contour(x = x, 
+            y = y, 
+            z = data,
+            colorscale   = colorscale,
+            contours_coloring="lines",
+            line_width = 2,
+            colorbar= attr(thickness=5, title=field, x=1.2, yanchor = 0.5),
+            #zmin=zmin, zmax=zmax
+            )))
+    end    
+
+        pl = (  id = "fig_cross",
+                    data = data_plot,
             colorbar=Dict("orientation"=>"v", "len"=>0.5),
             layout = (  
                             xaxis=attr(
@@ -389,7 +403,7 @@ callback!(app,
             x,y,data, time, fields_available = get_data(OutFile, cur_t, plot_field)
 
             # update the plot
-            fig_cross = create_main_figure(x,y,data, field=plot_field)
+            fig_cross = create_main_figure(x,y,data, field=plot_field; contours = true)
 
             if cur_t < last_t
                 cur_t = Timestep[id+1]      # update current timestep
