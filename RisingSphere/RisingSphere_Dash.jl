@@ -8,7 +8,7 @@ GUI_version = "0.1.0"
 # this is the main figure window
 function create_main_figure()
     fig =  dcc_graph(
-        id = "example-graph-1",
+        id = "figure_main",
         figure = (
             data = [
                 (x = ["giraffes", "orangutans", "monkeys"], y = [20, 14, 23], type = "bar", name = "SF"),
@@ -75,11 +75,11 @@ app.layout = html_div() do
                         ]),
                         dbc_row([ # n elements in x-direction
                             dbc_col(dbc_label("# of elements in the x-direction: ", id="nel_x_label", size="sm")),
-                            dbc_col(dbc_input(id="nel_x", placeholder="16", value=16, type="number", min=2, size="sm"))
+                            dbc_col(dbc_input(id="nel_x", placeholder="32", value=32, type="number", min=2, size="sm"))
                         ]),
                         dbc_row([ # n elements in z-direction
                             dbc_col(dbc_label("# of elements in the z-direction: ", id="nel_z_label", size="sm")),
-                            dbc_col(dbc_input(id="nel_z", placeholder="16", value=16, type="number", min=2, size="sm"))
+                            dbc_col(dbc_input(id="nel_z", placeholder="32", value=32, type="number", min=2, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # n of timesteps
@@ -123,6 +123,7 @@ app.layout = html_div() do
         dcc_store(id="session-id", data=""),
         dcc_store(id="current_timestep", data="0"),
         dcc_store(id="last_timestep", data="0"),
+        dcc_store(id="update_fig", data="0"),
 
         # Start an interval that updates the number every second
         dcc_interval(id="session-interval", interval=1000, n_intervals=0, disabled=true)
@@ -163,11 +164,13 @@ callback!(app,
     State("radius_sphere", "value"),
     State("viscosity", "value"),
     prevent_initial_call=true
-) do n_run,  nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
+) do n_run, domain_width, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, viscosity
     @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
     args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
-   # run_lamem(ParamFile, 1, args, wait=false)
+    
+    clean_directory()   # removes all existing LaMEM files
+    run_lamem(ParamFile, 1, args, wait=false)
 
     disable_interval = false
     return disable_interval
@@ -176,12 +179,92 @@ end
 
 # Check if *.pvd file on disk changed and a new timestep is available
 callback!(app,
-    Output("session-interval", "n_intervals"),
-    Output("label-timestep", "children"),
-    Output("label-time", "children"),
     Output("last_timestep", "data"),
+    Output("update_fig","data"),
     Input("session-interval", "n_intervals"),
     State("current_timestep","data"),
+    State("update_fig","data"),
+    State("session-id", "data"),
+    prevent_initial_call=true
+) do n_inter, current_timestep, update_fig, session_id
+    @show n_inter, current_timestep
+
+    if isfile(OutFile*".pvd")
+        # Read LaMEM *.pvd file
+        Timestep, _, Time = Read_LaMEM_simulation(OutFile)
+
+        # Update the labels and data stored in webpage about the last timestep
+        last_time = "$(Timestep[end])"
+        # label_timestep = "Timestep: $last_time"
+        #  label_time="Time: $(Time[end]) Myrs"
+        
+        update_fig = "$(parse(Int,update_fig)+1)"
+        @show Timestep
+
+    else
+        last_time = "0"
+     #   label_timestep = "Timestep: 0"
+     #   label_time="Time: 0 Myrs"
+        create_plot = "0"
+    end
+
+    # create the figure
+
+    return last_time, update_fig
+end
+
+
+# Update the figure if the signal is given
+callback!(app,
+    Output("label-timestep", "children"),
+    Output("label-time", "children"),
+    Input("update_fig","data"),
+    State("current_timestep","data"),
+    State("last_timestep","data"),
+    State("session-id", "data"),
+    prevent_initial_call=true
+) do update_fig, current_timestep, last_timestep, session_id
+    @show update_fig, current_timestep
+
+    #=
+    if isfile(OutFile*".pvd")
+        # Read LaMEM *.pvd file
+        Timestep, _, Time = Read_LaMEM_simulation(OutFile)
+
+        # Update the labels and data stored in webpage about the last timestep
+        last_time = "$(Timestep[end])"
+       
+        
+        update_fig = "$(parse(Int,update_fig)+1)"
+        @show Timestep
+
+    else
+        last_time = "0"
+     #   label_timestep = "Timestep: 0"
+     #   label_time="Time: 0 Myrs"
+        create_plot = "0"
+    end
+=#  
+
+    #label_timestep = "Timestep: $last_time"
+    #label_time="Time: $(Time[end]) Myrs"
+
+    label_timestep = "Timestep: 0"
+    label_time="Time: 0 Myrs"
+
+    # create the figure
+
+    return label_timestep, label_time
+end
+
+
+
+#=
+# check every few milliseconds if the last timestep changed
+callback!(app,
+    Output("label-timestep", "children"),
+    Input("last_timestep", "data"),
+    Input("current_timestep","data"),
     State("session-id", "data"),
     prevent_initial_call=true
 ) do n_inter, current_timestep, session_id
@@ -197,9 +280,8 @@ callback!(app,
     
     # create the figure
 
-    return n_inter, label_timestep, label_time, last_time
+    return label_timestep, label_time, last_time
 end
-
 
 
 
@@ -217,6 +299,7 @@ callback!(app,
     data = 1
     return data
 end
+=#
 =#
 =#
 
