@@ -39,4 +39,26 @@ function read_colormaps(; dir_colormaps="../src/assets/colormaps/" , scaling=256
     return colormaps
 end
 
+function make_accordion_item(label::String, idx::String, msg::String, value::Float64, min::Float64=1.0e-10, max::Float64=10_000.0)
+    item = dbc_row([ # domain width
+        dbc_col([
+            dbc_label(label, id=idx*"_label", size="md"),
+            dbc_tooltip(msg, target=idx*"_label")
+        ]),
+        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
+    ])
+    return item
+end
+
+function make_accordion_item(label::String, idx::String, msg::String, value::Int64, min::Int64=2, max::Int64=10_000)
+    item = dbc_row([ # domain width
+        dbc_col([
+            dbc_label(label, id=idx*"_label", size="md"),
+            dbc_tooltip(msg, target=idx*"_label")
+        ]),
+        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
+    ])
+    return item
+end
+
 cc = read_colormaps()
