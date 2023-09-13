@@ -6,7 +6,7 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase", contours = true)
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10), x_contour=x, y_contour=y, data_contour=data; colorscale="Viridis", field="phase", contours = true)
     data_plot = [heatmap(x = x, 
                     y = y, 
                     z = data,
@@ -17,16 +17,17 @@ function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis"
                 ]
     if contours == true
         push!(data_plot, (
-            contour(x = x, 
-            y = y, 
-            z = data,
+            contour(x = x_contour, 
+            y = y_contour, 
+            z = data_contour,
             colorscale   = colorscale,
             contours_coloring="lines",
             line_width = 2,
             colorbar= attr(thickness=5, title=field, x=1.2, yanchor = 0.5),
             #zmin=zmin, zmax=zmax
             )))
-    end    
+    end
+    
 
         pl = (  id = "fig_cross",
                     data = data_plot,
