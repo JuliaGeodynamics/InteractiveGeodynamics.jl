@@ -133,15 +133,14 @@ app.layout = html_div() do
 
         # Store a unique number of our session in the webpage
         dcc_store(id="session-id", data=""),
+        
+        # Store info related to the simulation and current timestep
         dcc_store(id="current_timestep", data="0"),
         dcc_store(id="last_timestep", data="0"),
         dcc_store(id="update_fig", data="0"),
 
         # Start an interval that updates the number every second
-        dcc_interval(id="session-interval", interval=1000, n_intervals=0, disabled=true)
-        
-        # Store the time steps that have been executed
-        # dcc_store(id="all-current-timesteps", Timestep)
+        dcc_interval(id="session-interval", interval=200, n_intervals=0, disabled=true)
 
     ])
 
@@ -167,7 +166,6 @@ end
 callback!(app,
     Output("session-interval","disabled"),
     Input("button-run", "n_clicks"),
-    Input("current_timestep","data"),
     State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
@@ -180,7 +178,7 @@ callback!(app,
     State("last_timestep","data"),
 
     prevent_initial_call=true
-) do    n_run, current_timestep,
+) do    n_run,
         domain_width, nel_x, nel_z, n_timesteps, 
         sphere_density, matrix_density, sphere_radius, viscosity, 
         last_timestep
@@ -188,8 +186,6 @@ callback!(app,
     @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
     trigger = get_trigger()
-    @show trigger
-
     disable_interval = true
     if trigger == "button-run.n_clicks"
         # We clicked the run button
@@ -199,14 +195,6 @@ callback!(app,
         run_lamem(ParamFile, 1, args, wait=false)
         println("started new run")
         disable_interval = false
-
-    elseif trigger == "current_timestep.data"
-        cur_t = parse(Int, current_timestep)                    # current timestep
-        last_t = parse(Int, last_timestep)                      # last timestep available on disk
-
-        if cur_t<last_t
-            disable_interval = false
-        end
     end    
 
     return disable_interval
@@ -224,10 +212,7 @@ callback!(app,
     State("session-id", "data"),
     prevent_initial_call=true
 ) do n_inter, n_run, current_timestep, update_fig, session_id
-    @show n_inter, current_timestep
-
     trigger = get_trigger()
-    @show trigger
     if trigger == "session-interval.n_intervals"
         if isfile(OutFile*".pvd")
             # Read LaMEM *.pvd file
@@ -237,8 +222,6 @@ callback!(app,
             last_time  = "$(Timestep[end])"
             
             update_fig = "$(parse(Int,update_fig)+1)"
-            @show Timestep
-
         else
             last_time = "0"
             update_fig = "0"
