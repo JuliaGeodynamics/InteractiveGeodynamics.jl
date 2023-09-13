@@ -76,13 +76,33 @@ app.layout = html_div() do
         dbc_row([ # data row
             dbc_col([ # graph column
                 dbc_col(dcc_graph(id = "figure_main",
-                 figure = create_main_figure(),
-                #animate   = false,
-                #responsive=false,
-                #clickData = true,
-                #config = PlotConfig(displayModeBar=false, scrollZoom = false),
+                    figure = create_main_figure(),
+                    #animate   = false,
+                    #responsive=false,
+                    #clickData = true,
+                    #config = PlotConfig(displayModeBar=false, scrollZoom = false),
                 style = attr(width="80vw", height="80vh",padding_left="0vw",)
                 )),
+                dbc_row([
+                    dbc_col([]),
+                    dbc_col([
+                        dbc_button("⏮", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏴", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏯", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏵", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏭", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
+                    dbc_col([
+                        dbc_dropdownmenu(
+                            id="plot_field",
+                            label="Plot field",
+                            children=[
+                                dbc_dropdownmenuitem("Phase", id="phase_item"),
+                                dbc_dropdownmenuitem("Temperature", id="temperature_item"),
+                                dbc_dropdownmenuitem("Viscosity", id="viscosity_item"),
+                            ], color="secondary"),
+                    ], class_name="d-grid gap-2 d-md-flex justify-content-md-end"),
+                ]),
                 dbc_col(dbc_label("", id="label-id"))
             ]),
             dbc_col([ # input column
@@ -141,6 +161,18 @@ app.layout = html_div() do
                         ]), 
                         ])
                 ]),
+                # dbc_row(html_p()),
+                # dbc_row([
+                #     dbc_col(dbc_dropdownmenu(
+                #         label="Plot type",
+                #         children=[
+                #             dbc_dropdownmenuitem("Viscosity"),
+                #             dbc_dropdownmenuitem("Temperature"),
+                #             dbc_dropdownmenuitem("Velocity"),
+                #         ],
+                #     )),
+                #     dbc_col(dbc_button("Play", id="button-play", size="lg", class_name="d-grid gap-2 col-6 mx-auto"))
+                # ]),
                 dbc_row(html_p()),
                 dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
                 
@@ -181,8 +213,13 @@ end
 # Call run button
 callback!(app,
     Output("session-interval","disabled"),
-    Input("button-run", "n_clicks"),
     Input("button-run", "disabled"),
+    Input("button-start", "n_clicks"),
+    Input("button-back", "n_clicks"),
+    Input("button-play", "n_clicks"),
+    Input("button-forward", "n_clicks"),
+    Input("button-end", "n_clicks"),
+    Input("plot_field", "children"),
     State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
@@ -192,14 +229,14 @@ callback!(app,
     State("radius_sphere", "value"),
     State("viscosity", "value"),
     State("last_timestep","data"),
-
+    State("last_timestep","data"),
     prevent_initial_call=true
-) do    n_run, active_run,
+) do    n_run, active_run, n_start, n_back, n_play, n_forward, n_end, plot_item,
         domain_width, nel_x, nel_z, n_timesteps, 
         sphere_density, matrix_density, sphere_radius, viscosity, 
         last_timestep
 
-    @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
+    @show n_run, n_start, n_back, n_play, n_forward, n_end, plot_item, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
     trigger = get_trigger()
     disable_interval = true
