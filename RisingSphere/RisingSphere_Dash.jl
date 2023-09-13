@@ -185,6 +185,7 @@ end
 callback!(app,
     Output("session-interval","disabled"),
     Input("button-run", "n_clicks"),
+    Input("button-run", "disabled"),
     State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
@@ -195,7 +196,7 @@ callback!(app,
     State("viscosity", "value"),
     State("last_timestep","data"),
     prevent_initial_call=true
-) do    n_run,
+) do    n_run, active_run,
         domain_width, nel_x, nel_z, n_timesteps, 
         sphere_density, matrix_density, sphere_radius, viscosity, 
         last_timestep
@@ -210,8 +211,13 @@ callback!(app,
         
         clean_directory()   # removes all existing LaMEM files
         run_lamem(ParamFile, 1, args, wait=false)
-        println("started new run")
         disable_interval = false
+
+    elseif  trigger == "button-run.disabled"
+        last_t = parse(Int,last_timestep )
+        if active_run==true || last_t<n_timesteps
+            disable_interval = false
+        end
     end    
 
     return disable_interval
