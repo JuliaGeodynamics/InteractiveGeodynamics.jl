@@ -6,25 +6,25 @@ using UUIDs
 GUI_version = "0.1.0"
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis")
+function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis", field="phase")
             pl = (  id = "fig_cross",
             data = [heatmap(x = x, 
                             y = y, 
                             z = data,
                             colorscale   = colorscale,
-                            colorbar= attr(thickness=5),
+                            colorbar= attr(thickness=5, title=field),
                             #zmin=zmin, zmax=zmax
                             )
                     ],                            
-            colorbar=Dict("orientation"=>"v", "len"=>0.5,"title"=>"elevat"),
-            layout = (  title = "Cross-section",
-                        xaxis=attr(
-                            title="Distance in x-Direction [km]",
+            colorbar=Dict("orientation"=>"v", "len"=>0.5),
+            layout = (  
+                            xaxis=attr(
+                            title="Width",
                             tickfont_size= 14,
                             tickfont_color="rgb(100, 100, 100)"
                         ),
                         yaxis=attr(
-                            title="Depth [km]",
+                            title="Depth",
                             tickfont_size= 14,
                             tickfont_color="rgb(10, 10, 10)"
                         ),
@@ -43,13 +43,14 @@ function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
     
     data,time = Read_LaMEM_timestep(OutFile, tstep)
     value = data.fields[Symbol(field)]
+    fields_available= String.(keys(data.fields))
     
     x = data.x.val[:,1,1]
     z = data.z.val[1,1,:]
     
     data2D = value[:,1,:]'
 
-    return x,z,data2D
+    return x, z, data2D, time, fields_available
 end
 
 #returns the trigger callback (simplifies code)
@@ -89,22 +90,15 @@ app.layout = html_div() do
                 dbc_row([
                     dbc_col([]),
                     dbc_col([
-                        dbc_button("<<", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
-                        dbc_button("<", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
-                        dbc_button("Play/Pause", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-3"),
-                        dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
-                        dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
+                        dbc_button("⏮", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏴", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏯", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏵", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
+                        dbc_button("⏭", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-1")#, class_name="d-grid gap-2 col-1 mx-auto"),
                         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center"), 
                     dbc_col([
-                        dbc_dropdownmenu(
-                            id="plot_field",
-                            label="Plot field",
-                            children=[
-                                dbc_dropdownmenuitem("Phase", id="phase_item"),
-                                dbc_dropdownmenuitem("Temperature", id="temperature_item"),
-                                dbc_dropdownmenuitem("Viscosity", id="viscosity_item"),
-                            ], color="secondary"),
-                    ], class_name="d-grid gap-2 d-md-flex justify-content-md-end"),
+                        dcc_dropdown(id="plot_field",options = ["phase"], value="phase"),
+                    ], class_name="d-grid gap-2 justify-content-md-end col-12"),
                 ]),
                 dbc_col(dbc_label("", id="label-id"))
             ]),
@@ -112,44 +106,29 @@ app.layout = html_div() do
                 dbc_row([ # information card
                     dbc_card([
                         dbc_label(" Time: 0 Myrs", id="label-time"), 
-                        dbc_label(" Timestep: 0", id="label-timestep",
+                        dbc_label(" Timestep: 0", id="label-timestep"
                         )], 
                     color="secondary", 
-                    class_name="d-grid gap-2 col-11 mx-auto",
                     outline=true)
                 ]),
                 dbc_row(html_p()),
                 dbc_accordion(always_open=true, [
                     dbc_accordionitem(title="Simulation Parameters", [
                         dbc_row([ # domain width
-                            dbc_col([
-                                dbc_label("Lₓ (km): ", id="domain_width_label", size="sm"),
-                                dbc_tooltip("Width of the domain, given in kilometers.", target="domain_width_label")
-                            ]),
+                            dbc_col(dbc_label("Domain width (km): ", id="domain_width_label", size="sm")),
                             dbc_col(dbc_input(id="domain_width", placeholder="1.0", value=1.0, type="number", min=1.0e-10, size="sm"))
                         ]),
-                        dbc_row(html_p()),
                         dbc_row([ # n elements in x-direction
-                            dbc_col([
-                                dbc_label("nx: ", id="nel_x_label", size="sm"),
-                                dbc_tooltip(target="nel_x_label", "Number of elements in the x-direction. Must be an integer greater than 2.")
-                            ]),
+                            dbc_col(dbc_label("# of elements in the x-direction: ", id="nel_x_label", size="sm")),
                             dbc_col(dbc_input(id="nel_x", placeholder="32", value=32, type="number", min=2, size="sm"))
                         ]),
-                        dbc_row(html_p()),
                         dbc_row([ # n elements in z-direction
-                            dbc_col([
-                                dbc_label("nz: ", id="nel_z_label", size="sm"),
-                                dbc_tooltip(target="nel_z_label", "Number of elements in the z-direction. Must be an integer greater than 2.")
-                            ]),
+                            dbc_col(dbc_label("# of elements in the z-direction: ", id="nel_z_label", size="sm")),
                             dbc_col(dbc_input(id="nel_z", placeholder="32", value=32, type="number", min=2, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # n of timesteps
-                            dbc_col([
-                                dbc_label("nt: ", id="n_timesteps_label", size="sm"),
-                                dbc_tooltip(target="n_timesteps_label", "Maximum number of timesteps. Must be an integer greater than 1.")
-                            ]),
+                            dbc_col(dbc_label("# of timesteps: ", id="n_timesteps_label", size="sm")),
                             dbc_col(dbc_input(id="n_timesteps", placeholder="10", value=10, type="number", min=1, size="sm"))
                         ]),
                     ]),
@@ -157,36 +136,24 @@ app.layout = html_div() do
                         # dbc_row(html_p()),
                         # dbc_row(html_hr()),
                         dbc_row([ # density of the sphere
-                            dbc_col([
-                                dbc_label("ρₛ (kg/m³): ", id="density_sphere_label", size="sm"),
-                                dbc_tooltip(target="density_sphere_label", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).")
-                            ]),
+                            dbc_col(dbc_label("Density of the sphere (kg/m³): ", id="density_sphere_label", size="sm")),
                             dbc_col(dbc_input(id="density_sphere", placeholder="3400", value=3400, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         # dbc_row(html_hr()),
                         dbc_row([ # density of the matrix
-                            dbc_col([
-                                dbc_label("ρₘ (kg/m³): ", id="density_matrix_label", size="sm"),
-                                dbc_tooltip(target="density_matrix_label", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).")
-                            ]),
+                            dbc_col(dbc_label("Density of the matrix (kg/m³): ", id="density_matrix_label", size="sm")),
                             dbc_col(dbc_input(id="density_matrix", placeholder="3000", value=3000, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         # dbc_row(html_hr()),
                         dbc_row([ # radius of the sphere
-                            dbc_col([
-                                dbc_label("rₛ (km): ", id="radius_sphere_label", size="sm"),
-                                dbc_tooltip(target="radius_sphere_label", "Radius of the sphere in kilometers (0 < rₛ ≤ Lₓ).")
-                            ]),
+                            dbc_col(dbc_label("Radius of the sphere (km): ", id="radius_sphere_label", size="sm")),
                             dbc_col(dbc_input(id="radius_sphere", placeholder="0.1", value=0.1, type="number", min=1.0e-10, size="sm"))
                         ]),
                         dbc_row(html_p()),
                         dbc_row([ # viscosity
-                            dbc_col([
-                                dbc_label("ηₘ (log(Pa⋅s))", id="viscosity_label", size="sm"),
-                                dbc_tooltip(target="viscosity_label", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).")
-                            ]),
+                            dbc_col(dbc_label("Viscosity (log(Pa⋅s))", id="viscosity_label", size="sm")),
                             dbc_col(dbc_input(id="viscosity", placeholder="20.0", value=20, type="number", min=15, max=25, size="sm"))
                         ]), 
                         ])
@@ -204,7 +171,7 @@ app.layout = html_div() do
                 #     dbc_col(dbc_button("Play", id="button-play", size="lg", class_name="d-grid gap-2 col-6 mx-auto"))
                 # ]),
                 dbc_row(html_p()),
-                dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-11 mx-auto"))
+                dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="d-grid gap-2 col-12 mx-auto"))
                 
             ]) 
         ]),
@@ -254,12 +221,12 @@ callback!(app,
     State("radius_sphere", "value"),
     State("viscosity", "value"),
     State("last_timestep","data"),
-
+    State("plot_field","value"),
     prevent_initial_call=true
 ) do    n_run, active_run,
         domain_width, nel_x, nel_z, n_timesteps, 
         sphere_density, matrix_density, sphere_radius, viscosity, 
-        last_timestep
+        last_timestep, plot_field
 
     @show n_run, nel_x, nel_z, n_timesteps, sphere_density, matrix_density, sphere_radius, domain_width, viscosity
 
@@ -352,13 +319,15 @@ callback!(app,
     Output("label-time", "children"),
     Output("current_timestep","data"),
     Output("figure_main", "figure"),
+    Output("plot_field","options"),
     Input("update_fig","data"),
     Input("current_timestep","data"),
     Input("button-run", "n_clicks"),
     State("last_timestep","data"),
     State("session-id", "data"),
+    State("plot_field","value"),
     prevent_initial_call=true
-) do update_fig, current_timestep,  n_run, last_timestep, session_id
+) do update_fig, current_timestep,  n_run, last_timestep, session_id, plot_field
     @show update_fig, current_timestep
 
     trigger = get_trigger()
@@ -368,27 +337,23 @@ callback!(app,
     cur_t = parse(Int, current_timestep)                    # current timestep
     last_t = parse(Int, last_timestep)                      # last timestep available on disk
     fig_cross = []
+    fields_available = ["phase"]
     if trigger == "current_timestep.data" || 
         trigger == "update_fig.data"
         if isfile(OutFile*".pvd")
             Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
             id = findall(Timestep .== cur_t)[1]
-            time = Time[id]
-            @show cur_t, last_t, id, Time[id]
-
-                
+          
             # Load data 
-            field = "phase"
-            x,y,data = get_data(OutFile, cur_t, "phase")
+            x,y,data, time, fields_available = get_data(OutFile, cur_t, plot_field)
 
-            # - TBD - 
+            # update the plot
+            fig_cross = create_main_figure(x,y,data, field=plot_field)
 
             if cur_t < last_t
                 cur_t = Timestep[id+1]      # update current timestep
             end
 
-             # update the plot
-            fig_cross = create_main_figure(x,y,data)
             
         else
             time = 0
@@ -408,53 +373,8 @@ callback!(app,
 
    
 
-    return label_timestep, label_time, current_timestep, fig_cross
+    return label_timestep, label_time, current_timestep, fig_cross, fields_available
 end
 
-
-
-#=
-# check every few milliseconds if the last timestep changed
-callback!(app,
-    Output("label-timestep", "children"),
-    Input("last_timestep", "data"),
-    Input("current_timestep","data"),
-    State("session-id", "data"),
-    prevent_initial_call=true
-) do n_inter, current_timestep, session_id
-    @show n_inter, current_timestep
-
-    # Read LaMEM *.pvd file
-    Timestep, _, Time = Read_LaMEM_simulation(OutFile)
-
-    # Update the labels and data stored in webpage about the last timestep
-    last_time = "$(Timestep[end])"
-    label_timestep = "Timestep: $last_time"
-    label_time="Time: $(Time[end]) Myrs"
-    
-    # create the figure
-
-    return label_timestep, label_time, last_time
-end
-
-
-
-#=
-#=
-callback!(app,
-    Output("session-interval", "n_intervals"),
-    Input("current_timestep-interval", "data"),
-    prevent_initial_call=true
-) do current_timestep_plot
-    @show "triggered current_timestep_plot", current_timestep_plot
-
-
-    # Create new figure based on LaMEM output
-    data = 1
-    return data
-end
-=#
-=#
-=#
 
 run_server(app, debug=false)
