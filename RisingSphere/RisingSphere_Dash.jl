@@ -10,12 +10,12 @@ cmaps = read_colormaps()
 
 # this is the main figure window
 function create_main_figure(x=1:10,y=1:10,data=rand(10,10), 
-                            x_con=1:10,y_con=1:10,data_con=rand(10,10); 
-                            colorscale="Viridis", field="phase", add_contours = true, add_velocity=false, contour_field="phase")
+                            x_con=1:10,y_con=1:10,data_con=rand(10,10), cmaps=read_colormaps(); 
+                            colorscale="batlow", field="phase", add_contours = true, add_velocity=false, contour_field="phase")
     data_plot = [heatmap(x = x, 
                     y = y, 
                     z = data,
-                    colorscale   = colorscale,
+                    colorscale   = cmaps[Symbol(colorscale)],
                     colorbar= attr(thickness=5, title=field),
                     #zmin=zmin, zmax=zmax
                     )
@@ -226,21 +226,12 @@ app.layout = html_div() do
                             dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-12")
                         ]),
                         dbc_row(html_p()),
-                        dbc_row(html_hr()),
-                        dbc_row([ # plot type
-                            dbc_col([
-                                dbc_label("Plot type:", id="plot_type", size="md"),
-                                dbc_tooltip(target="plot_type", "Choose the type of plot")
-                            ]),
-                            dbc_col(dcc_dropdown(id="plot_type_option", options = ["Surface", "Contour"], value="Surface"))
-                        ]), 
-                        dbc_row(html_p()),
                         dbc_row([ # color map
                             dbc_col([
-                                dbc_label("Color map:", id="cmap", size="md"),
+                                dbc_label("Colormap:", id="cmap", size="md"),
                                 dbc_tooltip(target="cmap", "Choose the colormap of the plot")
                             ]),
-                            dbc_col(dcc_dropdown(id="color_map_option", options = ["Viridis", "Jet", "Rainbow"], value="Viridis"))
+                            dbc_col(dcc_dropdown(id="color_map_option", options = String.(keys(cmaps)), value=String.(keys(cmaps))[1]))
                         ]), 
                         dbc_row(html_p()),
                         dbc_row(html_hr()),
@@ -424,19 +415,19 @@ callback!(app,
     Input("button-forward", "n_clicks"),
     Input("button-back", "n_clicks"),
     Input("button-play", "n_clicks"),
-    State("color_map_option", "value"),
     State("last_timestep","data"),
     State("session-id", "data"),
     State("plot_field","value"),
     State("switch-contour","value"),
     State("contour_option","value"),
     State("switch-velocity","value"),
+    State("color_map_option", "value"),
     prevent_initial_call=true
 ) do update_fig, current_timestep,  n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id, 
-    plot_field, switch_contour, contour_field, switch_velocity
+    plot_field, switch_contour, contour_field, switch_velocity, color_map_option
 
     trigger = get_trigger()
-    @show trigger
+
     # Get info about timesteps
     cur_t = parse(Int, current_timestep)                    # current timestep
     last_t = parse(Int, last_timestep)                      # last timestep available on disk
@@ -477,9 +468,6 @@ callback!(app,
                 add_contours = false
             end    
             # update the plot
-    
-          #  @show contour_field
-            colorscale="Viridis" 
             
             if isnothing(switch_velocity)
                 add_velocity = false
@@ -488,10 +476,10 @@ callback!(app,
             end
 
 
-            fig_cross = create_main_figure(x,y,data, x_con, y_con, data_con, field=plot_field; 
+            fig_cross = create_main_figure(x,y,data, x_con, y_con, data_con, field=plot_field, cmaps; 
                             add_contours = add_contours, contour_field = contour_field,
                             add_velocity = add_velocity,
-                            colorscale   = colorscale)
+                            colorscale   = color_map_option)
 
             if trigger == "current_timestep.data" ||  trigger == "update_fig.data" ||  trigger == "button-play.n_clicks"
                 if cur_t < last_t 
