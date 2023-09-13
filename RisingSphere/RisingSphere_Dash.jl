@@ -338,7 +338,7 @@ end
 
 
 
-#=
+
 # check every few milliseconds if the last timestep changed
 callback!(app,
     Output("label-timestep", "children"),
@@ -352,6 +352,10 @@ callback!(app,
     # Read LaMEM *.pvd file
     Timestep, _, Time = Read_LaMEM_simulation(OutFile)
 
+    # read the data
+    x,z,data = get_data(OutFile, tstep=0, field="phase")
+    # input the physical name you want
+   
     # Update the labels and data stored in webpage about the last timestep
     last_time = "$(Timestep[end])"
     label_timestep = "Timestep: $last_time"
@@ -363,6 +367,22 @@ callback!(app,
 end
 
 
+"""
+ x,z,data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+This loads the timestep `tstep` from a LaMEM simulation with field `field`.
+"""
+function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+    
+    data,time = Read_LaMEM_timestep(OutFile, tstep)
+    value = data.fields[Symbol(field)]
+    
+    x = data.x.val[:,1,1]
+    z = data.z.val[1,1,:]
+    
+    data2D = value[:,1,:]
+
+    return x,z,data2D
+end
 
 #=
 #=
@@ -380,6 +400,6 @@ callback!(app,
 end
 =#
 =#
-=#
+
 
 run_server(app, debug=false)
