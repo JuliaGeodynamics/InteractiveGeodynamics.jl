@@ -47,7 +47,7 @@ function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
     x = data.x.val[:,1,1]
     z = data.z.val[1,1,:]
     
-    data2D = value[:,1,:]
+    data2D = value[:,1,:]'
 
     return x,z,data2D
 end
@@ -340,7 +340,7 @@ callback!(app,
     # Get info about timesteps
     cur_t = parse(Int, current_timestep)                    # current timestep
     last_t = parse(Int, last_timestep)                      # last timestep available on disk
-
+    fig_cross = []
     if trigger == "current_timestep.data" || 
         trigger == "update_fig.data"
         if isfile(OutFile*".pvd")
@@ -350,13 +350,19 @@ callback!(app,
             @show cur_t, last_t, id, Time[id]
 
                 
-            # create the figure
+            # Load data 
+            field = "phase"
+            x,y,data = get_data(OutFile, cur_t, "phase")
+
             # - TBD - 
 
             if cur_t < last_t
                 cur_t = Timestep[id+1]      # update current timestep
             end
 
+             # update the plot
+            fig_cross = create_main_figure(x,y,data)
+            
         else
             time = 0
         end
@@ -373,8 +379,7 @@ callback!(app,
     current_timestep = "$cur_t"
     @show current_timestep
 
-    # update the plot
-    fig_cross = create_main_figure()
+   
 
     return label_timestep, label_time, current_timestep, fig_cross
 end
