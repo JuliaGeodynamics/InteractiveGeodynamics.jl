@@ -26,7 +26,8 @@ function create_main_figure(x=1:10,y=1:10,data=rand(10,10); colorscale="Viridis"
                         yaxis=attr(
                             title="Depth",
                             tickfont_size= 14,
-                            tickfont_color="rgb(10, 10, 10)"
+                            tickfont_color="rgb(10, 10, 10)",
+                            scaleanchor="x", scaleratio=1
                         ),
                         ),
             config = (edits    = (shapePosition =  true,)),  
