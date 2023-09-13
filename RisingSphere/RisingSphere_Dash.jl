@@ -51,7 +51,7 @@ function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
     
     data2D = value[:,1,:]'
 
-    return x, z, data2D, time, fields_available
+    return x, z, data2D, time[1], fields_available
 end
 
 #returns the trigger callback (simplifies code)
@@ -190,18 +190,6 @@ app.layout = html_div() do
                         ]), 
                         ])
                 ]),
-                # dbc_row(html_p()),
-                # dbc_row([
-                #     dbc_col(dbc_dropdownmenu(
-                #         label="Plot type",
-                #         children=[
-                #             dbc_dropdownmenuitem("Viscosity"),
-                #             dbc_dropdownmenuitem("Temperature"),
-                #             dbc_dropdownmenuitem("Velocity"),
-                #         ],
-                #     )),
-                #     dbc_col(dbc_button("Play", id="button-play", size="lg", class_name="d-grid gap-2 col-6 mx-auto"))
-                # ]),
                 dbc_row(html_p()),
                 dbc_row(dbc_button("RUN", id="button-run", size="lg", class_name="col-11 mx-auto"))
                 
