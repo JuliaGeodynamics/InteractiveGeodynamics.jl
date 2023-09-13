@@ -272,6 +272,9 @@ callback!(app,
             if cur_t < last_t
                 cur_t = Timestep[id+1]      # update current timestep
             end
+
+        else
+            time = 0
         end
 
     elseif trigger == "button-run.n_clicks"
