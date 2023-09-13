@@ -285,7 +285,7 @@ app.layout = html_div() do
                         ]), 
                         dbc_row(html_p()),
                         dbc_row([
-                            dbc_checklist(options=["Overlap contour plot with:"],
+                            dbc_checklist(options=["Overlap plot with contour:"],
                                     id="switch-contour",
                                     switch=true,
                             ),
