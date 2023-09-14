@@ -9,7 +9,6 @@ GUI_version = "0.1.0"
 include("utils.jl")
 cmaps = read_colormaps()
 
-
 # create a new directory named by session-id
 # function make_new_directory(session_id)
 #     cur_dir = pwd()
@@ -26,8 +25,6 @@ cmaps = read_colormaps()
 # end
 # still need to save timestep file in the simulations/session_id file
 
-
-
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
 OutFile = "RiseSphere"
@@ -40,22 +37,22 @@ app.title = title_app
 app.layout = html_div() do
     dbc_container(className="mxy-auto", fluid=true, [
         make_title(title_app),
-        dbc_row([ 
-            dbc_col([ 
+        dbc_row([
+            dbc_col([
                 make_plot(),            # show graph
                 make_plot_controls(),   # show media buttons
                 make_id_label(),        # show user id
             ]),
-            dbc_col([ 
+            dbc_col([
                 make_time_card(),       # show simulation time info
                 make_menu(),            # show menu with simulation parameters, rheological parameters, and plotting parameters
                 make_run_button()       # show the run simulation button
-            ]) 
+            ])
         ]),
 
         # Store a unique number of our session in the webpage
         dcc_store(id="session-id", data=""),
-        
+
         # Store info related to the simulation and current timestep
         dcc_store(id="current_timestep", data="0"),
         dcc_store(id="last_timestep", data="0"),
@@ -63,35 +60,33 @@ app.layout = html_div() do
 
         # Start an interval that updates the number every second
         dcc_interval(id="session-interval", interval=100, n_intervals=0, disabled=true)
-
     ])
 
 end
 
 # This creates an initial session id that is unique for this session
 # it will run on first start 
-callback!(app,  Output("session-id", "data"),
-                Output("label-id","children"),
-                Input("session-id", "data")
-                ) do session_id
-    
+callback!(app, 
+    Output("session-id", "data"),
+    Output("label-id", "children"),
+    Input("session-id", "data")
+) do session_id
+
     session_id = UUIDs.uuid4()
     str = "id=$(session_id), v=$(GUI_version)"
 
     # make_new_directory(session_id)
-    
+
     return String("$(session_id)"), str
 end
 
 
 # Call run button
 callback!(app,
-    Output("session-interval","disabled"),
+    Output("session-interval", "disabled"),
     Input("button-run", "n_clicks"),
     Input("button-run", "disabled"),
-    Input("button-play", "n_clicks"),
-    
-    State("domain_width", "value"),
+    Input("button-play", "n_clicks"), State("domain_width", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
     State("n_timesteps", "value"),
@@ -99,35 +94,35 @@ callback!(app,
     State("density_matrix", "value"),
     State("radius_sphere", "value"),
     State("viscosity", "value"),
-    State("last_timestep","data"),
-    State("plot_field","value"),
+    State("last_timestep", "data"),
+    State("plot_field", "value"),
     prevent_initial_call=true
-) do    n_run, active_run, n_play,
-        domain_width, nel_x, nel_z, n_timesteps, 
-        sphere_density, matrix_density, sphere_radius, viscosity, 
-        last_timestep, plot_field
+) do n_run, active_run, n_play,
+    domain_width, nel_x, nel_z, n_timesteps,
+    sphere_density, matrix_density, sphere_radius, viscosity,
+    last_timestep, plot_field
 
     trigger = get_trigger()
     disable_interval = true
     if trigger == "button-run.n_clicks"
         # We clicked the run button
         args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
-        
+
         clean_directory()   # removes all existing LaMEM files
         run_lamem(ParamFile, 1, args, wait=false)
         disable_interval = false
 
-    elseif  trigger == "button-run.disabled"
-        last_t = parse(Int,last_timestep )
-        if active_run==true || last_t<n_timesteps
+    elseif trigger == "button-run.disabled"
+        last_t = parse(Int, last_timestep)
+        if active_run == true || last_t < n_timesteps
             disable_interval = false
         end
 
     elseif trigger == "button-play.n_clicks"
-        last_t = parse(Int,last_timestep )
+        last_t = parse(Int, last_timestep)
         @show last_t
         disable_interval = false
-    end    
+    end
 
     return disable_interval
 end
