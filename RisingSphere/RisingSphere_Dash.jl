@@ -9,22 +9,12 @@ GUI_version = "0.1.0"
 include("utils.jl")
 cmaps = read_colormaps()
 
-# create a new directory named by session-id
-function make_new_directory(session_id)
-    dirname = String(session_id)
-    if isdir("simulations")
-        mkdir("simulations/" * dirname)
-    else
-        mkdir("simulations")
-        mkdir("simulations/" * dirname)
-    end
-    cur_user_dir = "simulations/" * dirname
-    return cur_user_dir
-end
-
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
 OutFile = "RiseSphere"
+
+cur_dir = pwd()
+cd(cur_dir)
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
@@ -102,9 +92,10 @@ callback!(app,
     trigger = get_trigger()
     disable_interval = true
     if trigger == "button-run.n_clicks"
+        cd(cur_dir)
         cur_user_dir = make_new_directory(session_id)
         # We clicked the run button
-        cur_dir = pwd()
+        
         cd(cur_user_dir)
         args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
         
@@ -112,6 +103,7 @@ callback!(app,
         pfile = cur_dir * "/" * ParamFile
         run_lamem(pfile, 1, args, wait=false)
         disable_interval = false
+        # cd(cur_dir)
 
     elseif trigger == "button-run.disabled"
         last_t = parse(Int, last_timestep)
@@ -124,7 +116,7 @@ callback!(app,
         @show last_t
         disable_interval = false
     end
-
+    
     return disable_interval
 end
 
