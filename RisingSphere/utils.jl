@@ -2,13 +2,10 @@
 # Colormaps should be given in text format in the direc
 using DelimitedFiles
 
-# dir_colormaps = "../src/assets/colormaps/"
-
 """
 This reads colormaps and transfers them into plotly format. The colormaps are supposed to be provided in ascii text format 
 """
 function read_colormaps(; dir_colormaps="../src/assets/colormaps/" , scaling=256)
-    println(dir_colormaps)
     # Read all colormaps
     colormaps = NamedTuple();
     for map in readdir(dir_colormaps)
@@ -60,5 +57,3 @@ function make_accordion_item(label::String, idx::String, msg::String, value::Int
     ])
     return item
 end
-
-cc = read_colormaps()
