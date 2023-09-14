@@ -97,13 +97,15 @@ callback!(app,
         # We clicked the run button
         
         cd(cur_user_dir)
+        click_times = "button-run.n_clicks"
+        cur_user_dir = make_new_directory(click_times)
+        cd(cur_user_dir)
         args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
         
         clean_directory()   # removes all existing LaMEM files
         pfile = cur_dir * "/" * ParamFile
         run_lamem(pfile, 1, args, wait=false)
         disable_interval = false
-        # cd(cur_dir)
 
     elseif trigger == "button-run.disabled"
         last_t = parse(Int, last_timestep)
