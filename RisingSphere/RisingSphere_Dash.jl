@@ -10,19 +10,15 @@ include("utils.jl")
 cmaps = read_colormaps()
 
 # create a new directory named by session-id
-# function make_new_directory(session_id)
-#     cur_dir = pwd()
-#     if isdir("simulations")
-#         cd("simulations")
-#     else
-#         mkdir("simulations")
-#         cd("simulations")
-#     end
-#     dirname = String(session_id)
-#     mkdir(dirname)
-#     cd(cur_dir)
-#     return dirname
-# end
+function make_new_directory(session_id)
+    dirname = String(session_id)
+    if isdir("simulations")
+        mkdir("simulations/" * dirname)
+    else
+        mkdir("simulations")
+        mkdir("simulations/" * dirname)
+    end
+end
 # still need to save timestep file in the simulations/session_id file
 
 title_app = "Rising Sphere example"
@@ -75,7 +71,7 @@ callback!(app,
     session_id = UUIDs.uuid4()
     str = "id=$(session_id), v=$(GUI_version)"
 
-    # make_new_directory(session_id)
+    make_new_directory(session_id)
 
     return String("$(session_id)"), str
 end
