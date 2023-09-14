@@ -1,2 +1,8 @@
 Timestep*
 *.pvd
+simulations
+*/simulations
+*/*/simulations
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store

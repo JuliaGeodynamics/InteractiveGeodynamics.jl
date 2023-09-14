@@ -18,8 +18,9 @@ function make_new_directory(session_id)
         mkdir("simulations")
         mkdir("simulations/" * dirname)
     end
+    cur_user_dir = "simulations/" * dirname
+    return cur_user_dir
 end
-# still need to save timestep file in the simulations/session_id file
 
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
@@ -71,7 +72,7 @@ callback!(app,
     session_id = UUIDs.uuid4()
     str = "id=$(session_id), v=$(GUI_version)"
 
-    make_new_directory(session_id)
+    # make_new_directory(session_id)
 
     return String("$(session_id)"), str
 end
@@ -91,20 +92,25 @@ callback!(app,
     State("viscosity", "value"),
     State("last_timestep", "data"),
     State("plot_field", "value"),
+    State("session-id", "data"),
     prevent_initial_call=true
 ) do n_run, active_run, n_play,
     domain_width, nel_x, nel_z, n_timesteps,
     sphere_density, matrix_density, sphere_radius, viscosity,
-    last_timestep, plot_field
+    last_timestep, plot_field, session_id
 
     trigger = get_trigger()
     disable_interval = true
     if trigger == "button-run.n_clicks"
+        cur_user_dir = make_new_directory(session_id)
         # We clicked the run button
+        cur_dir = pwd()
+        cd(cur_user_dir)
         args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
-
+        
         clean_directory()   # removes all existing LaMEM files
-        run_lamem(ParamFile, 1, args, wait=false)
+        pfile = cur_dir * "/" * ParamFile
+        run_lamem(pfile, 1, args, wait=false)
         disable_interval = false
 
     elseif trigger == "button-run.disabled"
