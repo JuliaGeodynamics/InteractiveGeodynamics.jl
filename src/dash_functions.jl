@@ -170,16 +170,27 @@ Interpolate velocities.
 function interpolate_velocities(x, z, Vx, Vz)
 
     # interpolate velocities to a quarter of original grid density
-    itp_Vx = interpolate((x,z), Vx, Gridded(Linear()))
-    itp_Vz = interpolate((x,z), Vz, Gridded(Linear()))
+    itp_Vx = interpolate((x, z), Vx, Gridded(Linear()))
+    itp_Vz = interpolate((x, z), Vz, Gridded(Linear()))
 
-    interpolation_coords_x = LinRange(x[1], x[end], 8)
-    interpolation_coords_z = LinRange(z[1], z[end], 8)
+    interpolation_coords_x = LinRange(x[1], x[end], 15)
+    interpolation_coords_z = LinRange(z[1], z[end], 15)
 
-    Vx_interpolated = itp_Vx.(interpolation_coords_x, interpolation_coords_z)
-    Vz_interpolated = itp_Vz.(interpolation_coords_x, interpolation_coords_z)
+    Vx_interpolated = zeros(length(interpolation_coords_x) * length(interpolation_coords_z))
+    Vz_interpolated = zeros(length(interpolation_coords_x) * length(interpolation_coords_z))
 
-    return Vx_interpolated, Vz_interpolated, interpolation_coords_x, interpolation_coords_z
+    itp_coords_x = zeros(length(interpolation_coords_x) * length(interpolation_coords_z))
+    itp_coords_z = zeros(length(interpolation_coords_x) * length(interpolation_coords_z))
+
+    itp_coords_x = repeat(interpolation_coords_x, outer=length(interpolation_coords_z))
+    itp_coords_z = repeat(interpolation_coords_z, inner=length(interpolation_coords_x))
+
+    for i in eachindex(itp_coords_x)
+        Vx_interpolated[i] = itp_Vx(itp_coords_x[i], itp_coords_z[i])
+        Vz_interpolated[i] = itp_Vz(itp_coords_x[i], itp_coords_z[i])
+    end
+
+    return Vx_interpolated, Vz_interpolated, itp_coords_x, itp_coords_z
 end
 
 """
@@ -187,43 +198,46 @@ Calculate angle between two vectors.
 """
 function calculate_angle(Vx_interpolated, Vz_interpolated)
     angle = zeros(size(Vx_interpolated))
-    north = [1 0]
-        for i in CartesianIndices(angle)
-            angle[i] = acos((north[1] * Vx_interpolated[i] + north[2]* Vz_interpolated[i]) / (sqrt(north[1]^2 + north[2]^2)*sqrt(Vx_interpolated[i]^2 + Vz_interpolated[i]^2)))
+    north = [1, 0]
+    for i in eachindex(angle)
+        angle[i] = asind((north[1] * Vx_interpolated[i] + north[2] * Vz_interpolated[i]) / (sqrt(north[1]^2 + north[2]^2) * sqrt(Vx_interpolated[i]^2 + Vz_interpolated[i]^2)))
+        if isnan(angle[i]) == true
+            angle[i] = 180.0
         end
+        if angle[i] < 90 && angle[i] > -90 && Vz_interpolated[i] < 0
+            angle[i] = 180.0 - angle[i]
+        end
+    end
     return angle
 end
 
 """
 Calculate quiver.
 """
-function calculate_quiver(OutFile, cur_t, cmaps; colorscale ="batlow")
+function calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
 
-    # x,z = extract_coordinates(data)
     Vx, Vz, x, z = extract_velocity(OutFile, cur_t)
     Vx_interpolated, Vy_interpolated, interpolation_coords_x, interpolation_coords_z = interpolate_velocities(x, z, Vx, Vz)
     angle = calculate_angle(Vx_interpolated, Vy_interpolated)
-    magnitude = sqrt.(Vx_interpolated.^2 .+ Vy_interpolated.^2)
-
+    magnitude = sqrt.(Vx_interpolated .^ 2 .+ Vy_interpolated .^ 2)
+    
     arrow_head = scatter(
-                    x = interpolation_coords_x, 
-                    y = interpolation_coords_z, 
-                    z = magnitude,
-                    mode = "markers",
-                    colorscale   = cmaps[Symbol(colorscale)],
-                    marker = attr(size=10, color=magnitude, angle = angle, symbol = "arrow-up", line=attr(width=2, color=magnitude)),
-                    #zmin=zmin, zmax=zmax
-                   )
-    line       = scatter(
-                    x = interpolation_coords_x, 
-                    y = interpolation_coords_z, 
-                    z = magnitude,
-                    mode = "markers",
-                    colorscale   = cmaps[Symbol(colorscale)],
-                    marker = attr(size=10, color=magnitude, angle = angle, symbol = "line-ns", line=attr(width=2, color=magnitude)),
-                    #zmin=zmin, zmax=zmax
-                    )
-    return  arrow_head, line
+        x=interpolation_coords_x,
+        y=interpolation_coords_z,
+        mode="markers",
+        colorscale=cmaps[Symbol(colorscale)],
+        marker=attr(size=15, color=magnitude, angle=angle, symbol="triangle-up"),
+        colorbar=attr(title="Velocity", thickness=5, x=1.4),
+    )
+
+    line = scatter(
+        x=interpolation_coords_x,
+        y=interpolation_coords_z,
+        mode="markers",
+        colorscale=cmaps[Symbol(colorscale)],
+        marker=attr(size=10, color=magnitude, angle=angle, symbol="line-ns", line=attr(width=2, color=magnitude)),
+    )
+    return arrow_head, line
 end
 
 """
