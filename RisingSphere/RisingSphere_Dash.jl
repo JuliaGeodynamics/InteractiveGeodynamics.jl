@@ -13,8 +13,8 @@ title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
 OutFile = "RiseSphere"
 
-cur_dir = pwd()
-cd(cur_dir)
+base_dir = pwd()
+cd(base_dir)
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
@@ -62,7 +62,6 @@ callback!(app,
     session_id = UUIDs.uuid4()
     str = "id=$(session_id), v=$(GUI_version)"
 
-    # make_new_directory(session_id)
 
     return String("$(session_id)"), str
 end
@@ -92,18 +91,16 @@ callback!(app,
     trigger = get_trigger()
     disable_interval = true
     if trigger == "button-run.n_clicks"
-        cd(cur_dir)
-        cur_user_dir = make_new_directory(session_id)
-        # We clicked the run button
+        cd(base_dir)
         
-        cd(cur_user_dir)
-        click_times = "button-run.n_clicks"
-        cur_user_dir = make_new_directory(click_times)
-        cd(cur_user_dir)
+       
         args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
+         # We clicked the run button
+         user_dir = make_new_directory(session_id)
+         cd(user_dir)
         
         clean_directory()   # removes all existing LaMEM files
-        pfile = cur_dir * "/" * ParamFile
+        pfile = base_dir * "/" * ParamFile
         run_lamem(pfile, 1, args, wait=false)
         disable_interval = false
 
