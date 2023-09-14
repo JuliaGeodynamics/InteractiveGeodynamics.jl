@@ -1,6 +1,8 @@
 using DelimitedFiles
 
-# this is the main figure window
+"""
+Creates the main figure plot.
+"""
 function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
     x_con=1:10, y_con=1:10, data_con=rand(10, 10), cmaps=read_colormaps()
     ;
@@ -33,7 +35,6 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
         push!(data_plot, line)
     end
 
-
     pl = (id="fig_cross",
         data=data_plot,
         colorbar=Dict("orientation" => "v", "len" => 0.5),
@@ -56,7 +57,8 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
 end
 
 """
- x,z,data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+    x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+
 This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 """
 function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
@@ -77,7 +79,9 @@ function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
     return x, z, data2D, time[1], fields_available
 end
 
-#returns the trigger callback (simplifies code)
+"""
+Returns the trigger callback (simplifies code).
+"""
 function get_trigger()
 
     tr = callback_context().triggered;
@@ -89,8 +93,9 @@ function get_trigger()
     return trigger
 end
 
-
-#add-ons to names for vector & tensors (used in dropdown menu)
+"""
+Add-ons to names for vector & tensors (used in dropdown menu).
+"""
 function vector_tensor()
     vector = [ "_$a" for a in ["x","y","z"]]
     tensor = [ "_$(b)$(a)" for a in ["x","y","z"], b in ["x","y","z"] ][:]
@@ -100,8 +105,7 @@ end
 
 
 """
-
-This extracts a LaMEM datafield and in case it is a tensor or scalar (and has _x, _z or so at the end), 
+This extracts a LaMEM datafield and in case it is a tensor or scalar (and has _x, _z or so at the end).
 """
 function extract_data_fields(data, field)
 
@@ -123,7 +127,9 @@ function extract_data_fields(data, field)
     return value
 end
 
-# returns a list with fields. in case the LaMEM field is a vector field, it adds _x, _y etc; im case of tensor, _xx,_xy etyc
+"""
+Returns a list with fields. In case the LaMEM field is a vector field, it adds _x, _y etc; im case of tensor, _xx, _xy etc.
+"""
 function get_fields(fields)
 
     scalar, vector, tensor = vector_tensor()
@@ -144,9 +150,9 @@ function get_fields(fields)
     return fields_available
 end
 
-
-# functions building up to quiver plot
-
+"""
+Functions building up to quiver plot
+"""
 function extract_velocity(OutFile, cur_t)
 
     data, _ = Read_LaMEM_timestep(OutFile, cur_t)
@@ -158,7 +164,9 @@ function extract_velocity(OutFile, cur_t)
     return Vx, Vz, x_vel, z_vel
 end
 
-
+"""
+Interpolate velocities.
+"""
 function interpolate_velocities(x, z, Vx, Vz)
 
     # interpolate velocities to a quarter of original grid density
@@ -174,6 +182,9 @@ function interpolate_velocities(x, z, Vx, Vz)
     return Vx_interpolated, Vz_interpolated, interpolation_coords_x, interpolation_coords_z
 end
 
+"""
+Calculate angle between two vectors.
+"""
 function calculate_angle(Vx_interpolated, Vz_interpolated)
     angle = zeros(size(Vx_interpolated))
     north = [1 0]
@@ -183,6 +194,9 @@ function calculate_angle(Vx_interpolated, Vz_interpolated)
     return angle
 end
 
+"""
+Calculate quiver.
+"""
 function calculate_quiver(OutFile, cur_t, cmaps; colorscale ="batlow")
 
     # x,z = extract_coordinates(data)
