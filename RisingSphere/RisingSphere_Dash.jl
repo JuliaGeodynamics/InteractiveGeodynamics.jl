@@ -6,7 +6,7 @@ using Interpolations
 
 GUI_version = "0.1.0"
 
-include("utils.jl")
+include("../src/dash_functions.jl")
 cmaps = read_colormaps()
 
 title_app = "Rising Sphere example"
