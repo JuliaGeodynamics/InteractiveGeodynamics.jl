@@ -2,6 +2,7 @@ using Dash, DashBootstrapComponents
 using PlotlyJS
 using LaMEM
 using UUIDs
+using Interpolations
 
 GUI_version = "0.1.0"
 
@@ -9,8 +10,9 @@ include("utils.jl")
 cmaps = read_colormaps()
 
 # this is the main figure window
-function create_main_figure(x=1:10,y=1:10,data=rand(10,10), 
-                            x_con=1:10,y_con=1:10,data_con=rand(10,10), cmaps=read_colormaps(); 
+function create_main_figure(OutFile, cur_t,x=1:10,y=1:10,data=rand(10,10), 
+                            x_con=1:10,y_con=1:10,data_con=rand(10,10), cmaps=read_colormaps()
+                            ; 
                             colorscale="batlow", field="phase", add_contours = true, add_velocity=false, contour_field="phase")
     data_plot = [heatmap(x = x, 
                     y = y, 
@@ -25,16 +27,18 @@ function create_main_figure(x=1:10,y=1:10,data=rand(10,10),
             contour(x = x_con, 
             y = y_con, 
             z = data_con,
-            colorscale   = colorscale,
+            colorscale   = cmaps[Symbol(colorscale)],
             contours_coloring="lines",
             line_width = 2,
             colorbar= attr(thickness=5, title=contour_field, x=1.2, yanchor = 0.5),
             #zmin=zmin, zmax=zmax
             )))
     end
-    if add_velocity
-        
 
+    if add_velocity == true
+        arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale = "batlow")
+        push!(data_plot, arrowhead)
+        push!(data_plot, line)
     end
     
 
@@ -153,6 +157,74 @@ function get_fields(fields)
     return fields_available
 end
 
+
+# functions building up to quiver plot
+
+function extract_velocity(OutFile, cur_t)
+
+    data, _ = Read_LaMEM_timestep(OutFile, cur_t)
+    Vx     = data.fields.velocity[1,:,1,:] 
+    Vz     = data.fields.velocity[3,:,1,:] 
+    x_vel = data.x.val[:,1,1]
+    z_vel = data.z.val[1,1,:]
+
+    return Vx, Vz, x_vel, z_vel
+end
+
+
+function interpolate_velocities(x, z, Vx, Vz)
+
+    # interpolate velocities to a quarter of original grid density
+    itp_Vx = interpolate((x,z), Vx, Gridded(Linear()))
+    itp_Vz = interpolate((x,z), Vz, Gridded(Linear()))
+
+    interpolation_coords_x = LinRange(x[1], x[end], 8)
+    interpolation_coords_z = LinRange(z[1], z[end], 8)
+
+    Vx_interpolated = itp_Vx.(interpolation_coords_x, interpolation_coords_z)
+    Vz_interpolated = itp_Vz.(interpolation_coords_x, interpolation_coords_z)
+
+    return Vx_interpolated, Vz_interpolated, interpolation_coords_x, interpolation_coords_z
+end
+
+function calculate_angle(Vx_interpolated, Vz_interpolated)
+    angle = zeros(size(Vx_interpolated))
+    north = [1 0]
+        for i in CartesianIndices(angle)
+            angle[i] = acos((north[1] * Vx_interpolated[i] + north[2]* Vz_interpolated[i]) / (sqrt(north[1]^2 + north[2]^2)*sqrt(Vx_interpolated[i]^2 + Vz_interpolated[i]^2)))
+        end
+    return angle
+end
+
+function calculate_quiver(OutFile, cur_t, cmaps; colorscale ="batlow")
+
+    # x,z = extract_coordinates(data)
+    Vx, Vz, x, z = extract_velocity(OutFile, cur_t)
+    Vx_interpolated, Vy_interpolated, interpolation_coords_x, interpolation_coords_z = interpolate_velocities(x, z, Vx, Vz)
+    angle = calculate_angle(Vx_interpolated, Vy_interpolated)
+    magnitude = sqrt.(Vx_interpolated.^2 .+ Vy_interpolated.^2)
+
+    arrow_head = scatter(
+                    x = interpolation_coords_x, 
+                    y = interpolation_coords_z, 
+                    z = magnitude,
+                    mode = "markers",
+                    colorscale   = cmaps[Symbol(colorscale)],
+                    marker = attr(size=10, color=magnitude, angle = angle, symbol = "arrow-up", line=attr(width=2, color=magnitude)),
+                    #zmin=zmin, zmax=zmax
+                   )
+    line       = scatter(
+                    x = interpolation_coords_x, 
+                    y = interpolation_coords_z, 
+                    z = magnitude,
+                    mode = "markers",
+                    colorscale   = cmaps[Symbol(colorscale)],
+                    marker = attr(size=10, color=magnitude, angle = angle, symbol = "line-ns", line=attr(width=2, color=magnitude)),
+                    #zmin=zmin, zmax=zmax
+                    )
+    return  arrow_head, line
+end
+
 title_app = "Rising Sphere example"
 ParamFile = "RisingSphere.dat"
 OutFile = "RiseSphere"
@@ -168,7 +240,7 @@ app.layout = html_div() do
         dbc_row([ # data row
             dbc_col([ # graph column
                 dbc_col(dcc_graph(id = "figure_main",
-                    figure = create_main_figure(),
+                    figure = create_main_figure(OutFile, 0),
                     #animate   = false,
                     #responsive=false,
                     #clickData = true,
@@ -476,7 +548,7 @@ callback!(app,
             end
 
 
-            fig_cross = create_main_figure(x,y,data, x_con, y_con, data_con, field=plot_field, cmaps; 
+            fig_cross = create_main_figure(OutFile, cur_t,x,y,data, x_con, y_con, data_con, field=plot_field, cmaps; 
                             add_contours = add_contours, contour_field = contour_field,
                             add_velocity = add_velocity,
                             colorscale   = color_map_option)
