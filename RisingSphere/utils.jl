@@ -488,11 +488,13 @@ Create a new directory named by session-id
 function make_new_directory(session_id)
     dirname = String(session_id)
     if isdir("simulations")
-        mkdir("simulations/" * dirname)
+        if isdir("simulations/" * dirname) == false
+            mkdir("simulations/" * dirname)
+        end
     else
         mkdir("simulations")
         mkdir("simulations/" * dirname)
     end
-    cur_user_dir = "simulations/" * dirname
-    return cur_user_dir
+    user_dir = "simulations/" * dirname
+    return user_dir
 end
