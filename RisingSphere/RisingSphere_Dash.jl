@@ -9,6 +9,23 @@ GUI_version = "0.1.0"
 include("utils.jl")
 cmaps = read_colormaps()
 
+
+# create a new directory named by session-id
+function make_new_directory(session_id)
+    cur_dir = pwd()
+    if isdir("simulations")
+        cd("simulations")
+    else
+        mkdir("simulations")
+        cd("simulations")
+    end
+    dirname = String(session_id)
+    mkdir(dirname)
+    cd(cur_dir)
+    return dirname
+end
+# still need to save timestep file in the simulations/session_id file
+
 # this is the main figure window
 function create_main_figure(OutFile, cur_t,x=1:10,y=1:10,data=rand(10,10), 
                             x_con=1:10,y_con=1:10,data_con=rand(10,10), cmaps=read_colormaps()
@@ -357,6 +374,8 @@ callback!(app,  Output("session-id", "data"),
     
     session_id = UUIDs.uuid4()
     str = "id=$(session_id), v=$(GUI_version)"
+
+    make_new_directory(session_id)
     
     return String("$(session_id)"), str
 end
