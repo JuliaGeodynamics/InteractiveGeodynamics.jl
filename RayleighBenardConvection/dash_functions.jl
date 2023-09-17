@@ -5,8 +5,8 @@ Creates the main figure plot.
 """
 function create_main_figure(
     OutFile, cur_t, 
-    x=-20:20, y=-10:0, data=rand(10, 40), # heatmap plot
-    x_con=-20:20, y_con=-10:0, data_con=rand(10, 40), # contour plot
+    x=-10:10, y=-10:0, data=rand(10, 20), # heatmap plot
+    x_con=-10:10, y_con=-10:0, data_con=rand(10, 20), # contour plot
     cmaps=read_colormaps() # colormaps
     ; colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase")
 
@@ -19,7 +19,7 @@ function create_main_figure(
             y=y,
             z=data,
             colorscale=cmaps[Symbol(colorscale)],
-            colorbar=attr(thickness=cbar_thk, title=field),
+            colorbar=attr(thickness=cbar_thk, title=field)
         )
     ]
     # add contours
@@ -49,28 +49,42 @@ function create_main_figure(
         data=data_plot,
         title="Test",
         # colorbar=Dict("orientation" => "v", "len" => 0.5),
+        
         layout=(
+            
+            # width="320vw", height="320vh",
             xaxis=attr(
-                title="Width",
+                title="Width (km)",
                 tickfont_size=14,
                 tickfont_color="rgb(100, 100, 100)",
                 showgrid=false,
                 # zeroline=false, 
                 # automargin=true,
+                # constrain="domain",
+                # scaleanchor="x", 
+                # scaleratio=2.0,
+                showline=true, linewidth=2, linecolor="black", mirror=true,
             ),
             yaxis=attr(
-                title="Depth",
-                domain=[0,10],
+                title="Depth (km)",
+                # domain=[0,100],
                 tickfont_size=14,
                 tickfont_color="rgb(10, 10, 10)",
                 showgrid=false,
+                showline=true, linewidth=2, linecolor="black", mirror=true,
+                # range=[-10,0],
                 # zeroline=false,
                 scaleanchor="x", 
-                scaleratio=1
+                scaleratio=1.0,
+                # constrain="domain",
+                # constrain="range",
             ), margin=Dict([("l", 50), ("r", 50)])#), margin=Dict([("l", 350), ("r", 350)])
         ),
-        config=(edits = (shapePosition=true,)),
+        config=(edits = (shapePosition=true,)), scaleratio=1.0
+
+        
     )
+
     return pl
 end
 
@@ -424,7 +438,7 @@ Returns an accordion menu containing the simulation parameters.
 """
 function make_simulation_parameters()
     return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 4.0, 1.0e-10),
+        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 2.0, 1.0e-10),
         dbc_row(html_p()),
         make_accordion_item("Height (km):", "domain_height", "Height of the domain, given in kilometers.", 1.0, 1.0e-10),
         dbc_row(html_p()),
