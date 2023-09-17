@@ -3,32 +3,42 @@ using DelimitedFiles
 """
 Creates the main figure plot.
 """
-function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
-    x_con=1:10, y_con=1:10, data_con=rand(10, 10), cmaps=read_colormaps()
-    ;
-    colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase")
-    
-    data_plot = [heatmap(x=x,
-        y=y,
-        z=data,
-        colorscale=cmaps[Symbol(colorscale)],
-        colorbar=attr(thickness=5, title=field),
-        #zmin=zmin, zmax=zmax
-    )
-    ]
-    if add_contours == true
-        push!(data_plot, (
-            contour(x=x_con,
-            y=y_con,
-            z=data_con,
-            colorscale=cmaps[Symbol(colorscale)],
-            contours_coloring="lines",
-            line_width=2,
-            colorbar=attr(thickness=5, title=contour_field, x=1.2, yanchor=0.5),
-            #zmin=zmin, zmax=zmax
-        )))
-    end
+function create_main_figure(
+    OutFile, cur_t, 
+    x=-20:20, y=-10:0, data=rand(10, 40), # heatmap plot
+    x_con=-20:20, y_con=-10:0, data_con=rand(10, 40), # contour plot
+    cmaps=read_colormaps() # colormaps
+    ; colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase")
 
+    cbar_thk = 20
+    
+    # add heatmap
+    data_plot = [
+        heatmap(
+            x=x,
+            y=y,
+            z=data,
+            colorscale=cmaps[Symbol(colorscale)],
+            colorbar=attr(thickness=cbar_thk, title=field),
+        )
+    ]
+    # add contours
+    if add_contours == true
+        push!(
+            data_plot, (
+                contour(
+                    x=x_con,
+                    y=y_con,
+                    z=data_con,
+                    colorscale=cmaps[Symbol(colorscale)],
+                    contours_coloring="lines",
+                    line_width=2,
+                    colorbar=attr(thickness=cbar_thk, title=contour_field, x=1.1, yanchor=0.5, contour_label=true),
+                )
+            )
+        )
+    end
+    # add velocity
     if add_velocity == true
         arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
         push!(data_plot, arrowhead)
@@ -37,19 +47,27 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
 
     pl = (id="fig_cross",
         data=data_plot,
-        colorbar=Dict("orientation" => "v", "len" => 0.5),
+        title="Test",
+        # colorbar=Dict("orientation" => "v", "len" => 0.5),
         layout=(
             xaxis=attr(
                 title="Width",
                 tickfont_size=14,
                 tickfont_color="rgb(100, 100, 100)",
-                automargin=true,),
+                showgrid=false,
+                # zeroline=false, 
+                # automargin=true,
+            ),
             yaxis=attr(
                 title="Depth",
+                domain=[0,10],
                 tickfont_size=14,
                 tickfont_color="rgb(10, 10, 10)",
-                scaleanchor="x", scaleratio=1
-            ), margin=Dict([("l", 350), ("r", 350)])
+                showgrid=false,
+                # zeroline=false,
+                scaleanchor="x", 
+                scaleratio=1
+            ), margin=Dict([("l", 50), ("r", 50)])#), margin=Dict([("l", 350), ("r", 350)])
         ),
         config=(edits = (shapePosition=true,)),
     )
@@ -102,7 +120,6 @@ function vector_tensor()
     scalar = [""]
     return scalar, vector, tensor
 end
-
 
 """
 This extracts a LaMEM datafield and in case it is a tensor or scalar (and has _x, _z or so at the end).
@@ -407,15 +424,15 @@ Returns an accordion menu containing the simulation parameters.
 """
 function make_simulation_parameters()
     return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 1.0, 1.0e-10),
+        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 4.0, 1.0e-10),
         dbc_row(html_p()),
         make_accordion_item("Height (km):", "domain_height", "Height of the domain, given in kilometers.", 1.0, 1.0e-10),
         dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 32, 2),
+        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
         dbc_row(html_p()),
         make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 32, 2),
         dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 400, 1),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 10, 1),
     ])
 end
 
