@@ -394,7 +394,8 @@ Returns a row containing the media buttons, each one in a column.
 """
 function make_plot_controls()
     item = dbc_row([
-        make_screenshot_button(),
+        # make_screenshot_button(),
+        make_empty_col(),
         make_media_buttons(),
         make_empty_col(),
     ])
