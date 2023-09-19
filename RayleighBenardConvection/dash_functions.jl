@@ -345,11 +345,32 @@ Returns a column containing all the media control buttons.
 """
 function make_media_buttons()
     item = dbc_col([
-        dbc_button("<<", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
-        dbc_button("<", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
-        dbc_button("Play/Pause", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-3"),
-        dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
-        dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
+        dbc_button(
+            [
+                html_i(className="fa-regular fa-backward-fast"),
+            ],
+            id="button-start", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
+        dbc_button(
+            [
+                html_i(className="fa-regular fa-backward-step"),
+            ],
+        id="button-back", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
+        dbc_button(
+            [
+                html_i(className="fa-regular fa-play"),
+            ],
+            id="button-play", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"
+        ),
+        dbc_button(
+            [
+                html_i(className="fa-regular fa-forward-step"),
+            ],
+            id="button-forward", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
+        dbc_button(
+            [
+                html_i(className="fa-regular fa-forward-fast"),
+            ], 
+            id="button-last", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
     return item
 end
