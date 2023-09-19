@@ -406,7 +406,7 @@ end
 Return a row with the id of the current user session.
 """
 function make_id_label()
-    item = dbc_row([dbc_label("", id="label-id")])
+    item = dbc_row([dbc_label("", id="label-id", color="secondary")])
     return item
 end
 
