@@ -18,7 +18,7 @@ base_dir = pwd()
 cd(base_dir)
 
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
-app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP, dbc_icons.FONT_AWESOME], prevent_initial_callbacks=false)
+app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP, dbc_icons.BOOTSTRAP], prevent_initial_callbacks=false)
 app.title = title_app
 
 # Main code layout

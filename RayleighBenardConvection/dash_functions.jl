@@ -47,7 +47,6 @@ function create_main_figure(
 
     pl = (id="fig_cross",
         data=data_plot,
-        title="Test",
         # colorbar=Dict("orientation" => "v", "len" => 0.5),
         
         layout=(
@@ -61,8 +60,8 @@ function create_main_figure(
                 # zeroline=false, 
                 # automargin=true,
                 # constrain="domain",
-                # scaleanchor="x", 
-                # scaleratio=2.0,
+                scaleanchor="y", 
+                scaleratio=1.0,
                 showline=true, linewidth=2, linecolor="black", mirror=true,
             ),
             yaxis=attr(
@@ -74,8 +73,8 @@ function create_main_figure(
                 showline=true, linewidth=2, linecolor="black", mirror=true,
                 # range=[-10,0],
                 # zeroline=false,
-                scaleanchor="x", 
-                scaleratio=1.0,
+                # scaleanchor="x", 
+                # scaleratio=1.0,
                 # constrain="domain",
                 # constrain="range",
             ), margin=Dict([("l", 50), ("r", 50)])#), margin=Dict([("l", 350), ("r", 350)])
@@ -317,14 +316,17 @@ end
 Returns a row containing the main plot.
 """
 function make_plot()
+    # w = 
+    # h = 
     item = dbc_row([
         dcc_graph(id="figure_main",
             figure=create_main_figure(OutFile, 0),
             #animate   = false,
-            #responsive=false,
+            # responsive=true,
             #clickData = true,
             #config = PlotConfig(displayModeBar=false, scrollZoom = false),
-            style=attr(width="80vw", height="80vh")
+            style=attr(width="80vw", height="80vh"),
+            # style=attr(width="80vw"),
         )
     ])
     return item
@@ -347,28 +349,28 @@ function make_media_buttons()
     item = dbc_col([
         dbc_button(
             [
-                html_i(className="fa-regular fa-backward-fast"),
+                html_i(className="bi bi-skip-backward-fill"),
             ],
             id="button-start", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
         dbc_button(
             [
-                html_i(className="fa-regular fa-backward-step"),
+                html_i(className="bi bi-skip-start-fill"),
             ],
         id="button-back", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
         dbc_button(
             [
-                html_i(className="fa-regular fa-play"),
+                html_i(className="bi bi-play-fill"),
             ],
             id="button-play", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"
         ),
         dbc_button(
             [
-                html_i(className="fa-regular fa-forward-step"),
+                html_i(className="bi bi-skip-end-fill"),
             ],
             id="button-forward", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
         dbc_button(
             [
-                html_i(className="fa-regular fa-forward-fast"),
+                html_i(className="bi bi-skip-forward-fill"),
             ], 
             id="button-last", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
