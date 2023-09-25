@@ -72,7 +72,7 @@ callback!(app,
     Input("button-run", "disabled"),
     Input("button-play", "n_clicks"), 
     State("domain_width", "value"),
-    State("domain_height", "value"),
+    State("depth", "value"),
     State("nel_x", "value"),
     State("nel_z", "value"),
     State("n_timesteps", "value"),
@@ -87,7 +87,7 @@ callback!(app,
     State("density_lower", "value"),
     prevent_initial_call=true
 ) do n_run, active_run, n_play,
-    domain_width, domain_height, nel_x, nel_z, n_timesteps,
+    domain_width, depth, nel_x, nel_z, n_timesteps,
     open_top, layers,
     last_timestep, plot_field, session_id,
     η_up,η_lo,ρ_up,ρ_lo
@@ -103,7 +103,7 @@ callback!(app,
         
         η_up = 10.0^η_up
         η_lo = 10.0^η_lo
-        Hi_value = domain_height
+        Hi_value = depth
         W    = domain_width
         if open_top === nothing
             open_top = 0
