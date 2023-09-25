@@ -464,7 +464,7 @@ function make_simulation_parameters()
     return dbc_accordionitem(title="Simulation Parameters", [
         make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 10.0, 1.0e-10),
         dbc_row(html_p()),
-        make_accordion_item("Depth (km):", "depth", "Depth of the interface, given in kilometers.", -2.5, -5.0),
+        make_accordion_item("Depth of the interface (km):", "depth", "Depth of the interface, given in kilometers.", -2.5, -5.0),
         dbc_row(html_p()),
         make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 32, 2),
         dbc_row(html_p()),
