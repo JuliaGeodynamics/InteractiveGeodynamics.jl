@@ -16,6 +16,25 @@ OutFile = "RiseSphere"
 base_dir = pwd()
 cd(base_dir)
 
+
+# We also use a time-card that has maximum(Vz)
+function make_time_card()
+    item = dbc_row([
+        html_p(),
+        dbc_card([
+                dbc_label(" Time       : 0 Myrs", id="label-time"),
+                dbc_label(" Timestep   : 0", id="label-timestep"),
+                dbc_label(" Maximum Vz : 0", id="label-max-vz"),
+                ],
+            color="secondary",
+            class_name="mx-auto col-11",
+            outline=true),
+        html_p()])
+    return item
+end
+
+
+
 #app = dash(external_stylesheets=[dbc_themes.CYBORG])
 app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP], prevent_initial_callbacks=false)
 app.title = title_app
@@ -185,6 +204,7 @@ callback!(app,
     Output("figure_main", "figure"),
     Output("plot_field", "options"),
     Output("contour_option", "options"),
+    Output("label-max-vz","children"),
     Input("update_fig", "data"),
     Input("current_timestep", "data"),
     Input("button-run", "n_clicks"),
@@ -237,7 +257,9 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
             end
 
             # Load data 
+            x, y, Vz, time, fields_available = get_data(OutFile, cur_t, "velocity_z")
             x, y, data, time, fields_available = get_data(OutFile, cur_t, plot_field)
+            
             if !isnothing(switch_contour)
                 add_contours = true
                 x_con, y_con, data_con, _, _ = get_data(OutFile, cur_t, contour_field)
@@ -253,7 +275,6 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
                 add_velocity = true
             end
 
-
             fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con, field=plot_field, cmaps;
                 add_contours=add_contours, contour_field=contour_field,
                 add_velocity=add_velocity,
@@ -264,6 +285,7 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
                     cur_t = Timestep[id+1]      # update current timestep
                 end
             end
+            maxVz = maximum(Vz)
 
         else
             time = 0
@@ -272,18 +294,21 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
     elseif trigger == "button-run.n_clicks"
         cur_t = 0
         time = 0.0
+        maxVz = 0
     end
 
     # update the labels
     label_timestep = "Timestep: $cur_t"
-    label_time = "Time: $time Myrs"
+    label_time =  "Time       : $time Myrs"
+    label_maxVz = "Maximum Vz : $maxVz cm/yr"
     current_timestep = "$cur_t"
 
+
     @show current_timestep
-    return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
+    return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available, label_maxVz
 end
 
-# 
+# Enable or disable contours
 callback!(app,
     Output("contour_option", "disabled"),
     Input("switch-contour", "value")) do switch_contour
@@ -298,5 +323,6 @@ callback!(app,
     end
     return disable_contours
 end
+
 
 run_server(app, debug=false)
