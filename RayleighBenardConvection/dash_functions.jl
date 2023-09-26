@@ -486,6 +486,13 @@ function make_rheological_parameters()
         make_accordion_item("Cohesion (MPa):", "cohesion", "Logarithm of the cohesion of the model (0 ≤ cohesion ≤ 10_000) [MPa].", 500.0, 0.0, 10_000.0),
         dbc_row(html_p()),
         make_accordion_item("η (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < η ≤ 25).", 21.0, 15.0, 25.0),
+        dbc_row(html_p()),
+        dbc_row([
+            dbc_checklist(options=["FreeSurf"],
+                    id="switch-FreeSurf",
+                    switch=true,
+            )
+        ]),
     ])
 end
 
