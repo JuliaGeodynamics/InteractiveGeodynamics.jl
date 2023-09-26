@@ -122,7 +122,8 @@ callback!(app,
         # print(layers)c
 
 
-        args = "-nstep_max $(n_timesteps) -eta[0] $η_up -eta[1] $η_up -eta[2] $η_lo -rho[0] $ρ_up -rho[1] $ρ_up -rho[2] $ρ_lo -open_top_bound $open_top -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) "
+        args = "-nstep_max $(n_timesteps) -eta[0] $η_up -eta[1] $η_up -eta[2] $η_lo -rho[0] $ρ_up -rho[1] $ρ_up -rho[2] $ρ_lo -open_top_bound $open_top -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2)"
+        println("args = ", args)
 
         
         # We clicked the run button
@@ -315,7 +316,8 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
     label_time = "Time: $time Myrs"
     current_timestep = "$cur_t"
 
-    @show current_timestep
+    # @show current_timestep
+    println("Timestep ", current_timestep)
     return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
 end
 

@@ -106,6 +106,8 @@ callback!(app,
             args = "-nstep_max $(n_timesteps) -eta_fk[0] $(viscosity)  -gamma_fk[0] $γ -TRef_fk[0] $(ΔT/2) -ch[0] $(cohesion) -nel_x $nel_x -coord_x $(-domain_width/2),$(domain_width/2) -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
         end
 
+        println("args = ", args)
+
         # We clicked the run button
         user_dir = make_new_directory(session_id)
         cd(user_dir)
@@ -291,7 +293,8 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
     label_time = "Time: $time Myrs"
     current_timestep = "$cur_t"
 
-    @show current_timestep
+    # @show current_timestep
+    println("Timsetep ", cur_t)
     return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
 end
 
