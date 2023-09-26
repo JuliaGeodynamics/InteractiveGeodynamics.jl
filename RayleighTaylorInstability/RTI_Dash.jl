@@ -135,9 +135,7 @@ callback!(app,
         # Create the setup
         CreateSetup(pfile, layers, Hi_value, args=args)
  
-
         run_lamem(pfile, 1, args, wait=false)
-
 
         disable_interval = false
 
@@ -149,7 +147,7 @@ callback!(app,
 
     elseif trigger == "button-play.n_clicks"
         last_t = parse(Int, last_timestep)
-        @show last_t
+        # @show last_t
         disable_interval = false
     end
     

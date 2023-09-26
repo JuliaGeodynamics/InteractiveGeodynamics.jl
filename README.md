@@ -173,13 +173,12 @@ julia>
 7) Start the GUI: 
 ```julia
 julia> include("Convection_Dash.jl")
-Adding plotting routines of GeoParams through GLMakie 
-Loading GLMakie plotting routines within GMG
-run_code (generic function with 1 method)
+[ Info: Listening on: 127.0.0.1:8050, thread id: 1
 ```
 It will take a bit of time (to precompile/download all required packages) but it will start a GUI. After pushing `Run`, you'll get something that looks like this: 
 ```julia
 julia> 
+Timestep 0
 args = -nstep_max 250 -eta_fk[0] 1.0e21  -gamma_fk[0] 0.001 -TRef_fk[0] 1000.0 -ch[0] 5.0e8 -nel_x 128 -nel_z 64 -coord_x -1000.0,1000.0 -coord_z -1000,0 -coord_y -7.8125,7.8125 -temp_bot 2000
 Timestep 1
 Timestep 10
@@ -197,7 +196,9 @@ Running the other examples is reasonably straightforward. Every directory contai
 ```julia
 shell>cd RayleighTaylorInstability/
 julia> include("RTI_Dash.jl")
-julia> 
+[ Info: Listening on: 127.0.0.1:8050, thread id: 1
+Tiestep 0
+args = -nstep_max 50 -eta[0] 1.0e21 -eta[1] 1.0e21 -eta[2] 1.0e20 -rho[0] 2800 -rho[1] 2800 -rho[2] 2200 -open_top_bound 0 -nel_x 32 -nel_z 16 -coord_x -5.0,5.0 
 Timestep 1
 Timestep 5
 Timestep 10

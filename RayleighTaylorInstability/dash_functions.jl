@@ -596,7 +596,7 @@ function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.
     if layered_overburden
         H_layer = 0.25;
         for z_low = minimum(Grid.Z):2*H_layer:maximum(Grid.Z)
-            print(z_low)
+            # print(z_low)
             # z_low = -z_low
             iz = findall( (Grid.Z[1,1,:] .> z_low) .&  (Grid.Z[1,1,:] .<= (z_low+H_layer) )) 
             Phases[:,:,iz] .= 1;
@@ -604,7 +604,7 @@ function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.
     end
    
     z_int       =   ones(Grid.nump_x)*Hi + rand(Grid.nump_x)*ampl_noise
-    print(z_int)
+    # print(z_int)
     # z_int       =   -z_int
     for ix=1:Grid.nump_x, iy=1:Grid.nump_y
         iz = findall(Grid.Z[ix,iy,:] .< z_int[ix] )

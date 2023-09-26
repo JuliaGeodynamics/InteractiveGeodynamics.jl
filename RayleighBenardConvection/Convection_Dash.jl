@@ -126,7 +126,7 @@ callback!(app,
 
     elseif trigger == "button-play.n_clicks"
         last_t = parse(Int, last_timestep)
-        @show last_t
+        # @show last_t
         disable_interval = false
     end
     
