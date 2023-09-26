@@ -462,15 +462,15 @@ Returns an accordion menu containing the simulation parameters.
 """
 function make_simulation_parameters()
     return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 2.0, 1.0e-10),
+        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 2000.0, 1.0e-10),
         dbc_row(html_p()),
-        make_accordion_item("Height (km):", "domain_height", "Height of the domain, given in kilometers.", 1.0, 1.0e-10),
+        make_accordion_item("Height (km):", "domain_height", "Height of the domain, given in kilometers.", 1000.0, 1.0e-10),
         dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
+        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 128, 2),
         dbc_row(html_p()),
-        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 32, 2),
+        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 64, 2),
         dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 10, 1),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 250, 1),
     ])
 end
 
@@ -479,13 +479,13 @@ Returns an accordion menu containing the rheological parameters.
 """
 function make_rheological_parameters()
     return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("ΔT:", "ΔT", "Temperature difference between the base and the top.", 1000.0, 1.0-10, 10_000.0),
+        make_accordion_item("ΔT:", "ΔT", "Temperature difference between the base and the top.", 2000.0, 1.0-10, 10_000.0),
         dbc_row(html_p()),
-        make_accordion_item("γ:", "γ", "Heat capacity ratio (0.0 ≤ γ ≤ 0.01)", 0.1, 0.0, 1.0),
+        make_accordion_item("η=η₀exp(-γT), γ:", "γ", "Parameter for Frank-Kamenetzky viscosity (0.0 ≤ γ ≤ 1.0)", 0.001, 0.0, 1.0),
         dbc_row(html_p()),
-        make_accordion_item("cohesion:", "cohesion", "Logarithm of the cohesion of the model (0 ≤ cohesion ≤ 50).", 1.0, 0.0, 50.0),
+        make_accordion_item("Cohesion (MPa):", "cohesion", "Logarithm of the cohesion of the model (0 ≤ cohesion ≤ 10_000) [MPa].", 500.0, 0.0, 10_000.0),
         dbc_row(html_p()),
-        make_accordion_item("ηₘ (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).", 18.0, 15.0, 25.0),
+        make_accordion_item("η (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < η ≤ 25).", 21.0, 15.0, 25.0),
     ])
 end
 

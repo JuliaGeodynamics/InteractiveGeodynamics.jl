@@ -95,11 +95,23 @@ callback!(app,
         cd(base_dir)
 
         viscosity = 10.0^viscosity
+        cohesion *= 1.0e6
 
         Δx  = domain_width/nel_x # y-width
 
+        # nstep_max_val = 1000
+        # η0 = 10^21
+        # gam = 0.001
+        # ΔT = 2000.0
+        # ch = 500.0e6
+        # nel_x = 128
+        # nel_z = 64
+        # W = 2000.0
+        # H = 1000.0
+        # Δx = 1.0
         args = "-nstep_max $(n_timesteps) -eta_fk[0] $(viscosity)  -gamma_fk[0] $γ -TRef_fk[0] $(ΔT/2) -ch[0] $(cohesion) -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_height),0 -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
-    
+        # args = "-nstep_max $(nstep_max_val) -eta_fk[0] $η0  -gamma_fk[0] $gam -TRef_fk[0] $(ΔT/2) -ch[0] $ch -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2) -coord_z $(-H),0 -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
+        
         # We clicked the run button
         user_dir = make_new_directory(session_id)
         cd(user_dir)
