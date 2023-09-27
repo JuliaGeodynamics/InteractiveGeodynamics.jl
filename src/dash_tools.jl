@@ -1,5 +1,4 @@
-using DelimitedFiles
-
+# various handy and reusable functions
 """
 Creates the main figure plot.
 """
@@ -59,6 +58,8 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
     return pl
 end
 
+
+
 """
     x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
 
@@ -104,7 +105,6 @@ function vector_tensor()
     scalar = [""]
     return scalar, vector, tensor
 end
-
 
 """
 This extracts a LaMEM datafield and in case it is a tensor or scalar (and has _x, _z or so at the end).
@@ -276,6 +276,7 @@ function read_colormaps(; dir_colormaps="../src/assets/colormaps/" , scaling=256
     return colormaps
 end
 
+
 """
 Returns a row containing the title of the page.
 """
@@ -298,16 +299,6 @@ function make_plot()
             style=attr(width="80vw", height="80vh")
         )
     ])
-    return item
-end
-
-"""
-Returns a column containing a screenshot button.
-"""
-function make_screenshot_button()
-    item = dbc_col([
-            dbc_button("Save figure", id="button-save-fig", color="secondary", size="sg", class_name="col-4")
-            ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
     return item
 end
 
@@ -352,12 +343,41 @@ function make_plot_controls()
     return item
 end
 
+
+"""
+Returns a column containing a screenshot button.
+"""
+function make_screenshot_button()
+    item = dbc_col([
+            dbc_button("Save figure", id="button-save-fig", color="secondary", size="sg", class_name="col-4")
+            ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
+    return item
+end
+
+
 """
 Return a row with the id of the current user session.
 """
 function make_id_label()
     item = dbc_row([dbc_label("", id="label-id")])
     return item
+end
+
+
+
+"""
+Returns an accordion menu containing the simulation parameters.
+"""
+function make_simulation_parameters()
+    return dbc_accordionitem(title="Simulation Parameters", [
+        make_accordion_item("Lₓ (km):", "domain_width", "Width of the domain, given in kilometers.", 1.0, 1.0e-10),
+        dbc_row(html_p()),
+        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
+        dbc_row(html_p()),
+        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 64, 2),
+        dbc_row(html_p()),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 30, 1),
+    ])
 end
 
 """
@@ -403,36 +423,6 @@ function make_accordion_item(label::String="param", idx::String="id", msg::Strin
         dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
     ])
     return item
-end
-
-"""
-Returns an accordion menu containing the simulation parameters.
-"""
-function make_simulation_parameters()
-    return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Lₓ (km):", "domain_width", "Width of the domain, given in kilometers.", 1.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 64, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 30, 1),
-    ])
-end
-
-"""
-Returns an accordion menu containing the rheological parameters.
-"""
-function make_rheological_parameters()
-    return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("ρₛ (kg/m³):", "density_sphere", "Density of the sphere in kg/m³ (0 < ρₛ ≤ 10_000.0).", 3000.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("ρₘ (kg/m³):", "density_matrix", "Density of the matrix in kg/m³ (0 < ρₛ ≤ 10_000.0).", 3400.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("rₛ (km):", "radius_sphere", "Radius of the sphere in kilometers (0 < rₛ ≤ Lₓ).", 0.1, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("ηₘ (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < ηₘ ≤ 25).", 25.0, 15.0, 25.0),
-    ])
 end
 
 """
@@ -525,26 +515,6 @@ function simulation_directory(session_id; clean=true)
 
     return user_dir
 end
-
-"""
-Creates a setup with noisy temperature and one phase
-"""
-function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
-    Grid = ReadLaMEM_InputFile(ParamFile, args=args)
-    Phases = zeros(Int64, size(Grid.X))
-    Temp = ones(Float64, size(Grid.X)) * ΔT / 2
-    Temp = Temp + rand(size(Temp)...) .* ampl_noise
-    Phases[Grid.Z.>0.0] .= 1
-    Temp[Grid.Z.>0.0] .= 0.0
-
-    Model3D = CartData(Grid, (Phases=Phases, Temp=Temp))   # Create LaMEM model
-    Write_Paraview(Model3D, "LaMEM_ModelSetup", verbose=false)   # Save model to paraview (load with opening LaMEM_ModelSetup.vts in paraview)  
-
-    Save_LaMEMMarkersParallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
-
-    return nothing
-end
-
 
 has_pvd_file(OutFile, user_dir) = isfile(joinpath(user_dir, OutFile * ".pvd"))
 
