@@ -80,7 +80,7 @@ function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.
 end
 
 # Run the LaMEM simulation (modify some parameters if you want) 
-function run_code(ParamFile, gui; wait=true)
+function run_code(ParamFile, gui; wait=false)
 
     nel_x,nel_z = retrieve_resolution(ParamFile, gui)
     
