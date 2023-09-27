@@ -245,7 +245,11 @@ end
 """
 This reads colormaps and transfers them into plotly format. The colormaps are supposed to be provided in ascii text format 
 """
-function read_colormaps(; dir_colormaps="../src/assets/colormaps/" , scaling=256)
+function read_colormaps(; dir_colormaps="" , scaling=256)
+    if isempty(dir_colormaps)
+        dir_colormaps=joinpath(pkgdir(InteractiveGeodynamics),"src/assets/colormaps/")
+    end
+    
     # Read all colormaps
     colormaps = NamedTuple();
     for map in readdir(dir_colormaps)
@@ -288,7 +292,7 @@ end
 """
 Returns a row containing the main plot.
 """
-function make_plot()
+function make_plot(OutFile="")
     item = dbc_row([
         dcc_graph(id="figure_main",
             figure=create_main_figure(OutFile, 0),
@@ -428,7 +432,7 @@ end
 """
 Returns an accordion menu containing the plotting parameters.
 """
-function make_plotting_parameters()
+function make_plotting_parameters(cmaps)
     item = dbc_accordionitem(title="Plotting Parameters", [
         dbc_row([
             dbc_label("Select field to plot: ", size="md"),
@@ -467,12 +471,12 @@ end
 """
 Return a row containing the menu with the simulation, rheological and plotting parameters.
 """
-function make_menu()
+function make_menu(cmaps)
     item = dbc_row([
         dbc_accordion(always_open=true, [
             make_simulation_parameters(),
             make_rheological_parameters(),
-            make_plotting_parameters(),
+            make_plotting_parameters(cmaps),
         ]),
     ])
     return item

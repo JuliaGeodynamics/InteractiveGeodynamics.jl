@@ -4,13 +4,21 @@ using LaMEM
 using UUIDs
 using Interpolations
 
+export RisingSphere
 
+pkg_dir = pkgdir(InteractiveGeodynamics)
+include(joinpath(pkg_dir,"src/dash_tools.jl"))
 
+"""
+
+This starts a rising sphere GUI
+"""
 function RisingSphere()
-    GUI_version = "0.1.0"
+    pkg_dir = pkgdir(InteractiveGeodynamics)
+    include(joinpath(pkg_dir,"RisingSphere/dash_functions_RisingSphere.jl"))
     
-    include("dash_functions_RisingSphere.jl")
-    include("../src/dash_tools.jl")
+    GUI_version = "0.1.0"
+    pkg_dir = pkgdir(InteractiveGeodynamics);
     cmaps = read_colormaps()
 
     title_app = "Rising Sphere example"
@@ -54,7 +62,7 @@ function RisingSphere()
                 ]),
                 dbc_col([
                     make_time_card(),       # show simulation time info
-                    make_menu(),            # show menu with simulation parameters, rheological parameters, and plotting parameters
+                    make_menu(cmaps),       # show menu with simulation parameters, rheological parameters, and plotting parameters
                     make_run_button()       # show the run simulation button
                 ])
             ]),
@@ -113,7 +121,8 @@ function RisingSphere()
         trigger = get_trigger()
         disable_interval = true
         if trigger == "button-run.n_clicks"
-            base_dir = pwd()
+            cur_dir = pwd()
+            base_dir = joinpath(pkgdir(InteractiveGeodynamics),"RisingSphere")
             
             args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
             
@@ -124,7 +133,7 @@ function RisingSphere()
             pfile = joinpath(base_dir,ParamFile) 
             run_lamem(pfile, 1, args, wait=false)
             disable_interval = false
-            cd(base_dir)        # return to main directory
+            cd(cur_dir)        # return to main directory
 
         elseif trigger == "button-run.disabled"
             last_t = parse(Int, last_timestep)
