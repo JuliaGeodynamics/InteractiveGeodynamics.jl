@@ -6,7 +6,8 @@ Creates the main figure plot.
 function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
     x_con=1:10, y_con=1:10, data_con=rand(10, 10), cmaps=read_colormaps()
     ;
-    colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase")
+    colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase",
+    session_id="")
     
     data_plot = [heatmap(x=x,
         y=y,
@@ -30,7 +31,9 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
     end
 
     if add_velocity == true
-        arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
+        user_dir = simulation_directory(session_id, clean=false)
+
+        arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow", Dir=user_dir)
         push!(data_plot, arrowhead)
         push!(data_plot, line)
     end
@@ -57,16 +60,15 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
 end
 
 """
-    x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+    x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
 
 This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 """
-function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+function get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
     
-    data,time = Read_LaMEM_timestep(OutFile, tstep)
+    data,time = Read_LaMEM_timestep(OutFile, tstep, Dir)
 
     value = extract_data_fields(data, field)        # get field; can handle tensors & vectors as well
-
 
     fields= String.(keys(data.fields))
     fields_available = get_fields(fields)
@@ -153,9 +155,9 @@ end
 """
 Functions building up to quiver plot
 """
-function extract_velocity(OutFile, cur_t)
+function extract_velocity(OutFile, cur_t, Dir="")
 
-    data, _ = Read_LaMEM_timestep(OutFile, cur_t)
+    data, _ = Read_LaMEM_timestep(OutFile, cur_t, Dir)
     Vx     = data.fields.velocity[1,:,1,:] 
     Vz     = data.fields.velocity[3,:,1,:] 
     x_vel = data.x.val[:,1,1]
@@ -214,9 +216,9 @@ end
 """
 Calculate quiver.
 """
-function calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
+function calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow", Dir="")
 
-    Vx, Vz, x, z = extract_velocity(OutFile, cur_t)
+    Vx, Vz, x, z = extract_velocity(OutFile, cur_t, Dir)
     Vx_interpolated, Vy_interpolated, interpolation_coords_x, interpolation_coords_z = interpolate_velocities(x, z, Vx, Vz)
     angle = calculate_angle(Vx_interpolated, Vy_interpolated)
     magnitude = sqrt.(Vx_interpolated .^ 2 .+ Vy_interpolated .^ 2)
@@ -498,19 +500,29 @@ function make_run_button()
 end
 
 """
-Create a new directory named by session-id
+    simulation_directory(session_id; clean=true )
+Create a new directory named by session-id and optionally cleans it
 """
-function make_new_directory(session_id)
+function simulation_directory(session_id; clean=true)
+    base_dir = pwd();
     dirname = String(session_id)
     if isdir("simulations")
-        if isdir("simulations/" * dirname) == false
-            mkdir("simulations/" * dirname)
+        if isdir(joinpath("simulations" , dirname)) == false
+            mkdir(joinpath("simulations" , dirname))
         end
     else
         mkdir("simulations")
-        mkdir("simulations/" * dirname)
+        mkdir(joinpath("simulations" , dirname))
     end
-    user_dir = "simulations/" * dirname
+    user_dir = joinpath("simulations" , dirname)
+
+    if clean
+        # clean directory
+        cd(user_dir)
+        clean_directory()   # removes all existing LaMEM files
+        cd(base_dir)
+    end
+
     return user_dir
 end
 
@@ -532,3 +544,6 @@ function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
 
     return nothing
 end
+
+
+has_pvd_file(OutFile, user_dir) = isfile(joinpath(user_dir, OutFile * ".pvd"))

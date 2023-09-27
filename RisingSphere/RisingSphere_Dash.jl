@@ -16,7 +16,6 @@ OutFile = "RiseSphere"
 base_dir = pwd()
 cd(base_dir)
 
-
 # We also use a time-card that has maximum(Vz)
 function make_time_card()
     item = dbc_row([
@@ -110,18 +109,18 @@ callback!(app,
     trigger = get_trigger()
     disable_interval = true
     if trigger == "button-run.n_clicks"
-        cd(base_dir)
+        base_dir = pwd()
         
-       
         args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
-         # We clicked the run button
-         user_dir = make_new_directory(session_id)
-         cd(user_dir)
         
-        clean_directory()   # removes all existing LaMEM files
-        pfile = base_dir * "/" * ParamFile
+        # We clicked the run button
+        user_dir = simulation_directory(session_id, clean=true)
+        cd(user_dir)
+
+        pfile = joinpath(base_dir,ParamFile) 
         run_lamem(pfile, 1, args, wait=false)
         disable_interval = false
+        cd(base_dir)        # return to main directory
 
     elseif trigger == "button-run.disabled"
         last_t = parse(Int, last_timestep)
@@ -174,10 +173,12 @@ callback!(app,
     prevent_initial_call=true
 ) do n_inter, n_run, current_timestep, update_fig, session_id
     trigger = get_trigger()
+    user_dir = simulation_directory(session_id, clean=false)
     if trigger == "session-interval.n_intervals"
-        if isfile(OutFile * ".pvd")
+        if has_pvd_file(OutFile, user_dir)
+            
             # Read LaMEM *.pvd file
-            Timestep, _, Time = Read_LaMEM_simulation(OutFile)
+            Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)
 
             # Update the labels and data stored in webpage about the last timestep
             last_time = "$(Timestep[end])"
@@ -231,6 +232,7 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
     last_t = parse(Int, last_timestep)                      # last timestep available on disk
     fig_cross = []
     fields_available = ["phase"]
+    maxVz = 0
     if trigger == "current_timestep.data" ||
        trigger == "update_fig.data" ||
        trigger == "button-start.n_clicks" ||
@@ -239,8 +241,10 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
        trigger == "button-forward.n_clicks" ||
        trigger == "button-play.n_clicks"
 
-        if isfile(OutFile * ".pvd")
-            Timestep, _, Time = Read_LaMEM_simulation(OutFile)      # all timesteps
+        user_dir = simulation_directory(session_id, clean=false)
+        if has_pvd_file(OutFile, user_dir)
+
+            Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
             id = findall(Timestep .== cur_t)[1]
             if trigger == "button-start.n_clicks" || trigger == "button-play.n_clicks"
                 cur_t = 0
@@ -257,28 +261,35 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
             end
 
             # Load data 
-            x, y, Vz, time, fields_available = get_data(OutFile, cur_t, "velocity_z")
-            x, y, data, time, fields_available = get_data(OutFile, cur_t, plot_field)
+            x, y, Vz, time, fields_available = get_data(OutFile, cur_t, "velocity_z", user_dir)
+            x, y, data, time, fields_available = get_data(OutFile, cur_t, plot_field, user_dir)
             
+            add_contours = false
             if !isnothing(switch_contour)
-                add_contours = true
-                x_con, y_con, data_con, _, _ = get_data(OutFile, cur_t, contour_field)
+                if !isempty(switch_contour)
+                     add_contours = true
+                end
+            end
+
+            if add_contours
+                x_con, y_con, data_con, _, _ = get_data(OutFile, cur_t, contour_field, user_dir)
             else
                 x_con, y_con, data_con = x, y, data
-                add_contours = false
             end
-            # update the plot
 
-            if isnothing(switch_velocity)
-                add_velocity = false
-            else
-                add_velocity = true
+            # update the plot
+            add_velocity = false
+            if !isnothing(switch_velocity)
+                if !isempty(switch_velocity)
+                    add_velocity = true
+                end
             end
 
             fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con, field=plot_field, cmaps;
                 add_contours=add_contours, contour_field=contour_field,
                 add_velocity=add_velocity,
-                colorscale=color_map_option)
+                colorscale=color_map_option,
+                session_id=session_id)
 
             if trigger == "current_timestep.data" || trigger == "update_fig.data" || trigger == "button-play.n_clicks"
                 if cur_t < last_t
@@ -294,7 +305,6 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
     elseif trigger == "button-run.n_clicks"
         cur_t = 0
         time = 0.0
-        maxVz = 0
     end
 
     # update the labels
