@@ -547,3 +547,18 @@ end
 
 
 has_pvd_file(OutFile, user_dir) = isfile(joinpath(user_dir, OutFile * ".pvd"))
+
+
+"""
+    active_switch = active_switch(switch)
+Returns true if the switch is on
+"""
+function active_switch(switch)
+    active_switch=false;
+    if !isnothing(switch)
+        if !isempty(switch)
+            active_switch = true
+        end
+    end
+    return active_switch
+end

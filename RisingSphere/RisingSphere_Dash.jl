@@ -264,13 +264,7 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
             x, y, Vz, time, fields_available = get_data(OutFile, cur_t, "velocity_z", user_dir)
             x, y, data, time, fields_available = get_data(OutFile, cur_t, plot_field, user_dir)
             
-            add_contours = false
-            if !isnothing(switch_contour)
-                if !isempty(switch_contour)
-                     add_contours = true
-                end
-            end
-
+            add_contours = active_switch(switch_contour)
             if add_contours
                 x_con, y_con, data_con, _, _ = get_data(OutFile, cur_t, contour_field, user_dir)
             else
@@ -278,13 +272,8 @@ plot_field, switch_contour, contour_field, switch_velocity, color_map_option
             end
 
             # update the plot
-            add_velocity = false
-            if !isnothing(switch_velocity)
-                if !isempty(switch_velocity)
-                    add_velocity = true
-                end
-            end
-
+            add_velocity = active_switch(switch_velocity)
+            
             fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con, field=plot_field, cmaps;
                 add_contours=add_contours, contour_field=contour_field,
                 add_velocity=add_velocity,
