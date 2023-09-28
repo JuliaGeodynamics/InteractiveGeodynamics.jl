@@ -1,25 +1,25 @@
+module RisingSphereTools
+
 using Dash, DashBootstrapComponents
 using PlotlyJS
 using LaMEM
 using UUIDs
 using Interpolations
 
-export RisingSphere
+export RisingSphere 
 
-pkg_dir = pkgdir(InteractiveGeodynamics)
+pkg_dir = pkgdir(RisingSphereTools)
 include(joinpath(pkg_dir,"src/dash_tools.jl"))
+include(joinpath(pkg_dir,"RisingSphere/dash_functions_RisingSphere.jl"))
 
 """
-
-This starts a rising sphere GUI
+    This starts a rising sphere GUI
 """
 function RisingSphere()
-    pkg_dir = pkgdir(InteractiveGeodynamics)
-    include(joinpath(pkg_dir,"RisingSphere/dash_functions_RisingSphere.jl"))
+    pkg_dir = pkgdir(RisingSphereTools)
     
     GUI_version = "0.1.0"
-    pkg_dir = pkgdir(InteractiveGeodynamics);
-    cmaps = read_colormaps()
+    cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
 
     title_app = "Rising Sphere example"
     ParamFile = "RisingSphere.dat"
@@ -56,7 +56,7 @@ function RisingSphere()
             make_title(title_app),
             dbc_row([
                 dbc_col([
-                    make_plot(),            # show graph
+                    make_plot("",cmaps),    # show graph
                     make_plot_controls(),   # show media buttons
                     make_id_label(),        # show user id
                 ]),
@@ -101,7 +101,8 @@ function RisingSphere()
         Output("session-interval", "disabled"),
         Input("button-run", "n_clicks"),
         Input("button-run", "disabled"),
-        Input("button-play", "n_clicks"), State("domain_width", "value"),
+        Input("button-play", "n_clicks"), 
+        State("domain_width", "value"),
         State("nel_x", "value"),
         State("nel_z", "value"),
         State("n_timesteps", "value"),
@@ -122,7 +123,7 @@ function RisingSphere()
         disable_interval = true
         if trigger == "button-run.n_clicks"
             cur_dir = pwd()
-            base_dir = joinpath(pkgdir(InteractiveGeodynamics),"RisingSphere")
+            base_dir = joinpath(pkgdir(RisingSphereTools),"RisingSphere")
             
             args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
             
@@ -287,11 +288,12 @@ function RisingSphere()
                 # update the plot
                 add_velocity = active_switch(switch_velocity)
                 
-                fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con, field=plot_field, cmaps;
+                fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con;
                     add_contours=add_contours, contour_field=contour_field,
                     add_velocity=add_velocity,
                     colorscale=color_map_option,
-                    session_id=session_id)
+                    session_id=session_id,
+                    field=plot_field, cmaps=cmaps)
 
                 if trigger == "current_timestep.data" || trigger == "update_fig.data" || trigger == "button-play.n_clicks"
                     if cur_t < last_t
@@ -339,5 +341,7 @@ function RisingSphere()
 
     run_server(app, debug=false)
 
+
+end
 
 end

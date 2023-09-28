@@ -1,3 +1,13 @@
+#module Dash_tools
+
+using DelimitedFiles
+using Dash, DashBootstrapComponents
+using PlotlyJS
+
+#export create_main_figure, get_data, get_trigger, read_colormaps, active_switch, has_pvd_file,
+#        make_title, make_plot, make_plot_controls, make_id_label, make_time_card, make_menu,
+#        make_accordion_item, make_rheological_parameters
+
 # various handy and reusable functions
 """
 Creates the main figure plot.
@@ -407,9 +417,26 @@ function make_time_card()
 end
 
 """
-Retunrs a row containing a label, a tooltip and a filling box.
+Returns a row containing a label, a tooltip and a filling box.
 """
-function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::Float64=1.0, min::Float64=1.0e-10, max::Float64=10_000.0)
+function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::_T=1*one(_T), min=nothing, max=nothing) where _T <: Number
+    
+    if isa(_T, Float64)
+        if isnothing(min)
+            min = 1e-10
+        end
+        if isnothing(max)
+            max = 10000
+        end
+    elseif isa(_T, Int64)
+        if isnothing(min)
+            min = 2
+        end
+        if isnothing(max)
+            max = 10_000
+        end
+    end
+
     item = dbc_row([ # domain width
         dbc_col([
             dbc_label(label, id=idx*"_label", size="md"),
@@ -420,19 +447,21 @@ function make_accordion_item(label::String="param", idx::String="id", msg::Strin
     return item
 end
 
+#=
 """
-Retunrs a row containing a label, a tooltip and a filling box.
+Returns a row containing a label, a tooltip and a filling box.
 """
-function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::Int64=2, min::Int64=2, max::Int64=10_000)
+function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::Int64=2, mini::Int64=2, maxi::Int64=10_000)
     item = dbc_row([ # domain width
         dbc_col([
             dbc_label(label, id=idx*"_label", size="md"),
             dbc_tooltip(msg, target=idx*"_label")
         ]),
-        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
+        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=mini, size="md"))
     ])
     return item
 end
+=#
 
 """
 Returns an accordion menu containing the plotting parameters.
@@ -541,3 +570,5 @@ function active_switch(switch)
     end
     return active_switch_val
 end
+
+#end

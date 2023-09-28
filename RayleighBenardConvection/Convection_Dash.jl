@@ -1,5 +1,4 @@
 module ConvectionTools
-
 using Dash, DashBootstrapComponents
 using PlotlyJS
 using LaMEM
@@ -7,13 +6,14 @@ using UUIDs
 using Interpolations
 using GeophysicalModelGenerator
 using DelimitedFiles
+
 export Convection 
 
 pkg_dir = Base.pkgdir(ConvectionTools)
 
 include(joinpath(pkg_dir,"src/dash_tools.jl"))
 include(joinpath(pkg_dir,"RayleighBenardConvection/dash_functions_convection.jl"))
-        
+ 
 
 """
     This starts a rising sphere GUI
@@ -311,7 +311,7 @@ function Convection()
         current_timestep = "$cur_t"
 
         # @show current_timestep
-        println("Timsetep ", cur_t)
+        println("Timestep ", cur_t)
         return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
     end
 
