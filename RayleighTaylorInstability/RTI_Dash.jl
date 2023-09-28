@@ -6,6 +6,7 @@ using LaMEM
 using UUIDs
 using Interpolations
 using GeophysicalModelGenerator
+using HTTP
 
 export RayleighTaylor
 
@@ -15,9 +16,11 @@ include(joinpath(pkg_dir,"src/dash_tools.jl"))
 include(joinpath(pkg_dir,"RayleighTaylorInstability/dash_functions_RTI.jl"))
  
 """
-    This starts a RayleighTaylor instability GUI
+    RayleighTaylor(; host=HTTP.Sockets.localhost, port=8050)
+
+This starts a RayleighTaylor instability GUI
 """
-function RayleighTaylor()
+function RayleighTaylor(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(RTITools)
     
     GUI_version = "0.1.1"
@@ -123,7 +126,6 @@ function RayleighTaylor()
             addlayers = active_switch(layers)
             
             # print(layers)c
-
 
             args = "-nstep_max $(n_timesteps) -eta[0] $η_up -eta[1] $η_up -eta[2] $η_lo -rho[0] $ρ_up -rho[1] $ρ_up -rho[2] $ρ_lo -open_top_bound $(Int64(open_top_bound)) -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2)"
             println("args = ", args)
@@ -336,7 +338,7 @@ function RayleighTaylor()
         return disable_contours
     end
 
-    run_server(app, debug=false)
+    run_server(app, host, port, debug=false)
 
 end
 

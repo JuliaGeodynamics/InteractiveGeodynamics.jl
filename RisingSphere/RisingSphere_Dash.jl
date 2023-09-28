@@ -5,6 +5,7 @@ using PlotlyJS
 using LaMEM
 using UUIDs
 using Interpolations
+using HTTP
 
 export RisingSphere 
 
@@ -13,9 +14,11 @@ include(joinpath(pkg_dir,"src/dash_tools.jl"))
 include(joinpath(pkg_dir,"RisingSphere/dash_functions_RisingSphere.jl"))
 
 """
-    This starts a rising sphere GUI
+    RisingSphere(host=HTTP.Sockets.localhost, port=8050)
+
+This starts a rising sphere GUI
 """
-function RisingSphere()
+function RisingSphere(host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = pkgdir(RisingSphereTools)
     
     GUI_version = "0.1.0"
@@ -339,7 +342,7 @@ function RisingSphere()
     end
 
 
-    run_server(app, debug=false)
+    run_server(app, host, port, debug=false)
 
     return app
 end

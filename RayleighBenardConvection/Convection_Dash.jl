@@ -6,6 +6,7 @@ using UUIDs
 using Interpolations
 using GeophysicalModelGenerator
 using DelimitedFiles
+using HTTP
 
 export Convection 
 
@@ -16,9 +17,11 @@ include(joinpath(pkg_dir,"RayleighBenardConvection/dash_functions_convection.jl"
  
 
 """
-    This starts a rising sphere GUI
+    Convection(host=HTTP.Sockets.localhost, port=8050)
+
+This starts a convection GUI
 """
-function Convection()
+function Convection(host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(ConvectionTools)
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
     
@@ -332,7 +335,8 @@ function Convection()
     end
     
 
-    run_server(app, debug=false)
+    run_server(app, host, port, debug=false)
+
 
     return app
 end
