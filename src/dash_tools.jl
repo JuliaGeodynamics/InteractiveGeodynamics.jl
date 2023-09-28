@@ -3,10 +3,15 @@
 Creates the main figure plot.
 """
 function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
-    x_con=1:10, y_con=1:10, data_con=rand(10, 10), cmaps=read_colormaps()
+    x_con=1:10, y_con=1:10, data_con=rand(10, 10)
     ;
-    colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase",
-    session_id="")
+    colorscale="batlow", 
+    field="phase", 
+    add_contours=true, 
+    add_velocity=false, 
+    contour_field="phase",
+    session_id="",
+    cmaps=[])
     
     data_plot = [heatmap(x=x,
         y=y,
@@ -246,9 +251,9 @@ end
 This reads colormaps and transfers them into plotly format. The colormaps are supposed to be provided in ascii text format 
 """
 function read_colormaps(; dir_colormaps="" , scaling=256)
-    if isempty(dir_colormaps)
-        dir_colormaps=joinpath(pkgdir(InteractiveGeodynamics),"src/assets/colormaps/")
-    end
+    #if isempty(dir_colormaps)
+    #    dir_colormaps=joinpath(pkgdir(InteractiveGeodynamics),"src/assets/colormaps/")
+    #end
     
     # Read all colormaps
     colormaps = NamedTuple();
@@ -292,10 +297,10 @@ end
 """
 Returns a row containing the main plot.
 """
-function make_plot(OutFile="")
+function make_plot(OutFile="",cmaps=[])
     item = dbc_row([
         dcc_graph(id="figure_main",
-            figure=create_main_figure(OutFile, 0),
+            figure=create_main_figure(OutFile, 0, cmaps=cmaps),
             #animate   = false,
             #responsive=false,
             #clickData = true,
@@ -528,11 +533,11 @@ has_pvd_file(OutFile, user_dir) = isfile(joinpath(user_dir, OutFile * ".pvd"))
 Returns true if the switch is on
 """
 function active_switch(switch)
-    active_switch=false;
+    active_switch_val=false;
     if !isnothing(switch)
         if !isempty(switch)
-            active_switch = true
+            active_switch_val = true
         end
     end
-    return active_switch
+    return active_switch_val
 end
