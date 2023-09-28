@@ -384,20 +384,7 @@ end
 
 
 
-"""
-Returns an accordion menu containing the simulation parameters.
-"""
-function make_simulation_parameters()
-    return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Lₓ (km):", "domain_width", "Width of the domain, given in kilometers.", 1.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 64, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 30, 1),
-    ])
-end
+
 
 """
 Returns a row containing a card with time information of the simulation.

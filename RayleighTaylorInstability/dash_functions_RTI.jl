@@ -1,5 +1,90 @@
 using DelimitedFiles
 
+
+"""
+Returns an accordion menu containing the rheological parameters.
+"""
+function make_rheological_parameters()
+    return dbc_accordionitem(title="Rheological Parameters", [
+        make_accordion_item("η_up(log₁₀(Pa⋅s)):", "viscosity_upper", "Logarithm of the viscosity of the upper layers.", 21.0, 16.0, 23.0),
+        dbc_row(html_p()),
+        make_accordion_item("η_lo(log₁₀(Pa⋅s)):", "viscosity_lower", "Logarithm of the viscosity of the lower layer", 20.0, 16.0, 23.0),
+        dbc_row(html_p()),
+        make_accordion_item("ρ_up:", "density_upper", "Density of the upper layers.", 2800.0, 2.0, 5000.0),
+        dbc_row(html_p()),
+        make_accordion_item("ρ_lo:", "density_lower", "Density of the lower layer.", 2200.0, 2.0, 5000.0),
+    ])
+end
+
+"""
+Returns an accordion menu containing the simulation parameters.
+"""
+function make_simulation_parameters()
+    return dbc_accordionitem(title="Simulation Parameters", [
+        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 10.0, 1.0e-10),
+        dbc_row(html_p()),
+        make_accordion_item("Depth of the interface (km):", "depth", "Depth of the interface, given in kilometers.", -2.5, -50.0),
+        dbc_row(html_p()),
+        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
+        dbc_row(html_p()),
+        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 32, 2),
+        dbc_row(html_p()),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 50, 1),
+        dbc_row(html_p()),
+        dbc_row([
+            dbc_checklist(options=["FreeSurf"],
+                    id="switch-FreeSurf",
+                    switch=true,
+            )
+        ]),
+        dbc_row(html_p()),
+        dbc_row([
+            dbc_checklist(options=["Layers"],
+                    id="switch-Layers",
+                    switch=true,
+            )
+        ])
+    ])
+end
+
+"""
+Creates a setup with noisy temperature and one phase
+"""
+function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.1, ; args)
+    Grid        =   ReadLaMEM_InputFile(ParamFile, args=args)
+    Phases      =   zeros(Int64, size(Grid.X));      
+    Temp        =   zeros(Float64,size(Grid.X));  
+    
+
+    if layered_overburden
+        H_layer = 0.25;
+        for z_low = minimum(Grid.Z):2*H_layer:maximum(Grid.Z)
+            # print(z_low)
+            # z_low = -z_low
+            iz = findall( (Grid.Z[1,1,:] .> z_low) .&  (Grid.Z[1,1,:] .<= (z_low+H_layer) )) 
+            Phases[:,:,iz] .= 1;
+        end 
+    end
+   
+    z_int       =   ones(Grid.nump_x)*Hi + rand(Grid.nump_x)*ampl_noise
+    # print(z_int)
+    # z_int       =   -z_int
+    for ix=1:Grid.nump_x, iy=1:Grid.nump_y
+        iz = findall(Grid.Z[ix,iy,:] .< z_int[ix] )
+        Phases[ix,iy,iz] .= 2;
+    end
+
+    # print(z_int)
+
+    Model3D     =   CartData(Grid, (Phases=Phases,Temp=Temp))   # Create LaMEM model
+    Write_Paraview(Model3D,"LaMEM_ModelSetup", verbose=false)   # Save model to paraview   (load with opening LaMEM_ModelSetup.vts in paraview)  
+
+    Save_LaMEMMarkersParallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
+
+    return nothing
+end
+
+#=
 """
 Creates the main figure plot.
 """
@@ -457,51 +542,7 @@ function make_accordion_item(label::String="param", idx::String="id", msg::Strin
     return item
 end
 
-"""
-Returns an accordion menu containing the simulation parameters.
-"""
-function make_simulation_parameters()
-    return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 10.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("Depth of the interface (km):", "depth", "Depth of the interface, given in kilometers.", -2.5, -50.0),
-        dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 32, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 16, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 50, 1),
-        dbc_row(html_p()),
-        dbc_row([
-            dbc_checklist(options=["FreeSurf"],
-                    id="switch-FreeSurf",
-                    switch=true,
-            )
-        ]),
-        dbc_row(html_p()),
-        dbc_row([
-            dbc_checklist(options=["Layers"],
-                    id="switch-Layers",
-                    switch=true,
-            )
-        ])
-    ])
-end
 
-"""
-Returns an accordion menu containing the rheological parameters.
-"""
-function make_rheological_parameters()
-    return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("η_up(log₁₀(Pa⋅s)):", "viscosity_upper", "Logarithm of the viscosity of the upper layers.", 21.0, 16.0, 23.0),
-        dbc_row(html_p()),
-        make_accordion_item("η_lo(log₁₀(Pa⋅s)):", "viscosity_lower", "Logarithm of the viscosity of the lower layer", 20.0, 16.0, 23.0),
-        dbc_row(html_p()),
-        make_accordion_item("ρ_up:", "density_upper", "Density of the upper layers.", 2800.0, 2.0, 5000.0),
-        dbc_row(html_p()),
-        make_accordion_item("ρ_lo:", "density_lower", "Density of the lower layer.", 2200.0, 2.0, 5000.0),
-    ])
-end
 
 """
 Returns an accordion menu containing the plotting parameters.
@@ -584,39 +625,5 @@ function make_new_directory(session_id)
     return user_dir
 end
 
-"""
-Creates a setup with noisy temperature and one phase
-"""
-function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.1, ; args)
-    Grid        =   ReadLaMEM_InputFile(ParamFile, args=args)
-    Phases      =   zeros(Int64, size(Grid.X));      
-    Temp        =   zeros(Float64,size(Grid.X));  
-    
 
-    if layered_overburden
-        H_layer = 0.25;
-        for z_low = minimum(Grid.Z):2*H_layer:maximum(Grid.Z)
-            # print(z_low)
-            # z_low = -z_low
-            iz = findall( (Grid.Z[1,1,:] .> z_low) .&  (Grid.Z[1,1,:] .<= (z_low+H_layer) )) 
-            Phases[:,:,iz] .= 1;
-        end 
-    end
-   
-    z_int       =   ones(Grid.nump_x)*Hi + rand(Grid.nump_x)*ampl_noise
-    # print(z_int)
-    # z_int       =   -z_int
-    for ix=1:Grid.nump_x, iy=1:Grid.nump_y
-        iz = findall(Grid.Z[ix,iy,:] .< z_int[ix] )
-        Phases[ix,iy,iz] .= 2;
-    end
-
-    # print(z_int)
-
-    Model3D     =   CartData(Grid, (Phases=Phases,Temp=Temp))   # Create LaMEM model
-    Write_Paraview(Model3D,"LaMEM_ModelSetup", verbose=false)   # Save model to paraview   (load with opening LaMEM_ModelSetup.vts in paraview)  
-
-    Save_LaMEMMarkersParallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
-
-    return nothing
-end
+=#

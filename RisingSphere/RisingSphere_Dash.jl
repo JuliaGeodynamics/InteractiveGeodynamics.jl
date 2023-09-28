@@ -341,7 +341,7 @@ function RisingSphere()
 
     run_server(app, debug=false)
 
-
+    return app
 end
 
 end
