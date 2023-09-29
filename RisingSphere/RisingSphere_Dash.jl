@@ -14,11 +14,11 @@ include(joinpath(pkg_dir,"src/dash_tools.jl"))
 include(joinpath(pkg_dir,"RisingSphere/dash_functions_RisingSphere.jl"))
 
 """
-    RisingSphere(host=HTTP.Sockets.localhost, port=8050)
+    RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
 
 This starts a rising sphere GUI
 """
-function RisingSphere(host=HTTP.Sockets.localhost, port=8050)
+function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = pkgdir(RisingSphereTools)
     
     GUI_version = "0.1.0"

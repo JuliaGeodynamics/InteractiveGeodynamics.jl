@@ -20,7 +20,7 @@ include(joinpath(pkg_dir,"RayleighTaylorInstability/dash_functions_RTI.jl"))
 
 This starts a RayleighTaylor instability GUI
 """
-function RayleighTaylor(; host=HTTP.Sockets.localhost, port=8050)
+function RayleighTaylor(; host = HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(RTITools)
     
     GUI_version = "0.1.1"

@@ -17,11 +17,11 @@ include(joinpath(pkg_dir,"RayleighBenardConvection/dash_functions_convection.jl"
  
 
 """
-    Convection(host=HTTP.Sockets.localhost, port=8050)
+    Convection(; host=HTTP.Sockets.localhost, port=8050)
 
 This starts a convection GUI
 """
-function Convection(host=HTTP.Sockets.localhost, port=8050)
+function Convection(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(ConvectionTools)
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
     
