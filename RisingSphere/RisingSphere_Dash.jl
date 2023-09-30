@@ -87,8 +87,8 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
     # This creates an initial session id that is unique for this session
     # it will run on first start 
     callback!(app, 
-        Output("session-id", "data"),
-        Output("label-id", "children"),
+        Dash.Output("session-id", "data"),
+        Dash.Output("label-id", "children"),
         Input("session-id", "data")
     ) do session_id
 
@@ -101,7 +101,7 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
 
     # Call run button
     callback!(app,
-        Output("session-interval", "disabled"),
+        Dash.Output("session-interval", "disabled"),
         Input("button-run", "n_clicks"),
         Input("button-run", "disabled"),
         Input("button-play", "n_clicks"), 
@@ -156,8 +156,8 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
 
     # deactivate the button 
     callback!(app,
-        Output("button-run", "disabled"),
-        Output("button-run", "color"),
+        Dash.Output("button-run", "disabled"),
+        Dash.Output("button-run", "color"),
         Input("button-run", "n_clicks"),
         Input("session-interval", "n_intervals"),
         State("last_timestep", "data"),
@@ -180,8 +180,8 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
 
     # Check if *.pvd file on disk changed and a new timestep is available
     callback!(app,
-        Output("last_timestep", "data"),
-        Output("update_fig", "data"),
+        Dash.Output("last_timestep", "data"),
+        Dash.Output("update_fig", "data"),
         Input("session-interval", "n_intervals"),
         Input("button-run", "n_clicks"),
         State("current_timestep", "data"),
@@ -216,13 +216,13 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
 
     # Update the figure if the signal is given to do so
     callback!(app,
-        Output("label-timestep", "children"),
-        Output("label-time", "children"),
-        Output("current_timestep", "data"),
-        Output("figure_main", "figure"),
-        Output("plot_field", "options"),
-        Output("contour_option", "options"),
-        Output("label-max-vz","children"),
+        Dash.Output("label-timestep", "children"),
+        Dash.Output("label-time", "children"),
+        Dash.Output("current_timestep", "data"),
+        Dash.Output("figure_main", "figure"),
+        Dash.Output("plot_field", "options"),
+        Dash.Output("contour_option", "options"),
+        Dash.Output("label-max-vz","children"),
         Input("update_fig", "data"),
         Input("current_timestep", "data"),
         Input("button-run", "n_clicks"),
@@ -327,7 +327,7 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
 
     # Enable or disable contours
     callback!(app,
-        Output("contour_option", "disabled"),
+        Dash.Output("contour_option", "disabled"),
         Input("switch-contour", "value")) do switch_contour
         if !isnothing(switch_contour)
             if isempty(switch_contour)
