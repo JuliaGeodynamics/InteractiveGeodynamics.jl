@@ -83,9 +83,8 @@ This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 function get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
     
     data,time = Read_LaMEM_timestep(OutFile, tstep, Dir)
-
+    
     value = extract_data_fields(data, field)        # get field; can handle tensors & vectors as well
-
     fields= String.(keys(data.fields))
     fields_available = get_fields(fields)
     
@@ -139,7 +138,7 @@ function extract_data_fields(data, field)
         else
             id = findall(tensor.=="_"*extension)[1]
         end
-        value     = data.fields[Symbol(name)][id,:,:,:] 
+        value     = data.fields[Symbol(name)][id] 
     end
     return value
 end
