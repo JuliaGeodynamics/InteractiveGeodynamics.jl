@@ -2,34 +2,34 @@ using DelimitedFiles
 
 
 """
-Returns an accordion menu containing the rheological parameters.
-"""
-function make_rheological_parameters()
-    return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("η_up(log₁₀(Pa⋅s)):", "viscosity_upper", "Logarithm of the viscosity of the upper layers.", 21.0, 16.0, 23.0),
-        dbc_row(html_p()),
-        make_accordion_item("η_lo(log₁₀(Pa⋅s)):", "viscosity_lower", "Logarithm of the viscosity of the lower layer", 20.0, 16.0, 23.0),
-        dbc_row(html_p()),
-        make_accordion_item("ρ_up:", "density_upper", "Density of the upper layers.", 2800.0, 2.0, 5000.0),
-        dbc_row(html_p()),
-        make_accordion_item("ρ_lo:", "density_lower", "Density of the lower layer.", 2200.0, 2.0, 5000.0),
-    ])
-end
-
-"""
 Returns an accordion menu containing the simulation parameters.
 """
 function make_simulation_parameters()
     return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 10.0, 1.0e-10),
+        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 2000.0, 1.0e-10),
         dbc_row(html_p()),
-        make_accordion_item("Depth of the interface (km):", "depth", "Depth of the interface, given in kilometers.", -2.5, -50.0),
+        make_accordion_item("Height (km):", "domain_height", "Height of the domain, given in kilometers.", 1000.0, 1.0e-10),
         dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
+        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 128, 2),
         dbc_row(html_p()),
-        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 32, 2),
+        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 64, 2),
         dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 50, 1),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 250, 1),
+    ])
+end
+
+"""
+Returns an accordion menu containing the rheological parameters.
+"""
+function make_rheological_parameters()
+    return dbc_accordionitem(title="Rheological Parameters", [
+        make_accordion_item("ΔT:", "ΔT", "Temperature difference between the base and the top.", 2000.0, 1.0-10, 10_000.0),
+        dbc_row(html_p()),
+        make_accordion_item("η=η₀exp(-γT), γ:", "γ", "Parameter for Frank-Kamenetzky viscosity (0.0 ≤ γ ≤ 1.0)", 0.001, 0.0, 1.0),
+        dbc_row(html_p()),
+        make_accordion_item("Cohesion (MPa):", "cohesion", "Logarithm of the cohesion of the model (0 ≤ cohesion ≤ 10_000) [MPa].", 500.0, 0.0, 10_000.0),
+        dbc_row(html_p()),
+        make_accordion_item("η (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < η ≤ 25).", 21.0, 15.0, 25.0),
         dbc_row(html_p()),
         dbc_row([
             dbc_checklist(options=["FreeSurf"],
@@ -37,141 +37,29 @@ function make_simulation_parameters()
                     switch=true,
             )
         ]),
-        dbc_row(html_p()),
-        dbc_row([
-            dbc_checklist(options=["Layers"],
-                    id="switch-Layers",
-                    switch=true,
-            )
-        ])
     ])
 end
 
 """
 Creates a setup with noisy temperature and one phase
 """
-function CreateSetup(ParamFile, layered_overburden=false, Hi=-5.0, ampl_noise=0.1, ; args)
-    Grid        =   ReadLaMEM_InputFile(ParamFile, args=args)
-    Phases      =   zeros(Int64, size(Grid.X));      
-    Temp        =   zeros(Float64,size(Grid.X));  
-    
+function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
+    Grid = ReadLaMEM_InputFile(ParamFile, args=args)
+    Phases = zeros(Int64, size(Grid.X))
+    Temp = [ΔT / 2 + rand()*ampl_noise for _ in axes(Grid.X,1), _ in axes(Grid.X,2), _ in axes(Grid.X,3)]
+    Phases[Grid.Z.>0.0] .= 1
+    Temp[Grid.Z.>0.0] .= 0.0
 
-    if layered_overburden
-        H_layer = 0.25;
-        for z_low = minimum(Grid.Z):2*H_layer:maximum(Grid.Z)
-            # print(z_low)
-            # z_low = -z_low
-            iz = findall( (Grid.Z[1,1,:] .> z_low) .&  (Grid.Z[1,1,:] .<= (z_low+H_layer) )) 
-            Phases[:,:,iz] .= 1;
-        end 
-    end
-   
-    z_int       =   ones(Grid.nump_x)*Hi + rand(Grid.nump_x)*ampl_noise
-    # print(z_int)
-    # z_int       =   -z_int
-    for ix=1:Grid.nump_x, iy=1:Grid.nump_y
-        iz = findall(Grid.Z[ix,iy,:] .< z_int[ix] )
-        Phases[ix,iy,iz] .= 2;
-    end
-
-    # print(z_int)
-
-    Model3D     =   CartData(Grid, (Phases=Phases,Temp=Temp))   # Create LaMEM model
-    Write_Paraview(Model3D,"LaMEM_ModelSetup", verbose=false)   # Save model to paraview   (load with opening LaMEM_ModelSetup.vts in paraview)  
+    Model3D = CartData(Grid, (Phases=Phases, Temp=Temp))   # Create LaMEM model
+    Write_Paraview(Model3D, "LaMEM_ModelSetup", verbose=false)   # Save model to paraview (load with opening LaMEM_ModelSetup.vts in paraview)  
 
     Save_LaMEMMarkersParallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
 
     return nothing
 end
 
+
 #=
-"""
-Creates the main figure plot.
-"""
-function create_main_figure(
-    OutFile, cur_t, 
-    x=-10:10, y=-10:0, data=rand(10, 20), # heatmap plot
-    x_con=-10:10, y_con=-10:0, data_con=rand(10, 20), # contour plot
-    cmaps=read_colormaps() # colormaps
-    ; colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase")
-
-    cbar_thk = 20
-    
-    # add heatmap
-    data_plot = [
-        heatmap(
-            x=x,
-            y=y,
-            z=data,
-            colorscale=cmaps[Symbol(colorscale)],
-            colorbar=attr(thickness=cbar_thk, title=field)
-        )
-    ]
-    # add contours
-    if add_contours == true
-        push!(
-            data_plot, (
-                contour(
-                    x=x_con,
-                    y=y_con,
-                    z=data_con,
-                    colorscale=cmaps[Symbol(colorscale)],
-                    contours_coloring="lines",
-                    line_width=2,
-                    colorbar=attr(thickness=cbar_thk, title=contour_field, x=1.1, yanchor=0.5, contour_label=true),
-                )
-            )
-        )
-    end
-    # add velocity
-    if add_velocity == true
-        arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
-        push!(data_plot, arrowhead)
-        push!(data_plot, line)
-    end
-
-    pl = (id="fig_cross",
-        data=data_plot,
-        # colorbar=Dict("orientation" => "v", "len" => 0.5),
-        
-        layout=(
-            
-            # width="320vw", height="320vh",
-            xaxis=attr(
-                title="Width (km)",
-                tickfont_size=14,
-                tickfont_color="rgb(100, 100, 100)",
-                showgrid=false,
-                # zeroline=false, 
-                # automargin=true,
-                # constrain="domain",
-                scaleanchor="y", 
-                scaleratio=1.0,
-                showline=true, linewidth=2, linecolor="black", mirror=true,
-            ),
-            yaxis=attr(
-                title="Depth (km)",
-                # domain=[0,100],
-                tickfont_size=14,
-                tickfont_color="rgb(10, 10, 10)",
-                showgrid=false,
-                showline=true, linewidth=2, linecolor="black", mirror=true,
-                # range=[-10,0],
-                # zeroline=false,
-                # scaleanchor="x", 
-                # scaleratio=1.0,
-                # constrain="domain",
-                # constrain="range",
-            ), margin=Dict([("l", 50), ("r", 50)])#), margin=Dict([("l", 350), ("r", 350)])
-        ),
-        config=(edits = (shapePosition=true,)), scaleratio=1.0
-
-        
-    )
-
-    return pl
-end
-
 """
     x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
 
@@ -541,6 +429,8 @@ function make_accordion_item(label::String="param", idx::String="id", msg::Strin
     ])
     return item
 end
+
+
 
 
 

@@ -1,39 +1,35 @@
-module ConvectionTools
+module RTITools
+
 using Dash, DashBootstrapComponents
 using PlotlyJS
 using LaMEM
 using UUIDs
 using Interpolations
 using GeophysicalModelGenerator
-using DelimitedFiles
 using HTTP
 
-export Convection 
+export RayleighTaylor
 
-pkg_dir = Base.pkgdir(ConvectionTools)
+pkg_dir = Base.pkgdir(RTITools)
 
 include(joinpath(pkg_dir,"src/dash_tools.jl"))
-include(joinpath(pkg_dir,"RayleighBenardConvection/dash_functions_convection.jl"))
+include(joinpath(pkg_dir,"src/RayleighTaylorInstability/dash_functions_RTI.jl"))
  
-
 """
-    Convection(; host=HTTP.Sockets.localhost, port=8050)
+    RayleighTaylor(; host=HTTP.Sockets.localhost, port=8050)
 
-This starts a convection GUI
+This starts a RayleighTaylor instability GUI
 """
-function Convection(; host=HTTP.Sockets.localhost, port=8050)
-    pkg_dir = Base.pkgdir(ConvectionTools)
-    cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
+function RayleighTaylor(; host = HTTP.Sockets.localhost, port=8050)
+    pkg_dir = Base.pkgdir(RTITools)
     
     GUI_version = "0.1.1"
+    cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
+
+    title_app = "Rayleigh Taylor Instability"
+    ParamFile = "RTI.dat"
+    OutFile = "RTI"
     
-    title_app = "Rayleigh-Benard Convection"
-    ParamFile = "Convection.dat"
-    OutFile = "Convection"
-
-    base_dir = pwd()
-    cd(base_dir)
-
     #app = dash(external_stylesheets=[dbc_themes.CYBORG])
     app = dash(external_stylesheets = [dbc_themes.BOOTSTRAP, dbc_icons.BOOTSTRAP], prevent_initial_callbacks=false)
     app.title = title_app
@@ -89,53 +85,64 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
         Input("button-run", "disabled"),
         Input("button-play", "n_clicks"), 
         State("domain_width", "value"),
-        State("domain_height", "value"),
+        State("depth", "value"),
         State("nel_x", "value"),
         State("nel_z", "value"),
         State("n_timesteps", "value"),
-        State("ΔT", "value"),
-        State("γ", "value"),
-        State("cohesion", "value"),
-        State("viscosity", "value"),
+        State("switch-FreeSurf", "value"),
+        State("switch-Layers", "value"),
         State("last_timestep", "data"),
         State("plot_field", "value"),
-        State("session-id", "data"),
-        State("switch-FreeSurf","value"),
+        State("session-id", "data"), 
+        State("viscosity_upper", "value"),
+        State("viscosity_lower", "value"),
+        State("density_upper", "value"),
+        State("density_lower", "value"),
         prevent_initial_call=true
     ) do n_run, active_run, n_play,
-        domain_width, domain_height, nel_x, nel_z, n_timesteps,
-        ΔT, γ, cohesion, viscosity,
-        last_timestep, plot_field, session_id, FreeSurface
+        domain_width, depth, nel_x, nel_z, n_timesteps,
+        open_top, layers,
+        last_timestep, plot_field, session_id,
+        η_up,η_lo,ρ_up,ρ_lo
         
+
+        # print(layers)
+        # print(open_top)
+
         trigger = get_trigger()
         disable_interval = true
-        user_dir = simulation_directory(session_id, clean=false)
         if trigger == "button-run.n_clicks"
             cur_dir = pwd()
-            base_dir = joinpath(pkgdir(ConvectionTools),"RayleighBenardConvection")
-
-            viscosity = 10.0^viscosity
-            cohesion *= 1.0e6
-
-            Δx  = domain_width/nel_x # y-width
+            base_dir = joinpath(pkgdir(RTITools),"src","RayleighTaylorInstability")
             
-            if FreeSurface === nothing
-                args = "-nstep_max $(n_timesteps) -eta_fk[0] $(viscosity)  -gamma_fk[0] $γ -TRef_fk[0] $(ΔT/2) -ch[0] $(cohesion) -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_height),0 -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"  
-            else
-                args = "-nstep_max $(n_timesteps) -eta_fk[0] $(viscosity)  -gamma_fk[0] $γ -TRef_fk[0] $(ΔT/2) -ch[0] $(cohesion) -nel_x $nel_x -coord_x $(-domain_width/2),$(domain_width/2) -coord_y $(-Δx/2),$(Δx/2) -temp_bot $ΔT"
-            end
+            
+            η_up = 10.0^η_up
+            η_lo = 10.0^η_lo
+            Hi_value = depth
+            W    = domain_width
+            open_top_bound = active_switch(open_top)
 
+            # print(open_top)
+            addlayers = active_switch(layers)
+            
+            # print(layers)c
+
+            args = "-nstep_max $(n_timesteps) -eta[0] $η_up -eta[1] $η_up -eta[2] $η_lo -rho[0] $ρ_up -rho[1] $ρ_up -rho[2] $ρ_lo -open_top_bound $(Int64(open_top_bound)) -nel_x $nel_x -nel_z $nel_z -coord_x $(-W/2),$(W/2)"
             println("args = ", args)
-
+            
             # We clicked the run button
             user_dir = simulation_directory(session_id, clean=true)
             cd(user_dir)
-            
+
             pfile = joinpath(base_dir,ParamFile) 
-            CreateSetup(pfile, ΔT, args=args)
+
+            # Create the setup
+            CreateSetup(pfile, addlayers, Hi_value, args=args)
+    
             run_lamem(pfile, 1, args, wait=false)
-            disable_interval = false
             cd(cur_dir)        # return to main directory
+
+            disable_interval = false
 
         elseif trigger == "button-run.disabled"
             last_t = parse(Int, last_timestep)
@@ -152,7 +159,6 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
         return disable_interval
     end
 
-    
     # deactivate the button 
     callback!(app,
         Dash.Output("button-run", "disabled"),
@@ -255,7 +261,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
         trigger == "button-play.n_clicks"
 
             user_dir = simulation_directory(session_id, clean=false)
-            if  has_pvd_file(OutFile, user_dir)
+            if has_pvd_file(OutFile, user_dir)
                 Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
                 id = findall(Timestep .== cur_t)[1]
                 if trigger == "button-start.n_clicks" || trigger == "button-play.n_clicks"
@@ -280,18 +286,16 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
                 else
                     x_con, y_con, data_con = x, y, data
                 end
-                
+
                 # update the plot
                 add_velocity = active_switch(switch_velocity)
-
-
+                
                 fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con;
                     add_contours=add_contours, contour_field=contour_field,
                     add_velocity=add_velocity,
                     colorscale=color_map_option,
-                    session_id=session_id, 
-                    cmaps=cmaps,
-                    field=plot_field)
+                    session_id=session_id,
+                    field=plot_field, cmaps=cmaps)
 
                 if trigger == "current_timestep.data" || trigger == "update_fig.data" || trigger == "button-play.n_clicks"
                     if cur_t < last_t
@@ -314,7 +318,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
         current_timestep = "$cur_t"
 
         # @show current_timestep
-        println("Timestep ", cur_t)
+        println("Timestep ", current_timestep)
         return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
     end
 
@@ -333,12 +337,9 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
         end
         return disable_contours
     end
-    
 
     run_server(app, host, port, debug=false)
 
-
-    return app
 end
 
 end

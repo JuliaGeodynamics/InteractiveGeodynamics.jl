@@ -11,7 +11,7 @@ export RisingSphere
 
 pkg_dir = pkgdir(RisingSphereTools)
 include(joinpath(pkg_dir,"src/dash_tools.jl"))
-include(joinpath(pkg_dir,"RisingSphere/dash_functions_RisingSphere.jl"))
+include(joinpath(pkg_dir,"src/RisingSphere/dash_functions_RisingSphere.jl"))
 
 """
     RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
@@ -126,7 +126,7 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
         disable_interval = true
         if trigger == "button-run.n_clicks"
             cur_dir = pwd()
-            base_dir = joinpath(pkgdir(RisingSphereTools),"RisingSphere")
+            base_dir = joinpath(pkgdir(RisingSphereTools),"src","RisingSphere")
             
             args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
             

@@ -405,33 +405,30 @@ end
 """
 Returns a row containing a label, a tooltip and a filling box.
 """
-function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::_T=1*one(_T), min=nothing, max=nothing) where _T <: Number
+function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::_T=1*one(_T), low=nothing, high=nothing) where _T <: Number
     
-    if isa(_T, Float64)
-        if isnothing(min)
-            min = 1e-10
-        end
-        if isnothing(max)
-            max = 10000
-        end
-    elseif isa(_T, Int64)
-        if isnothing(min)
-            min = 2
-        end
-        if isnothing(max)
-            max = 10_000
-        end
-    end
+    low  = _check_min(_T, low)
+    high = _check_max(_T, high)
 
     item = dbc_row([ # domain width
         dbc_col([
             dbc_label(label, id=idx*"_label", size="md"),
             dbc_tooltip(msg, target=idx*"_label")
         ]),
-        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
+        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=low, size="md"))
     ])
     return item
 end
+
+
+@inline _check_min(::Float64, ::Nothing) = 1e-10
+@inline _check_min(::Int64, ::Nothing) = 2
+@inline _check_min(::T, x) where T = x
+
+@inline _check_max(::Float64, ::Nothing) = 10000
+@inline _check_max(::Int64, ::Nothing) = 10_000
+@inline _check_max(::T, x) where T = x
+
 
 #=
 """

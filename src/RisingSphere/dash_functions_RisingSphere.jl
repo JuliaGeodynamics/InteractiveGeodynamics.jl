@@ -36,8 +36,8 @@ Creates a setup with noisy temperature and one phase
 function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
     Grid = ReadLaMEM_InputFile(ParamFile, args=args)
     Phases = zeros(Int64, size(Grid.X))
-    Temp = ones(Float64, size(Grid.X)) * ΔT / 2
-    Temp = Temp + rand(size(Temp)...) .* ampl_noise
+    Temp = [ΔT / 2 + rand()*ampl_noise for _ in axes(Grid.X,1), _ in axes(Grid.X,2)]
+
     Phases[Grid.Z.>0.0] .= 1
     Temp[Grid.Z.>0.0] .= 0.0
 
