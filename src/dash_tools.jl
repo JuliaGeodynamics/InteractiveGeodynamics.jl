@@ -60,13 +60,20 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
                 title="Width",
                 tickfont_size=14,
                 tickfont_color="rgb(100, 100, 100)",
-                automargin=true,),
+                scaleanchor="y", scaleratio=1,
+                autorange="true",  automargin=true,
+                range=[-1,4], 
+                ),
             yaxis=attr(
                 title="Depth",
                 tickfont_size=14,
                 tickfont_color="rgb(10, 10, 10)",
-                scaleanchor="x", scaleratio=1
-            ), margin=Dict([("l", 350), ("r", 350)])
+                autorange="true", automargin=true,
+                range=[-1,4], 
+            ), 
+            #margin=attr(l=20, r=20, b=20, t=20, pad=1),
+            margin=attr(autoexpand="true"),
+            autosize=true
         ),
         config=(edits = (shapePosition=true,)),
     )
