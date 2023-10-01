@@ -49,9 +49,9 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
                     make_id_label(),        # show user id
                 ]),
                 dbc_col([
-                    make_time_card(),       # show simulation time info
-                    make_menu(cmaps),       # show menu with simulation parameters, rheological parameters, and plotting parameters
-                    make_run_button()       # show the run simulation button
+                    make_time_card(),                               # show simulation time info
+                    make_menu(cmaps, show_field="temperature"),     # show menu with simulation parameters, rheological parameters, and plotting parameters
+                    make_run_button()                               # show the run simulation button
                 ])
             ]),
 

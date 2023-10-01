@@ -27,7 +27,7 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
         y=y,
         z=data,
         colorscale=cmaps[Symbol(colorscale)],
-        colorbar=attr(thickness=5, title=field),
+        colorbar=attr(thickness=5, title=field, len=0.75),
         #zmin=zmin, zmax=zmax
     )
     ]
@@ -39,7 +39,7 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
             colorscale=cmaps[Symbol(colorscale)],
             contours_coloring="lines",
             line_width=2,
-            colorbar=attr(thickness=5, title=contour_field, x=1.2, yanchor=0.5),
+            colorbar=attr(thickness=5, title=contour_field, x=1.2, yanchor=0.5, len=0.75),
             #zmin=zmin, zmax=zmax
         )))
     end
@@ -61,18 +61,24 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
                 tickfont_size=14,
                 tickfont_color="rgb(100, 100, 100)",
                 scaleanchor="y", scaleratio=1,
-                autorange="true",  automargin=true,
-                range=[-1,4], 
+                autorange=false,  automargin="top",
+                range=[x[1],x[end]], 
+                showgrid=false,
+                zeroline=false
                 ),
             yaxis=attr(
                 title="Depth",
                 tickfont_size=14,
                 tickfont_color="rgb(10, 10, 10)",
-                autorange="true", automargin=true,
-                range=[-1,4], 
-            ), 
-            #margin=attr(l=20, r=20, b=20, t=20, pad=1),
-            margin=attr(autoexpand="true"),
+                autorange=false, automargin="top",
+                autorangeoptions=attr(clipmax=0),
+                range=[minimum(y),maximum(y)], 
+                showgrid=false,
+                zeroline=false
+                ), 
+                
+            margin=attr(l=10, r=0, b=10, t=0),
+            #margin=attr(autoexpand="true", pad=1),
             autosize=true
         ),
         config=(edits = (shapePosition=true,)),
@@ -456,11 +462,11 @@ end
 """
 Returns an accordion menu containing the plotting parameters.
 """
-function make_plotting_parameters(cmaps)
+function make_plotting_parameters(cmaps; show_field="phase")
     item = dbc_accordionitem(title="Plotting Parameters", [
         dbc_row([
             dbc_label("Select field to plot: ", size="md"),
-            dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-12")
+            dcc_dropdown(id="plot_field", options = [show_field], value=show_field, className="col-12")
         ]),
         dbc_row(html_p()),
         dbc_row([ # color map
@@ -493,14 +499,15 @@ function make_plotting_parameters(cmaps)
 end
 
 """
+    make_menu(cmaps; show_field="phase")
 Return a row containing the menu with the simulation, rheological and plotting parameters.
 """
-function make_menu(cmaps)
+function make_menu(cmaps; show_field="phase")
     item = dbc_row([
         dbc_accordion(always_open=true, [
             make_simulation_parameters(),
             make_rheological_parameters(),
-            make_plotting_parameters(cmaps),
+            make_plotting_parameters(cmaps, show_field=show_field),
         ]),
     ])
     return item
