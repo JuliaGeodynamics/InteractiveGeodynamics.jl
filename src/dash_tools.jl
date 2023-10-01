@@ -77,8 +77,8 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
                 zeroline=false
                 ), 
                 
-            margin=attr(l=10, r=0, b=10, t=0),
-            #margin=attr(autoexpand="true", pad=1),
+            #margin=attr(l=10, r=0, b=10, t=0),
+            margin=attr(autoexpand="true", pad=1),
             autosize=true
         ),
         config=(edits = (shapePosition=true,)),
