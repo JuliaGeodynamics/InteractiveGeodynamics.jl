@@ -1,12 +1,14 @@
 name = "InteractiveGeodynamics"
 uuid = "3ccad509-8039-4f04-ad0e-35c379e37327"
 authors = ["Boris Kaus <kaus@uni-mainz.de>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Dash = "1b08a953-4be3-4667-9a23-3db579824955"
 DashBootstrapComponents = "1b08a953-4be3-4667-9a23-fa6d05876a1e"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 GeophysicalModelGenerator = "3700c31b-fa53-48a6-808a-ef22d5a84742"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 LaMEM = "2e889f3d-35ce-4a77-8ea2-858aecb630f7"
 PlotlyJS = "f0f68f2c-4968-5e81-91da-67840de0976a"
@@ -16,6 +18,14 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
-GeophysicalModelGenerator = "0.4.12"
-LaMEM = "0.1.12"
+Dash = "1.3"
+DashBootstrapComponents = "1.4.1"
+DelimitedFiles = "1.9"
+GeophysicalModelGenerator = "0.5"
+Interpolations = "0.14"
+LaMEM = "0.2"
+PlotlyJS = "0.18"
+Revise = "3.5.2"
+Statistics = "1.9.0"
+HTTP = "1"
 julia = "1.7"

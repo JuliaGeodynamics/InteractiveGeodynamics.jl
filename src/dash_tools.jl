@@ -1,104 +1,103 @@
-using DelimitedFiles
+#module Dash_tools
 
+using DelimitedFiles
+using Dash, DashBootstrapComponents
+using PlotlyJS
+
+#export create_main_figure, get_data, get_trigger, read_colormaps, active_switch, has_pvd_file,
+#        make_title, make_plot, make_plot_controls, make_id_label, make_time_card, make_menu,
+#        make_accordion_item, make_rheological_parameters
+
+# various handy and reusable functions
 """
 Creates the main figure plot.
 """
-function create_main_figure(
-    OutFile, cur_t, 
-    x=-10:10, y=-10:0, data=rand(10, 20), # heatmap plot
-    x_con=-10:10, y_con=-10:0, data_con=rand(10, 20), # contour plot
-    cmaps=read_colormaps() # colormaps
-    ; colorscale="batlow", field="phase", add_contours=true, add_velocity=false, contour_field="phase")
-
-    cbar_thk = 20
+function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
+    x_con=1:10, y_con=1:10, data_con=rand(10, 10)
+    ;
+    colorscale="batlow", 
+    field="phase", 
+    add_contours=true, 
+    add_velocity=false, 
+    contour_field="phase",
+    session_id="",
+    cmaps=[])
     
-    # add heatmap
-    data_plot = [
-        heatmap(
-            x=x,
-            y=y,
-            z=data,
-            colorscale=cmaps[Symbol(colorscale)],
-            colorbar=attr(thickness=cbar_thk, title=field)
-        )
+    data_plot = [heatmap(x=x,
+        y=y,
+        z=data,
+        colorscale=cmaps[Symbol(colorscale)],
+        colorbar=attr(thickness=5, title=field, len=0.75),
+        #zmin=zmin, zmax=zmax
+    )
     ]
-    # add contours
     if add_contours == true
-        push!(
-            data_plot, (
-                contour(
-                    x=x_con,
-                    y=y_con,
-                    z=data_con,
-                    colorscale=cmaps[Symbol(colorscale)],
-                    contours_coloring="lines",
-                    line_width=2,
-                    colorbar=attr(thickness=cbar_thk, title=contour_field, x=1.1, yanchor=0.5, contour_label=true),
-                )
-            )
-        )
+        push!(data_plot, (
+            contour(x=x_con,
+            y=y_con,
+            z=data_con,
+            colorscale=cmaps[Symbol(colorscale)],
+            contours_coloring="lines",
+            line_width=2,
+            colorbar=attr(thickness=5, title=contour_field, x=1.2, yanchor=0.5, len=0.75),
+            #zmin=zmin, zmax=zmax
+        )))
     end
-    # add velocity
+
     if add_velocity == true
-        arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
+        user_dir = simulation_directory(session_id, clean=false)
+
+        arrowhead, line = calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow", Dir=user_dir)
         push!(data_plot, arrowhead)
         push!(data_plot, line)
     end
 
     pl = (id="fig_cross",
         data=data_plot,
-        # colorbar=Dict("orientation" => "v", "len" => 0.5),
-        
+        colorbar=Dict("orientation" => "v", "len" => 0.5),
         layout=(
-            
-            # width="320vw", height="320vh",
             xaxis=attr(
-                title="Width (km)",
+                title="Width",
                 tickfont_size=14,
                 tickfont_color="rgb(100, 100, 100)",
+                scaleanchor="y", scaleratio=1,
+                autorange=false,  automargin="top",
+                range=[x[1],x[end]], 
                 showgrid=false,
-                # zeroline=false, 
-                # automargin=true,
-                # constrain="domain",
-                scaleanchor="y", 
-                scaleratio=1.0,
-                showline=true, linewidth=2, linecolor="black", mirror=true,
-            ),
+                zeroline=false
+                ),
             yaxis=attr(
-                title="Depth (km)",
-                # domain=[0,100],
+                title="Depth",
                 tickfont_size=14,
                 tickfont_color="rgb(10, 10, 10)",
+                autorange=false, automargin="top",
+                autorangeoptions=attr(clipmax=0),
+                range=[minimum(y),maximum(y)], 
                 showgrid=false,
-                showline=true, linewidth=2, linecolor="black", mirror=true,
-                # range=[-10,0],
-                # zeroline=false,
-                # scaleanchor="x", 
-                # scaleratio=1.0,
-                # constrain="domain",
-                # constrain="range",
-            ), margin=Dict([("l", 50), ("r", 50)])#), margin=Dict([("l", 350), ("r", 350)])
+                zeroline=false
+                ), 
+                
+            #margin=attr(l=10, r=0, b=10, t=0),
+            margin=attr(autoexpand="true", pad=1),
+            autosize=true
         ),
-        config=(edits = (shapePosition=true,)), scaleratio=1.0
-
-        
+        config=(edits = (shapePosition=true,)),
     )
-
     return pl
 end
 
+
+
 """
-    x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+    x, z, data = get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
 
 This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 """
-function get_data(OutFile::String, tstep::Int64=0, field::String="phase")
+function get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
     
-    data,time = Read_LaMEM_timestep(OutFile, tstep)
-
+    data,time = Read_LaMEM_timestep(OutFile, tstep, Dir)
+    
     value = extract_data_fields(data, field)        # get field; can handle tensors & vectors as well
-
-
     fields= String.(keys(data.fields))
     fields_available = get_fields(fields)
     
@@ -152,7 +151,7 @@ function extract_data_fields(data, field)
         else
             id = findall(tensor.=="_"*extension)[1]
         end
-        value     = data.fields[Symbol(name)][id,:,:,:] 
+        value     = data.fields[Symbol(name)][id] 
     end
     return value
 end
@@ -183,9 +182,9 @@ end
 """
 Functions building up to quiver plot
 """
-function extract_velocity(OutFile, cur_t)
+function extract_velocity(OutFile, cur_t, Dir="")
 
-    data, _ = Read_LaMEM_timestep(OutFile, cur_t)
+    data, _ = Read_LaMEM_timestep(OutFile, cur_t, Dir)
     Vx     = data.fields.velocity[1,:,1,:] 
     Vz     = data.fields.velocity[3,:,1,:] 
     x_vel = data.x.val[:,1,1]
@@ -244,9 +243,9 @@ end
 """
 Calculate quiver.
 """
-function calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow")
+function calculate_quiver(OutFile, cur_t, cmaps; colorscale="batlow", Dir="")
 
-    Vx, Vz, x, z = extract_velocity(OutFile, cur_t)
+    Vx, Vz, x, z = extract_velocity(OutFile, cur_t, Dir)
     Vx_interpolated, Vy_interpolated, interpolation_coords_x, interpolation_coords_z = interpolate_velocities(x, z, Vx, Vz)
     angle = calculate_angle(Vx_interpolated, Vy_interpolated)
     magnitude = sqrt.(Vx_interpolated .^ 2 .+ Vy_interpolated .^ 2)
@@ -273,7 +272,11 @@ end
 """
 This reads colormaps and transfers them into plotly format. The colormaps are supposed to be provided in ascii text format 
 """
-function read_colormaps(; dir_colormaps="../src/assets/colormaps/" , scaling=256)
+function read_colormaps(; dir_colormaps="" , scaling=256)
+    #if isempty(dir_colormaps)
+    #    dir_colormaps=joinpath(pkgdir(InteractiveGeodynamics),"src/assets/colormaps/")
+    #end
+    
     # Read all colormaps
     colormaps = NamedTuple();
     for map in readdir(dir_colormaps)
@@ -304,6 +307,7 @@ function read_colormaps(; dir_colormaps="../src/assets/colormaps/" , scaling=256
     return colormaps
 end
 
+
 """
 Returns a row containing the title of the page.
 """
@@ -315,30 +319,17 @@ end
 """
 Returns a row containing the main plot.
 """
-function make_plot()
-    # w = 
-    # h = 
+function make_plot(OutFile="",cmaps=[])
     item = dbc_row([
         dcc_graph(id="figure_main",
-            figure=create_main_figure(OutFile, 0),
+            figure=create_main_figure(OutFile, 0, cmaps=cmaps),
             #animate   = false,
-            # responsive=true,
+            #responsive=false,
             #clickData = true,
             #config = PlotConfig(displayModeBar=false, scrollZoom = false),
-            style=attr(width="80vw", height="80vh"),
-            # style=attr(width="80vw"),
+            style=attr(width="80vw", height="80vh")
         )
     ])
-    return item
-end
-
-"""
-Returns a column containing a screenshot button.
-"""
-function make_screenshot_button()
-    item = dbc_col([
-            dbc_button("Save figure", id="button-save-fig", color="secondary", size="sg", class_name="col-4")
-            ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
     return item
 end
 
@@ -347,32 +338,11 @@ Returns a column containing all the media control buttons.
 """
 function make_media_buttons()
     item = dbc_col([
-        dbc_button(
-            [
-                html_i(className="bi bi-skip-backward-fill"),
-            ],
-            id="button-start", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
-        dbc_button(
-            [
-                html_i(className="bi bi-skip-start-fill"),
-            ],
-        id="button-back", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
-        dbc_button(
-            [
-                html_i(className="bi bi-play-fill"),
-            ],
-            id="button-play", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"
-        ),
-        dbc_button(
-            [
-                html_i(className="bi bi-skip-end-fill"),
-            ],
-            id="button-forward", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
-        dbc_button(
-            [
-                html_i(className="bi bi-skip-forward-fill"),
-            ], 
-            id="button-last", outline=true, color="primary", size="sg", class_name="d-flex align-items-center"),
+        dbc_button("<<", id="button-start", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
+        dbc_button("<", id="button-back", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
+        dbc_button("Play/Pause", id="button-play", outline=true, color="primary", size="sg", class_name="me-md-1 col-3"),
+        dbc_button(">", id="button-forward", outline=true, color="primary", size="sg", class_name="me-md-1 col-1"),
+        dbc_button(">>", id="button-last", outline=true, color="primary", size="sg", class_name="me-md-1 col-2"),
         ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
     return item
 end
@@ -396,7 +366,7 @@ Returns a row containing the media buttons, each one in a column.
 """
 function make_plot_controls()
     item = dbc_row([
-        # make_screenshot_button(),
+        #make_screenshot_button(),
         make_empty_col(),
         make_media_buttons(),
         make_empty_col(),
@@ -404,13 +374,29 @@ function make_plot_controls()
     return item
 end
 
+
+"""
+Returns a column containing a screenshot button.
+"""
+function make_screenshot_button()
+    item = dbc_col([
+            dbc_button("Save figure", id="button-save-fig", color="secondary", size="sg", class_name="col-4")
+            ], class_name="d-grid gap-2 d-md-flex justify-content-md-center")
+    return item
+end
+
+
 """
 Return a row with the id of the current user session.
 """
 function make_id_label()
-    item = dbc_row([dbc_label("", id="label-id", color="secondary")])
+    item = dbc_row([dbc_label("", id="label-id")])
     return item
 end
+
+
+
+
 
 """
 Returns a row containing a card with time information of the simulation.
@@ -430,80 +416,57 @@ function make_time_card()
 end
 
 """
-Retunrs a row containing a label, a tooltip and a filling box.
+Returns a row containing a label, a tooltip and a filling box.
 """
-function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::Float64=1.0, min::Float64=1.0e-10, max::Float64=10_000.0)
+function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::_T=1*one(_T), low=nothing, high=nothing) where _T <: Number
+    
+    low  = _check_min(_T, low)
+    high = _check_max(_T, high)
+
     item = dbc_row([ # domain width
         dbc_col([
             dbc_label(label, id=idx*"_label", size="md"),
             dbc_tooltip(msg, target=idx*"_label")
         ]),
-        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
+        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=low, size="md"))
     ])
     return item
 end
 
+
+@inline _check_min(::Float64, ::Nothing) = 1e-10
+@inline _check_min(::Int64, ::Nothing) = 2
+@inline _check_min(::T, x) where T = x
+
+@inline _check_max(::Float64, ::Nothing) = 10000
+@inline _check_max(::Int64, ::Nothing) = 10_000
+@inline _check_max(::T, x) where T = x
+
+
+#=
 """
-Retunrs a row containing a label, a tooltip and a filling box.
+Returns a row containing a label, a tooltip and a filling box.
 """
-function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::Int64=2, min::Int64=2, max::Int64=10_000)
+function make_accordion_item(label::String="param", idx::String="id", msg::String="Message", value::Int64=2, mini::Int64=2, maxi::Int64=10_000)
     item = dbc_row([ # domain width
         dbc_col([
             dbc_label(label, id=idx*"_label", size="md"),
             dbc_tooltip(msg, target=idx*"_label")
         ]),
-        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=min, size="md"))
+        dbc_col(dbc_input(id=idx, placeholder=string(value), value=value, type="number", min=mini, size="md"))
     ])
     return item
 end
-
-"""
-Returns an accordion menu containing the simulation parameters.
-"""
-function make_simulation_parameters()
-    return dbc_accordionitem(title="Simulation Parameters", [
-        make_accordion_item("Width (km):", "domain_width", "Width of the domain, given in kilometers.", 2000.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("Height (km):", "domain_height", "Height of the domain, given in kilometers.", 1000.0, 1.0e-10),
-        dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 128, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 64, 2),
-        dbc_row(html_p()),
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 250, 1),
-    ])
-end
-
-"""
-Returns an accordion menu containing the rheological parameters.
-"""
-function make_rheological_parameters()
-    return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("ΔT:", "ΔT", "Temperature difference between the base and the top.", 2000.0, 1.0-10, 10_000.0),
-        dbc_row(html_p()),
-        make_accordion_item("η=η₀exp(-γT), γ:", "γ", "Parameter for Frank-Kamenetzky viscosity (0.0 ≤ γ ≤ 1.0)", 0.001, 0.0, 1.0),
-        dbc_row(html_p()),
-        make_accordion_item("Cohesion (MPa):", "cohesion", "Logarithm of the cohesion of the model (0 ≤ cohesion ≤ 10_000) [MPa].", 500.0, 0.0, 10_000.0),
-        dbc_row(html_p()),
-        make_accordion_item("η (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < η ≤ 25).", 21.0, 15.0, 25.0),
-        dbc_row(html_p()),
-        dbc_row([
-            dbc_checklist(options=["FreeSurf"],
-                    id="switch-FreeSurf",
-                    switch=true,
-            )
-        ]),
-    ])
-end
+=#
 
 """
 Returns an accordion menu containing the plotting parameters.
 """
-function make_plotting_parameters()
+function make_plotting_parameters(cmaps; show_field="phase")
     item = dbc_accordionitem(title="Plotting Parameters", [
         dbc_row([
             dbc_label("Select field to plot: ", size="md"),
-            dcc_dropdown(id="plot_field", options = ["phase"], value="phase", className="col-12")
+            dcc_dropdown(id="plot_field", options = [show_field], value=show_field, className="col-12")
         ]),
         dbc_row(html_p()),
         dbc_row([ # color map
@@ -536,14 +499,15 @@ function make_plotting_parameters()
 end
 
 """
+    make_menu(cmaps; show_field="phase")
 Return a row containing the menu with the simulation, rheological and plotting parameters.
 """
-function make_menu()
+function make_menu(cmaps; show_field="phase")
     item = dbc_row([
         dbc_accordion(always_open=true, [
             make_simulation_parameters(),
             make_rheological_parameters(),
-            make_plotting_parameters(),
+            make_plotting_parameters(cmaps, show_field=show_field),
         ]),
     ])
     return item
@@ -561,37 +525,47 @@ function make_run_button()
 end
 
 """
-Create a new directory named by session-id
+    simulation_directory(session_id; clean=true )
+Create a new directory named by session-id and optionally cleans it
 """
-function make_new_directory(session_id)
+function simulation_directory(session_id; clean=true)
+    base_dir = pwd();
     dirname = String(session_id)
     if isdir("simulations")
-        if isdir("simulations/" * dirname) == false
-            mkdir("simulations/" * dirname)
+        if isdir(joinpath("simulations" , dirname)) == false
+            mkdir(joinpath("simulations" , dirname))
         end
     else
         mkdir("simulations")
-        mkdir("simulations/" * dirname)
+        mkdir(joinpath("simulations" , dirname))
     end
-    user_dir = "simulations/" * dirname
+    user_dir = joinpath("simulations" , dirname)
+
+    if clean
+        # clean directory
+        cd(user_dir)
+        clean_directory()   # removes all existing LaMEM files
+        cd(base_dir)
+    end
+
     return user_dir
 end
 
+has_pvd_file(OutFile, user_dir) = isfile(joinpath(user_dir, OutFile * ".pvd"))
+
+
 """
-Creates a setup with noisy temperature and one phase
+    active_switch = active_switch(switch)
+Returns true if the switch is on
 """
-function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
-    Grid = ReadLaMEM_InputFile(ParamFile, args=args)
-    Phases = zeros(Int64, size(Grid.X))
-    Temp = ones(Float64, size(Grid.X)) * ΔT / 2
-    Temp = Temp + rand(size(Temp)...) .* ampl_noise
-    Phases[Grid.Z.>0.0] .= 1
-    Temp[Grid.Z.>0.0] .= 0.0
-
-    Model3D = CartData(Grid, (Phases=Phases, Temp=Temp))   # Create LaMEM model
-    Write_Paraview(Model3D, "LaMEM_ModelSetup", verbose=false)   # Save model to paraview (load with opening LaMEM_ModelSetup.vts in paraview)  
-
-    Save_LaMEMMarkersParallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
-
-    return nothing
+function active_switch(switch)
+    active_switch_val=false;
+    if !isnothing(switch)
+        if !isempty(switch)
+            active_switch_val = true
+        end
+    end
+    return active_switch_val
 end
+
+#end
