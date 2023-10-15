@@ -3,9 +3,13 @@
 This package provides a range of graphical user interfaces (GUI's) to study and experiment with different geodynamic problems without need to program. It uses [julia](https://julialang.org) and [Dash](https://dash.plotly.com/julia) and automatically installs the required geodynamic software (such as [LaMEM](https://github.com/JuliaGeodynamics/LaMEM.jl)) in the background.
 
 This is particularly useful for teaching.
+We currently have the folloeing examples included:
+- `Convection()` - 2D mantle  (or magma chamber) convection
+- `RayleighTaylor()` - density driven instability
+- `RisingSphere()` - rising stokes sphere example
 
 ### Getting started/requirements
-Installing this is straightforward. Start with julia
+Installing this is straightforward. Start julia
 
 ```julia
 kausb$ julia
@@ -30,7 +34,7 @@ julia>]
 ```julia
 (@v1.9) pkg> instantiate
  ```
-This can take some time the first time you do this.
+This can take some time the first time you do this. Note that step 1 & 2 only have to be done once. Go back to the main command window with backspace.
 
 3) Start the GUI: 
 ```julia
@@ -38,7 +42,7 @@ julia> using InteractiveGeodynamics
 julia> Convection()
 [ Info: Listening on: 127.0.0.1:8050, thread id: 1
 ```
-It will take a bit of time (to precompile/download all required packages) but it will start a GUI. After pushing `Run`, you'll get something that looks like this: 
+It will take a bit of time (to precompile/download all required packages). Next, open tye displayed web address in your browser (127.0.0.1:8050 in this case) and it will start a GUI. After pushing `Run`, you'll get something that looks like this: 
 ```julia
 julia> 
 Timestep 0
