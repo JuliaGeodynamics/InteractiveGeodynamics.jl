@@ -21,11 +21,11 @@ kausb$ julia
   (_)     | (_) (_)    |
    _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.8.5 (2023-01-08)
+  | | |_| | | | (_| |  |  Version 1.9.3 (2023-08-24)
  _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
 |__/                   |
 
-julia> 
+julia>
 ```
 1) Go to the package manager by pressing `]` and type: 
 ```julia
