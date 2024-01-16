@@ -23,13 +23,13 @@ Returns an accordion menu containing the rheological parameters.
 """
 function make_rheological_parameters()
     return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("ΔT:", "ΔT", "Temperature difference between the base and the top.", 2000.0, 1.0-10, 10_000.0),
+        make_accordion_item("ΔT:", "ΔT", "Temperature difference between the base and the top.", 2000.0, 1.0-10, 4_000.0),
         dbc_row(html_p()),
-        make_accordion_item("η=η₀exp(-γT), γ:", "γ", "Parameter for Frank-Kamenetzky viscosity (0.0 ≤ γ ≤ 1.0)", 0.001, 0.0, 1.0),
+        make_accordion_item("η=η₀exp(-γ(T-½ΔT)), γ:", "γ", "Parameter for Frank-Kamenetzky viscosity (0.0 ≤ γ ≤ 0.1)", 0.001, 0.0, 0.1),
         dbc_row(html_p()),
-        make_accordion_item("Cohesion (MPa):", "cohesion", "Logarithm of the cohesion of the model (0 ≤ cohesion ≤ 10_000) [MPa].", 500.0, 0.0, 10_000.0),
+        make_accordion_item("Yield stress (MPa):", "cohesion", "Maximum stress allowed in the model (0 ≤ Yield stress ≤ 1000) [MPa].", 500.0, 0.0, 1000.0),
         dbc_row(html_p()),
-        make_accordion_item("η (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix (15 < η ≤ 25).", 21.0, 15.0, 25.0),
+        make_accordion_item("η₀ (log₁₀(Pa⋅s)):", "viscosity", "Logarithm of the viscosity of the matrix at ΔT/2 (15 < η ≤ 25).", 21.0, 15.0, 25.0),
         dbc_row(html_p()),
         dbc_row([
             dbc_checklist(options=["FreeSurf"],

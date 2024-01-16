@@ -25,7 +25,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(ConvectionTools)
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
     
-    GUI_version = "0.1.1"
+    GUI_version = "0.1.2"
     
     title_app = "Rayleigh-Benard Convection"
     ParamFile = "Convection.dat"
@@ -50,7 +50,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
                 ]),
                 dbc_col([
                     make_time_card(),                               # show simulation time info
-                    make_menu(cmaps, show_field="temperature"),     # show menu with simulation parameters, rheological parameters, and plotting parameters
+                    make_menu(cmaps, show_field="temperature [°C]"),     # show menu with simulation parameters, rheological parameters, and plotting parameters
                     make_run_button()                               # show the run simulation button
                 ])
             ]),
@@ -284,7 +284,6 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
                 # update the plot
                 add_velocity = active_switch(switch_velocity)
 
-
                 fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con;
                     add_contours=add_contours, contour_field=contour_field,
                     add_velocity=add_velocity,
@@ -315,7 +314,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
 
         # @show current_timestep
         println("Timestep ", cur_t)
-        return label_timestep, label_time, current_timestep, fig_cross, fields_available, fields_available
+        return label_timestep, label_time, current_timestep, fig_cross, add_units(fields_available), add_units(fields_available)
     end
 
     # 

@@ -93,8 +93,9 @@ end
 
 This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 """
-function get_data(OutFile::String, tstep::Int64=0, field::String="phase", Dir="")
+function get_data(OutFile::String, tstep::Int64=0, field_units::String="phase", Dir="")
     
+    field = strip_units(field_units)
     data,time = Read_LaMEM_timestep(OutFile, tstep, Dir)
     
     value = extract_data_fields(data, field)        # get field; can handle tensors & vectors as well
@@ -185,8 +186,8 @@ Functions building up to quiver plot
 function extract_velocity(OutFile, cur_t, Dir="")
 
     data, _ = Read_LaMEM_timestep(OutFile, cur_t, Dir)
-    Vx     = data.fields.velocity[1,:,1,:] 
-    Vz     = data.fields.velocity[3,:,1,:] 
+    Vx     = data.fields.velocity[1][:,1,:] 
+    Vz     = data.fields.velocity[3][:,1,:] 
     x_vel = data.x.val[:,1,1]
     z_vel = data.z.val[1,1,:]
 
@@ -566,6 +567,46 @@ function active_switch(switch)
         end
     end
     return active_switch_val
+end
+
+"""
+    fields_available_units = fields_available_units
+This adds units to the fields available in the LaMEM simulation
+"""
+function add_units(fields_available)
+    fields_available_units = fields_available
+
+    fields_available_units = replace(fields_available_units,   "visc_total"=>"visc_total [log₁₀(Pas)]", 
+                                "visc_creep"=>"visc_creep [log₁₀(Pas)]",
+                                "velocity_x"=>"velocity_x [cm/yr]",
+                                "velocity_z"=>"velocity_z [cm/yr]",
+                                "pressure"=>"pressure [MPa]",
+                                "temperature"=>"temperature [°C]",
+                                "j2_dev_stress"=>"j2_dev_stress [MPa]",
+                                "j2_strain_rate"=>"j2_strain_rate [1/s]",
+                                "density"=>"density [kg/m³]",
+                                )
+
+    return fields_available_units
+end
+
+
+function strip_units(fields_available_units)
+    fields_available = fields_available_units
+
+    fields_available =  replace(fields_available,   
+                                "visc_total [log₁₀(Pas)]"=>"visc_total", 
+                                "visc_creep [log₁₀(Pas)]"=>"visc_creep",
+                                "velocity_x [cm/yr]"=>"velocity_x",
+                                "velocity_z [cm/yr]"=>"velocity_z",
+                                "pressure [MPa]"=>"pressure",
+                                "temperature [°C]"=>"temperature",
+                                "density [kg/m³]"=>"density",
+                                "j2_dev_stress [MPa]"=>"j2_dev_stress",
+                                "j2_strain_rate [1/s]"=>"j2_strain_rate",
+                                )
+
+    return fields_available
 end
 
 #end
