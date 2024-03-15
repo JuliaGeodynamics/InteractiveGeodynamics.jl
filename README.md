@@ -7,9 +7,9 @@ This package provides a range of graphical user interfaces (GUI's) to study and 
 
 This is particularly useful for teaching.
 We currently have the folloeing examples included:
-- `Convection()` - 2D mantle  (or magma chamber) convection
-- `RayleighTaylor()` - density driven instability
-- `RisingSphere()` - rising stokes sphere example
+- `convection()` - 2D mantle  (or magma chamber) convection
+- `rayleigh_taylor()` - density driven instability
+- `rising_sphere()` - rising stokes sphere example
 
 ### Getting started/requirements
 Installing this is straightforward. Start julia
@@ -42,7 +42,7 @@ This can take some time the first time you do this. Note that step 1 & 2 only ha
 3) Start the GUI: 
 ```julia
 julia> using InteractiveGeodynamics
-julia> Convection()
+julia> convection()
 [ Info: Listening on: 127.0.0.1:8050, thread id: 1
 ```
 It will take a bit of time (to precompile/download all required packages). Next, open tye displayed web address in your browser (127.0.0.1:8050 in this case) and it will start a GUI. After pushing `Run`, you'll get something that looks like this: 
@@ -65,7 +65,7 @@ Timestep 30
 Running the other examples is  straightforward. For example, the Rayleigh-Taylor example can be started with:
 ```julia
 julia> using InteractiveGeodynamics
-julia> RayleighTaylor()
+julia> rayleigh_taylor()
 [ Info: Listening on: 127.0.0.1:8050, thread id: 1
 Tiestep 0
 args = -nstep_max 50 -eta[0] 1.0e21 -eta[1] 1.0e21 -eta[2] 1.0e20 -rho[0] 2800 -rho[1] 2800 -rho[2] 2200 -open_top_bound 0 -nel_x 32 -nel_z 16 -coord_x -5.0,5.0 
@@ -82,6 +82,6 @@ Timestep 25
 ### Available examples
 We currently have the following GUI's available:
 
-- `Convection()` 
-- `RisingSphere()`
-- `RayleighTaylor()`
+- `convection()` 
+- `rising_sphere()`
+- `rayleigh_taylor()`

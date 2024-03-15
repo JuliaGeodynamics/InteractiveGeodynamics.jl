@@ -34,7 +34,7 @@ end
 Creates a setup with noisy temperature and one phase
 """
 function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
-    Grid = ReadLaMEM_InputFile(ParamFile, args=args)
+    Grid = read_LaMEM_inputfile(ParamFile, args=args)
     Phases = zeros(Int64, size(Grid.X))
     Temp = [ΔT / 2 + rand()*ampl_noise for _ in axes(Grid.X,1), _ in axes(Grid.X,2)]
 
@@ -42,9 +42,9 @@ function CreateSetup(ParamFile, ΔT=1000, ampl_noise=100; args)
     Temp[Grid.Z.>0.0] .= 0.0
 
     Model3D = CartData(Grid, (Phases=Phases, Temp=Temp))   # Create LaMEM model
-    Write_Paraview(Model3D, "LaMEM_ModelSetup", verbose=false)   # Save model to paraview (load with opening LaMEM_ModelSetup.vts in paraview)  
+    write_paraview(Model3D, "LaMEM_ModelSetup", verbose=false)   # Save model to paraview (load with opening LaMEM_ModelSetup.vts in paraview)  
 
-    Save_LaMEMMarkersParallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
+    save_LaMEM_markers_parallel(Model3D, directory="./markers", verbose=false)   # save markers on one core
 
     return nothing
 end
