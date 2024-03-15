@@ -96,7 +96,7 @@ This loads the timestep `tstep` from a LaMEM simulation with field `field`.
 function get_data(OutFile::String, tstep::Int64=0, field_units::String="phase", Dir="")
     
     field = strip_units(field_units)
-    data,time = Read_LaMEM_timestep(OutFile, tstep, Dir)
+    data,time = read_LaMEM_timestep(OutFile, tstep, Dir)
     
     value = extract_data_fields(data, field)        # get field; can handle tensors & vectors as well
     fields= String.(keys(data.fields))
@@ -185,7 +185,7 @@ Functions building up to quiver plot
 """
 function extract_velocity(OutFile, cur_t, Dir="")
 
-    data, _ = Read_LaMEM_timestep(OutFile, cur_t, Dir)
+    data, _ = read_LaMEM_timestep(OutFile, cur_t, Dir)
     Vx     = data.fields.velocity[1][:,1,:] 
     Vz     = data.fields.velocity[3][:,1,:] 
     x_vel = data.x.val[:,1,1]

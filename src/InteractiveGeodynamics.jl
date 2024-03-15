@@ -2,19 +2,19 @@ module InteractiveGeodynamics
 
 
 # Rising sphere app
-include("./RisingSphere/RisingSphere_Dash.jl")
+include("./rising_sphere/RisingSphere_Dash.jl")
 using .RisingSphereTools
-export RisingSphere
+export rising_sphere
 
-# RayleighTaylor app
+# rayleigh_taylor app
 include("./RayleighTaylorInstability/RTI_Dash.jl")
 using .RTITools
-export RayleighTaylor
+export rayleigh_taylor
 
-# Convection app
+# convection app
 include("./RayleighBenardConvection/Convection_Dash.jl")
 using .ConvectionTools
-export Convection
+export convection
 
 
 end # module InteractiveGeodynamics

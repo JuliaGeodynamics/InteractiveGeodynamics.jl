@@ -7,25 +7,25 @@ using UUIDs
 using Interpolations
 using HTTP
 
-export RisingSphere 
+export rising_sphere 
 
 pkg_dir = pkgdir(RisingSphereTools)
 include(joinpath(pkg_dir,"src/dash_tools.jl"))
-include(joinpath(pkg_dir,"src/RisingSphere/dash_functions_RisingSphere.jl"))
+include(joinpath(pkg_dir,"src/rising_sphere/dash_functions_RisingSphere.jl"))
 
 """
-    RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
+    rising_sphere(; host=HTTP.Sockets.localhost, port=8050)
 
 This starts a rising sphere GUI
 """
-function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
+function rising_sphere(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = pkgdir(RisingSphereTools)
     
     GUI_version = "0.1.0"
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
 
     title_app = "Rising Sphere example"
-    ParamFile = "RisingSphere.dat"
+    ParamFile = "rising_sphere.dat"
     OutFile = "RiseSphere"
 
     base_dir = pwd()
@@ -126,7 +126,7 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
         disable_interval = true
         if trigger == "button-run.n_clicks"
             cur_dir = pwd()
-            base_dir = joinpath(pkgdir(RisingSphereTools),"src","RisingSphere")
+            base_dir = joinpath(pkgdir(RisingSphereTools),"src","rising_sphere")
             
             args = "-nstep_max $(n_timesteps) -radius[0] $sphere_radius -rho[0] $matrix_density -rho[1] $sphere_density  -nel_x $nel_x -nel_z $nel_z -coord_x $(-domain_width/2),$(domain_width/2) -coord_z $(-domain_width/2),$(domain_width/2)"
             
@@ -195,7 +195,7 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
             if has_pvd_file(OutFile, user_dir)
                 
                 # Read LaMEM *.pvd file
-                Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)
+                Timestep, _, Time = read_LaMEM_simulation(OutFile, user_dir)
 
                 # Update the labels and data stored in webpage about the last timestep
                 last_time = "$(Timestep[end])"
@@ -261,7 +261,7 @@ function RisingSphere(; host=HTTP.Sockets.localhost, port=8050)
             user_dir = simulation_directory(session_id, clean=false)
             if has_pvd_file(OutFile, user_dir)
 
-                Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
+                Timestep, _, Time = read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
                 id = findall(Timestep .== cur_t)[1]
                 if trigger == "button-start.n_clicks" || trigger == "button-play.n_clicks"
                     cur_t = 0

@@ -8,7 +8,7 @@ using GeophysicalModelGenerator
 using DelimitedFiles
 using HTTP
 
-export Convection 
+export convection 
 
 pkg_dir = Base.pkgdir(ConvectionTools)
 
@@ -17,17 +17,17 @@ include(joinpath(pkg_dir,"src/RayleighBenardConvection/dash_functions_convection
  
 
 """
-    Convection(; host=HTTP.Sockets.localhost, port=8050)
+    convection(; host=HTTP.Sockets.localhost, port=8050)
 
 This starts a convection GUI
 """
-function Convection(; host=HTTP.Sockets.localhost, port=8050)
+function convection(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(ConvectionTools)
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
     
     GUI_version = "0.1.2"
     
-    title_app = "Rayleigh-Benard Convection"
+    title_app = "Rayleigh-Benard convection"
     ParamFile = "Convection.dat"
     OutFile = "Convection"
 
@@ -193,7 +193,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
         if trigger == "session-interval.n_intervals"
             if has_pvd_file(OutFile, user_dir)
                 # Read LaMEM *.pvd file
-                Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)
+                Timestep, _, Time = read_LaMEM_simulation(OutFile, user_dir)
 
                 # Update the labels and data stored in webpage about the last timestep
                 last_time = "$(Timestep[end])"
@@ -256,7 +256,7 @@ function Convection(; host=HTTP.Sockets.localhost, port=8050)
 
             user_dir = simulation_directory(session_id, clean=false)
             if  has_pvd_file(OutFile, user_dir)
-                Timestep, _, Time = Read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
+                Timestep, _, Time = read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
                 id = findall(Timestep .== cur_t)[1]
                 if trigger == "button-start.n_clicks" || trigger == "button-play.n_clicks"
                     cur_t = 0
