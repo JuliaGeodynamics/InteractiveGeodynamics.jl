@@ -2,7 +2,7 @@ module InteractiveGeodynamics
 
 
 # Rising sphere app
-include("./rising_sphere/RisingSphere_Dash.jl")
+include("./RisingSphere/RisingSphere_Dash.jl")
 using .RisingSphereTools
 export rising_sphere
 
