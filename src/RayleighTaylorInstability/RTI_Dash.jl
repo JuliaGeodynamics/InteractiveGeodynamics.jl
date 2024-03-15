@@ -23,7 +23,7 @@ This starts a rayleigh_taylor instability GUI
 function rayleigh_taylor(; host = HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(RTITools)
     
-    GUI_version = "0.1.1"
+    GUI_version = "0.1.3"
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
 
     title_app = "Rayleigh Taylor Instability"

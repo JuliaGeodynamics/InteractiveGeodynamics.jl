@@ -21,7 +21,7 @@ This starts a rising sphere GUI
 function rising_sphere(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = pkgdir(RisingSphereTools)
     
-    GUI_version = "0.1.0"
+    GUI_version = "0.1.3"
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
 
     title_app = "Rising Sphere example"

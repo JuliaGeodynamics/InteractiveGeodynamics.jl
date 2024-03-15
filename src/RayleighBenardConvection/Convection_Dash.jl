@@ -25,7 +25,7 @@ function convection(; host=HTTP.Sockets.localhost, port=8050)
     pkg_dir = Base.pkgdir(ConvectionTools)
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
     
-    GUI_version = "0.1.2"
+    GUI_version = "0.1.3"
     
     title_app = "Rayleigh-Benard convection"
     ParamFile = "Convection.dat"
