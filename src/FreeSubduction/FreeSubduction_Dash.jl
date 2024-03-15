@@ -22,7 +22,7 @@ subduction(; host=HTTP.Sockets.localhost, port=8050)
 
 This starts a free subduction GUI
 """
-function subduction(; host = HTTP.Sockets.localhost, port=8050)
+function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false)
     pkg_dir = Base.pkgdir(FreeSubductionTools)
     
     GUI_version = "0.1.3"
@@ -87,6 +87,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050)
         Input("button-run", "disabled"),
         Input("button-play", "n_clicks"), 
         State("slab_thickness", "value"),
+        State("crust_thickness", "value"),
         State("nel_z", "value"),
         State("n_timesteps", "value"),
         State("switch-FreeSurf", "value"),
@@ -99,7 +100,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050)
         State("yield_stress_crust", "value"),
         prevent_initial_call=true
     ) do n_run, active_run, n_play,
-        slab_thickness, nel_z, n_timesteps,
+        slab_thickness, crust_thickness, nel_z, n_timesteps,
         free_surf,
         last_timestep, plot_field, session_id,
         η_slab,η_mantle,η_crust,yield_stress_crust
@@ -122,13 +123,20 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050)
             user_dir = simulation_directory(session_id, clean=true)
             cd(user_dir)
 
+            if isnothing(free_surf)
+                free_surface = false
+            else
+                free_surface = true
+            end
+
             # Create the setup
-            model = create_model_setup(nz=nel_z, SlabThickness=slab_thickness, eta_slab=η_slab, eta_mantle=η_mantle, eta_crust=η_crust,
+            model = create_model_setup(nz=nel_z, SlabThickness=slab_thickness, CrustThickness = crust_thickness, eta_slab=η_slab, eta_mantle=η_mantle, eta_crust=η_crust,
                             C_crust = yield_stress_crust,
-                            OutFile=OutFile, nstep_max=n_timesteps)
+                            OutFile=OutFile, nstep_max=n_timesteps,
+                            free_surface=free_surface)
     
             #run_lamem(pfile, 1, args, wait=false)
-            run_lamem(model, 1, wait=false)
+            run_lamem(model, 1, wait=wait)
             cd(cur_dir)        # return to main directory
 
             disable_interval = false
