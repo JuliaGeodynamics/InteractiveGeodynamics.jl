@@ -1,5 +1,7 @@
 using DelimitedFiles
 
+make_geometry_parameters() = nothing
+
 
 """
 Returns an accordion menu containing the simulation parameters.
