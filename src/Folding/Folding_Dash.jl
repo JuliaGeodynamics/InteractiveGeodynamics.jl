@@ -28,7 +28,7 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false)
     GUI_version = "0.1.3"
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
 
-    title_app = "Folding"
+    title_app = "Viscous Folding"
     OutFile = "Folding"
     
     #app = dash(external_stylesheets=[dbc_themes.CYBORG])
@@ -98,13 +98,17 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false)
         State("session-id", "data"), 
         State("viscosity_fold", "value"),
         State("viscosity_matrix", "value"),
+        State("A0_rand", "value"),
+        State("A0_sin", "value"),
+        
         prevent_initial_call=true
     ) do n_run, active_run, n_play,
         thickness, width, nel_x, nel_z, nlayers, n_timesteps,
         ThicknessLayers, SpacingLayers,
         last_timestep, plot_field, session_id,
-        viscosity_fold,viscosity_matrix
-        
+        viscosity_fold,viscosity_matrix,
+        A0_rand,A0_sin
+        @show A0_rand, typeof(A0_rand), A0_sin, typeof(A0_sin), last_timestep, typeof(last_timestep)
 
         # print(layers)
         # print(open_top)
@@ -127,6 +131,8 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false)
             model = create_model_setup(nx=nel_x, nz=nel_z, W=width/1e3, H=thickness/1e3, 
                         Number_layers=nlayers, H0=ThicknessLayers/1e3, Spacing=SpacingLayers/1e3,
                         eta_matrix=η_matrix, eta_fold=η_fold,
+                        nstep_max=n_timesteps, 
+                        A0_rand=A0_rand/1e3, A0_sin=A0_sin/1e3,
                         ε=ε,
                       )
     
@@ -278,10 +284,12 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false)
                     x_con, y_con, data_con = x, y, data
                 end
 
+                
+
                 # update the plot
                 add_velocity = active_switch(switch_velocity)
                 
-                fig_cross = create_main_figure(OutFile, cur_t, x, y, data, x_con, y_con, data_con;
+                fig_cross = create_main_figure(OutFile, cur_t, x*1e3, y*1e3, data, x_con*1e3, y_con*1e3, data_con;
                     add_contours=add_contours, contour_field=contour_field,
                     add_velocity=add_velocity,
                     colorscale=color_map_option,

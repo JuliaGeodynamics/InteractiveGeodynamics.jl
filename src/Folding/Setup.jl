@@ -47,7 +47,7 @@ function create_model_setup(; nx=64, nz=64,  W=0.2, H=0.2, Number_layers=1, H0=1
                     LaMEM.Output(out_file_name=OutFile),
 
                     # Timestepping etc
-                    Time(nstep_max=nstep_max, nstep_out=5, time_end=100, dt_min=1e-8, dt_max=dt_max),
+                    Time(nstep_max=nstep_max, nstep_out=5, time_end=100, dt_min=1e-8),
 
                     # Scaling:
                     Scaling(GEO_units(length=1km, stress=1e9Pa) )
