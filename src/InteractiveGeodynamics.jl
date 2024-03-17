@@ -21,5 +21,10 @@ include("./FreeSubduction/FreeSubduction_Dash.jl")
 using .FreeSubductionTools
 export subduction
 
+# folding app
+include("./Folding/Folding_Dash.jl")
+using .FoldingTools
+export folding
+
 
 end # module InteractiveGeodynamics

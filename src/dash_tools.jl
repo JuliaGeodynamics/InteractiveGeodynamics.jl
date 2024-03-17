@@ -507,6 +507,7 @@ function make_menu(cmaps; show_field="phase")
     item = dbc_row([
         dbc_accordion(always_open=true, [
             make_simulation_parameters(),
+            make_geometry_parameters(),
             make_rheological_parameters(),
             make_plotting_parameters(cmaps, show_field=show_field),
         ]),
