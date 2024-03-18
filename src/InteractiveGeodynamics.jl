@@ -16,5 +16,15 @@ include("./RayleighBenardConvection/Convection_Dash.jl")
 using .ConvectionTools
 export convection
 
+# free subduction app
+include("./FreeSubduction/FreeSubduction_Dash.jl")
+using .FreeSubductionTools
+export subduction
+
+# folding app
+include("./Folding/Folding_Dash.jl")
+using .FoldingTools
+export folding
+
 
 end # module InteractiveGeodynamics
