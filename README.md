@@ -1,8 +1,5 @@
 # InteractiveGeodynamics.jl
 
-> [!CAUTION]
-> The current version of InteractiveGeodynamics requires julia version 1.9.x and does not work with the latest julia release (1.10). We are working on fixing this but until that is done, please use julia 1.9.4 instead, which you can download [here](https://julialang.org/downloads/oldreleases/) 
-
 This package provides a range of graphical user interfaces (GUI's) to study and experiment with different geodynamic problems without need to program. It uses [julia](https://julialang.org) and [Dash](https://dash.plotly.com/julia) and automatically installs the required geodynamic software (such as [LaMEM](https://github.com/JuliaGeodynamics/LaMEM.jl)) in the background.
 
 This is particularly useful for teaching.
@@ -10,6 +7,8 @@ We currently have the folloeing examples included:
 - `convection()` - 2D mantle  (or magma chamber) convection
 - `rayleigh_taylor()` - density driven instability
 - `rising_sphere()` - rising stokes sphere example
+- `subduction()` - subduction of a single plate 
+- `folding()` - folding of one or more viscous layers
 
 ### Getting started/requirements
 Installing this is straightforward. Start julia
