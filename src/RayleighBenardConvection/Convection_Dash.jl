@@ -21,7 +21,7 @@ include(joinpath(pkg_dir,"src/RayleighBenardConvection/dash_functions_convection
 
 This starts a convection GUI
 """
-function convection(; host=HTTP.Sockets.localhost, port=8050)
+function convection(; host=HTTP.Sockets.localhost, port=8050, width="80vw", height="60vh")
     pkg_dir = Base.pkgdir(ConvectionTools)
     cmaps = read_colormaps(dir_colormaps=joinpath(pkg_dir,"src/assets/colormaps/"))
     
@@ -44,7 +44,7 @@ function convection(; host=HTTP.Sockets.localhost, port=8050)
             make_title(title_app),
             dbc_row([
                 dbc_col([
-                    make_plot("",cmaps),    # show graph
+                    make_plot("",cmaps, width=width, height=height),    # show graph
                     make_plot_controls(),   # show media buttons
                     make_id_label(),        # show user id
                 ]),

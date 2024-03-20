@@ -24,7 +24,7 @@ function make_geometry_parameters()
         dbc_row(html_p()),
         make_accordion_item("Spacing layers [m]:", "SpacingLayers", "Distance between center layers", 10.0, 1.0),
         dbc_row(html_p()),
-        make_accordion_item("Amplitude noise [m]:", "A0_rand", "Amplitude of the random noise on the layer interface [m]", 0.2, 0.0),
+        make_accordion_item("Amplitude noise [m]:", "A0_rand", "Amplitude of the random noise on the layer interface [m]", 0.3, 0.0),
         dbc_row(html_p()),
         make_accordion_item("Amplitude sin [m]:", "A0_sin", "Amplitude of the sinusoidal perturbation on the layer interface [m]", 0.0, 0.0),
         dbc_row(html_p()),
@@ -39,14 +39,14 @@ function make_simulation_parameters()
     return dbc_accordionitem(title="Simulation Parameters", [
         make_accordion_item("Thickness (m):", "thickness", "Model Thickness [m]", 100.0, 10.0),
         dbc_row(html_p()),
-        make_accordion_item("Width (m):", "width", "Model Width [m]", 100.0, 10.0),
+        make_accordion_item("Width (m):", "width", "Model Width [m]", 200.0, 10.0),
         dbc_row(html_p()),
-        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 64, 2),
+        make_accordion_item("nx:", "nel_x", "Number of elements in the x-direction. Must be an integer greater than 2.", 128, 2),
         dbc_row(html_p()),
         make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 128, 2),
         dbc_row(html_p()),
         
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 50, 1),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 100, 1),
         dbc_row(html_p()),
     ])
 end
