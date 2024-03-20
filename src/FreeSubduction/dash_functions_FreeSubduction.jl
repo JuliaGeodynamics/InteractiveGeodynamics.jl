@@ -7,11 +7,11 @@ Returns an accordion menu containing the rheological parameters.
 """
 function make_rheological_parameters()
     return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("log₁₀(η_slab [Pa⋅s]):", "viscosity_slab", "Logarithm of the viscosity of the slab.", 23.3, 16.0, 25.0),
+        make_accordion_item("log₁₀(η_slab [Pa⋅s]):", "viscosity_slab", "Logarithm of the viscosity of the slab.", 23.1, 16.0, 25.0),
         dbc_row(html_p()),
         make_accordion_item("(log₁₀(η_mantle [Pa⋅s]):", "viscosity_mantle", "Logarithm of the viscosity of the mantle", 21.0, 16.0, 23.0),
         dbc_row(html_p()),
-        make_accordion_item("log₁₀(η_crust [Pa⋅s]):", "viscosity_crust", "Logarithm of the viscosity of the crust", 21.0, 16.0, 23.0),
+        make_accordion_item("log₁₀(η_crust [Pa⋅s]):", "viscosity_crust", "Logarithm of the viscosity of the crust", 23.1, 16.0, 23.0),
         dbc_row(html_p()),
         make_accordion_item("σ_yield_crust [Pas]:", "yield_stress_crust", "Yield stress of the crust",1000, 1, 1000.0),
     ])
@@ -31,12 +31,12 @@ function make_simulation_parameters()
         make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.  nx=4*nz", 64, 2),
         dbc_row(html_p()),
         
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 50, 1),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 100, 1),
         dbc_row(html_p()),
         dbc_row([
             dbc_checklist(options=["activate free surface"],
                     id="switch-FreeSurf",
-                    switch=true,
+                    switch=true,  value="activate free surface",
             )
         ]),
       #  dbc_row(html_p()),

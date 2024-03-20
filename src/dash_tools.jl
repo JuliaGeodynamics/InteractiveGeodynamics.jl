@@ -13,7 +13,7 @@ using PlotlyJS
 Creates the main figure plot.
 """
 function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
-    x_con=1:10, y_con=1:10, data_con=rand(10, 10)
+                    x_con=1:10, y_con=1:10, data_con=rand(10, 10)
     ;
     colorscale="batlow", 
     field="phase", 
@@ -22,7 +22,7 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
     contour_field="phase",
     session_id="",
     cmaps=[])
-    
+
     data_plot = [heatmap(x=x,
         y=y,
         z=data,
@@ -52,35 +52,37 @@ function create_main_figure(OutFile, cur_t, x=1:10, y=1:10, data=rand(10, 10),
         push!(data_plot, line)
     end
 
+    layout_data = (xaxis=attr(
+                        title="Width",
+                        tickfont_size=14,
+                        tickfont_color="rgb(100, 100, 100)",
+                        scaleanchor="y", scaleratio=1,
+                        autorange=false,  automargin="top",
+                        range=[x[1],x[end]], 
+                        showgrid=false,
+                        zeroline=false
+                        ),
+                    yaxis=attr(
+                        title="Depth",
+                        tickfont_size=14,
+                        tickfont_color="rgb(10, 10, 10)",
+                        autorange=false, automargin="top",
+                        autorangeoptions=attr(clipmax=0),
+                        range=[minimum(y),maximum(y)], 
+                        showgrid=false,
+                        zeroline=false
+                        ), 
+                        margin=attr(autoexpand="true", pad=1),
+                )
+
+    # Specify size; since this does not always work you can set an autosize too (gives more white space)
+    layout_data = merge(layout_data, (autosize=true,));
+
+    # Create plot
     pl = (id="fig_cross",
         data=data_plot,
         colorbar=Dict("orientation" => "v", "len" => 0.5),
-        layout=(
-            xaxis=attr(
-                title="Width",
-                tickfont_size=14,
-                tickfont_color="rgb(100, 100, 100)",
-                scaleanchor="y", scaleratio=1,
-                autorange=false,  automargin="top",
-                range=[x[1],x[end]], 
-                showgrid=false,
-                zeroline=false
-                ),
-            yaxis=attr(
-                title="Depth",
-                tickfont_size=14,
-                tickfont_color="rgb(10, 10, 10)",
-                autorange=false, automargin="top",
-                autorangeoptions=attr(clipmax=0),
-                range=[minimum(y),maximum(y)], 
-                showgrid=false,
-                zeroline=false
-                ), 
-                
-            #margin=attr(l=10, r=0, b=10, t=0),
-            margin=attr(autoexpand="true", pad=1),
-            autosize=true
-        ),
+        layout=layout_data,
         config=(edits = (shapePosition=true,)),
     )
     return pl
@@ -320,7 +322,7 @@ end
 """
 Returns a row containing the main plot.
 """
-function make_plot(OutFile="",cmaps=[])
+function make_plot(OutFile="",cmaps=[]; width="80vw", height="80vh")
     item = dbc_row([
         dcc_graph(id="figure_main",
             figure=create_main_figure(OutFile, 0, cmaps=cmaps),
@@ -328,7 +330,7 @@ function make_plot(OutFile="",cmaps=[])
             #responsive=false,
             #clickData = true,
             #config = PlotConfig(displayModeBar=false, scrollZoom = false),
-            style=attr(width="80vw", height="80vh")
+            style=attr(width=width, height=height)
         )
     ])
     return item
