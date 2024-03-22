@@ -34,7 +34,7 @@ function make_simulation_parameters()
         make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 100, 1),
         dbc_row(html_p()),
         dbc_row([
-            dbc_checklist(options=["activate free surface"],
+            dbc_checklist(options=["free slip upper boundary"],
                     id="switch-FreeSurf",
                     switch=true,
             )

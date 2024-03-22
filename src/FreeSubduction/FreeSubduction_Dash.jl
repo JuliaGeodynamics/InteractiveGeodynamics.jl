@@ -31,7 +31,7 @@ Optional parameters
 - `height` : relative height of main figure
 
 """
-function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="40vh")
+function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="50vh")
     pkg_dir = Base.pkgdir(FreeSubductionTools)
     
     GUI_version = "0.1.3"
@@ -133,12 +133,13 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
             user_dir = simulation_directory(session_id, clean=true)
             cd(user_dir)
 
-            if free_surf === nothing
-                free_surface = false
-            else
-                free_surface = true
-            end
             @show free_surf 
+            if free_surf === nothing || free_surf == []
+                free_surface = true
+            else
+                free_surface = false
+            end
+          
 
             # Create the setup
             model = create_model_setup(nz=nel_z, SlabThickness=slab_thickness, CrustThickness = crust_thickness, eta_slab=η_slab, eta_mantle=η_mantle, eta_crust=η_crust,
