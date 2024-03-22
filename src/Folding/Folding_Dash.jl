@@ -22,7 +22,7 @@ folding(; host=HTTP.Sockets.localhost, port=8050)
 
 This starts a folding GUI
 """
-function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false)
+function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="80vh")
     pkg_dir = Base.pkgdir(FoldingTools)
     
     GUI_version = "0.1.3"
@@ -108,8 +108,7 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false)
         last_timestep, plot_field, session_id,
         viscosity_fold,viscosity_matrix,
         A0_rand,A0_sin
-        @show A0_rand, typeof(A0_rand), A0_sin, typeof(A0_sin), last_timestep, typeof(last_timestep)
-
+        
         # print(layers)
         # print(open_top)
 

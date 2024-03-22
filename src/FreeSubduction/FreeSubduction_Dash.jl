@@ -18,11 +18,20 @@ include(joinpath(pkg_dir,"src/FreeSubduction/dash_functions_FreeSubduction.jl"))
 include(joinpath(pkg_dir,"src/FreeSubduction/Setup.jl"))
  
 """
-subduction(; host=HTTP.Sockets.localhost, port=8050)
+subduction(;  host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="45vh")
 
 This starts a free subduction GUI
+
+Optional parameters
+===
+- `host`   : IP address
+- `port`   : port number
+- `wait`   : if true, you will see the LaMEM output and figure windows are only shown after the simulation is finished
+- `width`  : relative width of main figure
+- `height` : relative height of main figure
+
 """
-function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false)
+function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="40vh")
     pkg_dir = Base.pkgdir(FreeSubductionTools)
     
     GUI_version = "0.1.3"
@@ -42,7 +51,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false)
             make_title(title_app),
             dbc_row([
                 dbc_col([
-                    make_plot("",cmaps),    # show graph
+                    make_plot("",cmaps, width=width, height=height),    # show graph
                     make_plot_controls(),   # show media buttons
                     make_id_label(),        # show user id
                 ]),
@@ -64,6 +73,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false)
             # Start an interval that updates the number every second
             dcc_interval(id="session-interval", interval=100, n_intervals=0, disabled=true)
         ])
+
 
     end
 

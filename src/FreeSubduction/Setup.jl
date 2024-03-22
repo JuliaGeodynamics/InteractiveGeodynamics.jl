@@ -28,6 +28,7 @@ function create_model_setup(; nz=64, SlabThickness=80, CrustThickness=15, eta_sl
                                                 "-snes_ksp_ew",
                                                 "-snes_ksp_ew_rtolmax 1e-4",
                                 ]),
+                                
                     # Free FreeSurface
                     FreeSurface(surf_use=open_top_bound),
 
@@ -63,8 +64,6 @@ function create_model_setup(; nz=64, SlabThickness=80, CrustThickness=15, eta_sl
     crust  = Phase(Name="crust",        ID=2, eta=eta_crust,     rho=3280)
     slab   = Phase(Name="slab",         ID=3, eta=eta_slab,      rho=3280)
     slab2  = Phase(Name="slab_stripe",  ID=4, eta=eta_slab,      rho=3280)
-    
-
     add_phase!(model, air, mantle, slab, slab2, crust)
 
     return model
