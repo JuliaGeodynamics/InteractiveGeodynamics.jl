@@ -100,6 +100,8 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
         State("viscosity_matrix", "value"),
         State("A0_rand", "value"),
         State("A0_sin", "value"),
+        State("e_bg", "value"),
+        
         
         prevent_initial_call=true
     ) do n_run, active_run, n_play,
@@ -107,7 +109,7 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
         ThicknessLayers, SpacingLayers,
         last_timestep, plot_field, session_id,
         viscosity_fold,viscosity_matrix,
-        A0_rand,A0_sin
+        A0_rand,A0_sin, e_bg
         
         # print(layers)
         # print(open_top)
@@ -120,7 +122,7 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
 
             η_fold   = 10.0^viscosity_fold
             η_matrix = 10.0^viscosity_matrix
-            ε = 1e-15
+            ε = e_bg
 
             # We clicked the run button
             user_dir = simulation_directory(session_id, clean=true)

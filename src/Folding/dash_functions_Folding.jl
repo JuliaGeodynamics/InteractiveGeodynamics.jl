@@ -45,6 +45,8 @@ function make_simulation_parameters()
         dbc_row(html_p()),
         make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.", 128, 2),
         dbc_row(html_p()),
+        make_accordion_item("εbg [1/s]:", "e_bg", "Background strainrate of the deformation", 1e-15, -1e-13),
+        dbc_row(html_p()),
         
         make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 100, 1),
         dbc_row(html_p()),
