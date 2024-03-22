@@ -36,7 +36,7 @@ function make_simulation_parameters()
         dbc_row([
             dbc_checklist(options=["activate free surface"],
                     id="switch-FreeSurf",
-                    switch=true,  value="activate free surface",
+                    switch=true,
             )
         ]),
       #  dbc_row(html_p()),

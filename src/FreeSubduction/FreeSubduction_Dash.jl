@@ -133,11 +133,12 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
             user_dir = simulation_directory(session_id, clean=true)
             cd(user_dir)
 
-            if isnothing(free_surf)
+            if free_surf === nothing
                 free_surface = false
             else
                 free_surface = true
             end
+            @show free_surf 
 
             # Create the setup
             model = create_model_setup(nz=nel_z, SlabThickness=slab_thickness, CrustThickness = crust_thickness, eta_slab=η_slab, eta_mantle=η_mantle, eta_crust=η_crust,
