@@ -122,6 +122,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
         trigger = get_trigger()
         disable_interval = true
         if trigger == "button-run.n_clicks"
+            cd(pkg_dir)
             cur_dir = pwd()
             base_dir = joinpath(pkgdir(FreeSubductionTools),"src","FreeSubduction")
 

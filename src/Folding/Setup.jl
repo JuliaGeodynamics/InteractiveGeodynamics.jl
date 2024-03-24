@@ -57,9 +57,9 @@ function create_model_setup(; nx=64, nz=64,  W=0.2, H=0.2, Number_layers=1, H0=1
     # Add fold(s)
 
     # compute center of folds
-    z_bot = 0 - Spacing*floor((Number_layers))/2 + Spacing/2
-    z_top = 0 + Spacing*floor((Number_layers))/2 - Spacing/2
-    z_center = Vector(z_bot:Spacing:z_top)
+    z_bot = 0 - (H0+Spacing)*floor((Number_layers+1))/2 + (H0+Spacing)
+    z_top = 0 + (H0+Spacing)*floor((Number_layers+1))/2 - (H0+Spacing)
+    z_center = Vector(z_bot:(H0+Spacing):z_top)
 
     Phases = model.Grid.Phases[:,1,:]
     for z_cen in z_center

@@ -111,12 +111,14 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
         viscosity_fold,viscosity_matrix,
         A0_rand,A0_sin, e_bg
         
+
         # print(layers)
         # print(open_top)
 
         trigger = get_trigger()
         disable_interval = true
         if trigger == "button-run.n_clicks"
+            cd(pkg_dir)
             cur_dir = pwd()
             base_dir = joinpath(pkgdir(FoldingTools),"src","FreeSubduction")
 

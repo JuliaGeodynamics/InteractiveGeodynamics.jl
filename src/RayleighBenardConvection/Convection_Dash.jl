@@ -111,6 +111,7 @@ function convection(; host=HTTP.Sockets.localhost, port=8050, width="80vw", heig
         disable_interval = true
         user_dir = simulation_directory(session_id, clean=false)
         if trigger == "button-run.n_clicks"
+            cd(pkg_dir)
             cur_dir = pwd()
             base_dir = joinpath(pkgdir(ConvectionTools),"src","RayleighBenardConvection")
 
