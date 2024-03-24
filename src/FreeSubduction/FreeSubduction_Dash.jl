@@ -18,7 +18,7 @@ include(joinpath(pkg_dir,"src/FreeSubduction/dash_functions_FreeSubduction.jl"))
 include(joinpath(pkg_dir,"src/FreeSubduction/Setup.jl"))
  
 """
-subduction(;  host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="45vh")
+subduction(;  host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="45vh", cores=1)
 
 This starts a free subduction GUI
 
@@ -31,7 +31,7 @@ Optional parameters
 - `height` : relative height of main figure
 
 """
-function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="50vh")
+function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="50vh", cores=1)
     pkg_dir = Base.pkgdir(FreeSubductionTools)
     
     GUI_version = "0.1.3"
@@ -148,8 +148,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
                             OutFile=OutFile, nstep_max=n_timesteps,
                             free_surface=free_surface)
     
-            #run_lamem(pfile, 1, args, wait=false)
-            run_lamem(model, 1, wait=wait)
+            run_lamem(model, cores, wait=wait)
             cd(cur_dir)        # return to main directory
 
             disable_interval = false
