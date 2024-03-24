@@ -18,11 +18,11 @@ include(joinpath(pkg_dir,"src/Folding/dash_functions_Folding.jl"))
 include(joinpath(pkg_dir,"src/Folding/Setup.jl"))
  
 """
-folding(; host=HTTP.Sockets.localhost, port=8050)
+folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="80vh", cores=1)
 
 This starts a folding GUI
 """
-function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="80vh")
+function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="80vh", cores=1)
     pkg_dir = Base.pkgdir(FoldingTools)
     
     GUI_version = "0.1.3"
@@ -100,6 +100,8 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
         State("viscosity_matrix", "value"),
         State("A0_rand", "value"),
         State("A0_sin", "value"),
+        State("e_bg", "value"),
+        
         
         prevent_initial_call=true
     ) do n_run, active_run, n_play,
@@ -107,20 +109,22 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
         ThicknessLayers, SpacingLayers,
         last_timestep, plot_field, session_id,
         viscosity_fold,viscosity_matrix,
-        A0_rand,A0_sin
+        A0_rand,A0_sin, e_bg
         
+
         # print(layers)
         # print(open_top)
 
         trigger = get_trigger()
         disable_interval = true
         if trigger == "button-run.n_clicks"
+            cd(pkg_dir)
             cur_dir = pwd()
             base_dir = joinpath(pkgdir(FoldingTools),"src","FreeSubduction")
 
             η_fold   = 10.0^viscosity_fold
             η_matrix = 10.0^viscosity_matrix
-            ε = 1e-15
+            ε = e_bg
 
             # We clicked the run button
             user_dir = simulation_directory(session_id, clean=true)
@@ -135,7 +139,7 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
                         ε=ε,
                       )
     
-            run_lamem(model, 1, wait=wait)
+            run_lamem(model, cores, wait=wait)
             cd(cur_dir)        # return to main directory
 
             disable_interval = false
@@ -237,9 +241,10 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
         State("contour_option", "value"),
         State("switch-velocity", "value"),
         State("color_map_option", "value"),
+        State("e_bg", "value"),
         prevent_initial_call=true
     ) do update_fig, current_timestep, n_run, n_start, n_last, n_back, n_forward, n_play, last_timestep, session_id,
-    plot_field, switch_contour, contour_field, switch_velocity, color_map_option
+    plot_field, switch_contour, contour_field, switch_velocity, color_map_option, e_bg
 
         trigger = get_trigger()
 
@@ -276,13 +281,13 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
 
                 # Load data 
                 x, y, data, time, fields_available = get_data(OutFile, cur_t, plot_field, user_dir)
+
                 add_contours = active_switch(switch_contour)
                 if add_contours
                     x_con, y_con, data_con, _, _ = get_data(OutFile, cur_t, contour_field, user_dir)
                 else
                     x_con, y_con, data_con = x, y, data
                 end
-
                 
 
                 # update the plot

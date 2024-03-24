@@ -23,7 +23,7 @@ function create_model_setup(; nz=64, SlabThickness=80, CrustThickness=15, eta_sl
                     SolutionParams(eta_ref=eta_mantle),
                     
                     # We use a multigrid solver with 4 levels:
-                    Solver(SolverType="direct", DirectPenalty=DirectPenalty,
+                    Solver(SolverType="direct", DirectPenalty=DirectPenalty, DirectSolver="mumps",
                                 PETSc_options=[ "-js_ksp_monitor",
                                                 "-snes_ksp_ew",
                                                 "-snes_ksp_ew_rtolmax 1e-4",

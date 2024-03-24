@@ -18,7 +18,7 @@ include(joinpath(pkg_dir,"src/FreeSubduction/dash_functions_FreeSubduction.jl"))
 include(joinpath(pkg_dir,"src/FreeSubduction/Setup.jl"))
  
 """
-subduction(;  host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="45vh")
+subduction(;  host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="45vh", cores=1)
 
 This starts a free subduction GUI
 
@@ -31,7 +31,7 @@ Optional parameters
 - `height` : relative height of main figure
 
 """
-function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="40vh")
+function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="80vw", height="50vh", cores=1)
     pkg_dir = Base.pkgdir(FreeSubductionTools)
     
     GUI_version = "0.1.3"
@@ -122,6 +122,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
         trigger = get_trigger()
         disable_interval = true
         if trigger == "button-run.n_clicks"
+            cd(pkg_dir)
             cur_dir = pwd()
             base_dir = joinpath(pkgdir(FreeSubductionTools),"src","FreeSubduction")
 
@@ -133,11 +134,13 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
             user_dir = simulation_directory(session_id, clean=true)
             cd(user_dir)
 
-            if isnothing(free_surf)
-                free_surface = false
-            else
+            @show free_surf 
+            if free_surf === nothing || free_surf == []
                 free_surface = true
+            else
+                free_surface = false
             end
+          
 
             # Create the setup
             model = create_model_setup(nz=nel_z, SlabThickness=slab_thickness, CrustThickness = crust_thickness, eta_slab=η_slab, eta_mantle=η_mantle, eta_crust=η_crust,
@@ -145,8 +148,7 @@ function subduction(; host = HTTP.Sockets.localhost, port=8050, wait=false, widt
                             OutFile=OutFile, nstep_max=n_timesteps,
                             free_surface=free_surface)
     
-            #run_lamem(pfile, 1, args, wait=false)
-            run_lamem(model, 1, wait=wait)
+            run_lamem(model, cores, wait=wait)
             cd(cur_dir)        # return to main directory
 
             disable_interval = false

@@ -30,7 +30,7 @@ function create_model_setup(; nx=64, nz=64,  W=0.2, H=0.2, Number_layers=1, H0=1
     OutFile="Folding", nstep_max=100, DirectPenalty=1e4, dt_max=0.25, ε=1e-15)
 
     model = Model(  # Define the grid
-                    Grid(nel=(nz,nz), x=[-W/2, W/2], z=[-H/2 , H/2]),
+                    Grid(nel=(nx,nz), x=[-W/2, W/2], z=[-H/2 , H/2]),
 
                     # No slip lower boundary; the rest is free slip
                     BoundaryConditions(exx_strain_rates=[-ε]),
@@ -38,7 +38,7 @@ function create_model_setup(; nx=64, nz=64,  W=0.2, H=0.2, Number_layers=1, H0=1
                     SolutionParams(eta_ref=eta_matrix),
                     
                     # We use a multigrid solver with 4 levels:
-                    Solver(SolverType="direct", DirectPenalty=DirectPenalty,
+                    Solver(SolverType="direct", DirectSolver="mumps",DirectPenalty=DirectPenalty,
                                 PETSc_options=[ "-snes_ksp_ew",
                                                 "-snes_ksp_ew_rtolmax 1e-4",
                                 ]),
@@ -57,9 +57,9 @@ function create_model_setup(; nx=64, nz=64,  W=0.2, H=0.2, Number_layers=1, H0=1
     # Add fold(s)
 
     # compute center of folds
-    z_bot = 0 - Spacing*floor((Number_layers))/2 + Spacing/2
-    z_top = 0 + Spacing*floor((Number_layers))/2 - Spacing/2
-    z_center = Vector(z_bot:Spacing:z_top)
+    z_bot = 0 - (H0+Spacing)*floor((Number_layers+1))/2 + (H0+Spacing)
+    z_top = 0 + (H0+Spacing)*floor((Number_layers+1))/2 - (H0+Spacing)
+    z_center = Vector(z_bot:(H0+Spacing):z_top)
 
     Phases = model.Grid.Phases[:,1,:]
     for z_cen in z_center

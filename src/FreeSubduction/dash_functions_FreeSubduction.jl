@@ -7,7 +7,7 @@ Returns an accordion menu containing the rheological parameters.
 """
 function make_rheological_parameters()
     return dbc_accordionitem(title="Rheological Parameters", [
-        make_accordion_item("log₁₀(η_slab [Pa⋅s]):", "viscosity_slab", "Logarithm of the viscosity of the slab.", 23.1, 16.0, 25.0),
+        make_accordion_item("log₁₀(η_slab [Pa⋅s]):", "viscosity_slab", "Logarithm of the viscosity of the slab.", 23.5, 16.0, 25.0),
         dbc_row(html_p()),
         make_accordion_item("(log₁₀(η_mantle [Pa⋅s]):", "viscosity_mantle", "Logarithm of the viscosity of the mantle", 21.0, 16.0, 23.0),
         dbc_row(html_p()),
@@ -31,12 +31,12 @@ function make_simulation_parameters()
         make_accordion_item("nz:", "nel_z", "Number of elements in the z-direction. Must be an integer greater than 2.  nx=4*nz", 64, 2),
         dbc_row(html_p()),
         
-        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 100, 1),
+        make_accordion_item("nt:", "n_timesteps", "Maximum number of timesteps. Must be an integer greater than 1.", 200, 1),
         dbc_row(html_p()),
         dbc_row([
-            dbc_checklist(options=["activate free surface"],
+            dbc_checklist(options=["free slip upper boundary"],
                     id="switch-FreeSurf",
-                    switch=true,  value="activate free surface",
+                    switch=true,
             )
         ]),
       #  dbc_row(html_p()),
