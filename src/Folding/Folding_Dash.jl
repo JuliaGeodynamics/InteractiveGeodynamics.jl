@@ -279,7 +279,6 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
 
                 # Load data 
                 x, y, data, time, fields_available = get_data(OutFile, cur_t, plot_field, user_dir)
-                @show data
 
                 add_contours = active_switch(switch_contour)
                 if add_contours
@@ -287,7 +286,6 @@ function folding(; host = HTTP.Sockets.localhost, port=8050, wait=false, width="
                 else
                     x_con, y_con, data_con = x, y, data
                 end
-
                 
 
                 # update the plot
