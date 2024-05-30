@@ -15,6 +15,8 @@ fig = Figure(size=(900,900))
 
 time_val = Observable(0.0)
 
+Label(fig[0, 1:3], text = "1D sill injection in the crust", fontsize = 30)
+
 ax1 =  Axis(fig[1, 1], xlabel="Temperature [ᵒC]", ylabel="Depth [km]")
 ax2 =  Axis(fig[1, 2], xlabel="Melt fraction ϕ", title = @lift("t = $(round($time_val, digits = 2)) kyrs"))
 ax3 =  Axis(fig[2, 1:2], xlabel="Time [kyrs]", ylabel="Maximum Temperature [ᵒC]",ytickcolor=:red,ylabelcolor=:red,yticklabelcolor=:red)
@@ -28,7 +30,7 @@ fig[1:2, 3] = grid = GridLayout(tellwidth = false)
 grid[1, 1:2] = but          = Button(fig, label = "  RUN SIMULATION  ", buttoncolor = :lightgreen)
 
 Box(grid[2:4, 1:2], color = :lightgrey, cornerradius = 10)
-grid[2, 1:2] = Δz_box       = add_textbox(fig,"Grid spacing Δz [m]:",40)
+grid[2, 1:2] = Δz_box       = add_textbox(fig,"Grid spacing Δz [m]:",20)
 grid[3, 1:2] = nt_box       = add_textbox(fig,"# timesteps nt:",150)
 grid[4, 1:2] = Δt_yrs_box   = add_textbox(fig,"timestep Δt [yrs]:",100.0)
 
@@ -40,7 +42,7 @@ grid[7, 1:2] = γ_box        = add_textbox(fig,"Geotherm [ᵒC/km]:",20.0)
 Box(grid[8:12, 1:2], color = :lightyellow, cornerradius = 10)
 grid[8, 1:2] = Tsill_box    = add_textbox(fig,"Sill Temperature [ᵒC]:",1200.0)
 grid[9, 1:2] = Sill_thick_box = add_textbox(fig,"Sill thickness [m]:",1000.0)
-grid[10, 1:2] = Sill_interval_box = add_textbox(fig,"Sill injection interval [yrs]:",1000.0)
+grid[10, 1:2] = Sill_interval_box = add_textbox(fig,"Sill injection interval [yrs]:",10000.0)
 grid[11, 1:2] = Sill_interval_top_box = add_textbox(fig,"Top sill injection [km]:",10.0)
 grid[12, 1:2] = Sill_interval_bot_box = add_textbox(fig,"Bottom sill injection [km]:",20.0)
 
@@ -49,6 +51,14 @@ grid[13, 1:2] = Ql_box = add_textbox(fig,"Latent heat [kJ/kg]:",255.0)
 grid[14, 1:2] = menu_conduct = Menu(fig, options = ["T-dependent conductivity", "Constant conductivity 3 W/m/K"], default = "Constant conductivity 3 W/m/K")
 grid[15, 1:2] = menu_melting = Menu(fig, options = ["MeltingParam_Assimilation", "MeltingParam_Basalt", "MeltingParam_Rhyolite"], default = "MeltingParam_Basalt")
 
+Box(grid[16:17, 1:2], color = (:green,0.3), cornerradius = 10 )
+grid[16, 1:2] = filename = [Label(fig, "filename:"), Textbox(fig, stored_string = "sim1.png")]
+grid[17, 1:2] = but_save =  Button(fig, label = "  SAVE SCREENSHOT  ", buttoncolor = (:lightgreen, 0.5))
+
+on(but_save.clicks) do n
+    save(filename[2].stored_string.val, fig)
+    println("Save screenshot to $(joinpath(pwd(),filename[2].stored_string.val))")
+end
 
 
 rowsize!(fig.layout, 2, Relative(1/4))
@@ -113,6 +123,7 @@ on(but.clicks) do n
     ind = findall( abs.(z .+ T_cen) .< Sillthick/2)
     if !isempty(ind)
         T[ind] .= Tsill
+        rocks[ind] .= 1
     end
     Params.Told .= T
 
@@ -155,27 +166,27 @@ on(but.clicks) do n
     Sill_z0 = -20e3;
     println("Injecting sill @ z=$Sill_z0")
 
-    T, rocks = insert_sill(T,rocks, z; 
-                Sill_thick=Sillthick, Sill_z0=Sill_z0, Sill_T=Tsill)
-
     # perform timestepping
+    crust_added =  Sillthick/1e3
+    crust_added_numerics = sum(rocks)*Δz/1e3
     @async for t = 1:nt
         #sleep(0.1)
 
+      
         T,  converged, its = nonlinear_solution(F, T, Jac, colors, verbose=false, Δ=Δ, N=N, BC=BC, Params=Params, MatParam=MatParam)
        
-
-        if mod(time/SecYear, Sill_int_yr)==0
+        if mod(time/SecYear, Sill_int_yr)==0 && t>1
             
             Sill_z0 = rand(-Sillbot*1e3:1:-Silltop*1e3)
 
+            T, rocks = insert_sill(T,rocks, z, Sill_thick=Sillthick, Sill_z0=Sill_z0, Sill_T=Tsill)
+            Params.Told .= T
 
+            crust_added += Sillthick/1e3
+            crust_added_numerics = sum(rocks)*Δz/1e3
             println("Injecting sill @ z=$Sill_z0")
-
-            T, rocks = insert_sill(T,rocks, z; 
-                        Sill_thick=Sillthick, Sill_z0=Sill_z0, Sill_T=Tsill)
-
         end
+
 
         Params.Told .= T
 
@@ -209,8 +220,7 @@ on(but.clicks) do n
             scatter!(ax4, time_vec[end], ϕmax_vec[end], color=:blue)
             ylims!(ax4, 0, 1.01)
 
-            @show extrema(rocks)
-            println("Timestep $t, $time_kyrs kyrs, nz=$(length(T))")
+            println("Timestep $t, $time_kyrs kyrs, nz=$(length(T)) pts; crust added: $crust_added ($crust_added_numerics) km")
         end
 
     end
