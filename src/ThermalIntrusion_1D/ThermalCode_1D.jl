@@ -1,5 +1,5 @@
 using GeoParams
-using ForwardDiff, SparseArrays, SparseDiffTools, LinearAlgebra, DelimitedFiles, JLD2
+using ForwardDiff, SparseArrays, SparseDiffTools, LinearAlgebra, Interpolations
 
 av(x) = (x[2:end]+x[1:end-1])/2
 
@@ -179,6 +179,67 @@ function time_stepping(T, nt, Params, N, Δ, BC, MatParam; verbose=false, OutDir
 
     return T, Params.ϕ, time
 end
+
+crack_perp_displacement(z, d; r=5e3) = d.*(1.0 .- abs.(z)./(sqrt.(r^2 .+ z.^2)))
+
+"""
+    Tadv = insert_sill!(T,z; Sill_thick=400, Sill_z0=-20e3, Sill_T=1200, SillType=:constant)
+
+Adds a sill to the setup, using a 1D WENO5 advection scheme for a given temperature field `T` on a grid `z`.
+Optional parameters are the sill thickness `Sill_thick`, the sill center `Sill_z0`, the sill temperature `Sill_T`. 
+Advection is done by `SillType`, which can be `:constant` (where rocks above/below are moved with constant displacement 
+or `:elastic`, where the displacement decreases with distance from the sill.
+"""
+function insert_sill(T,rocks, z; Sill_thick=400, Sill_z0=-20e3, Sill_T=1200, Sill_phase=1.0, SillType=:elastic)
+
+    # find points above & below sill emplacement level
+    z_shift = Vector(z) .-  Sill_z0;
+    Displ   = zero(z_shift)
+    
+    # shift points above
+    id_above = findall(z_shift.>0)
+    id_below = findall(z_shift.<0)
+    
+    # Assume constant displacement - in elastic case this should decrease with distance from sill
+    if SillType==:constant
+        Displ[id_above]  .= Sill_thick
+        Displ[id_below]  .= -Sill_thick
+    elseif SillType==:elastic
+        R = 5e3;
+        Displ[id_above]  .=  crack_perp_displacement(z_shift[id_above], Sill_thick; r=R)
+        Displ[id_below]  .= -crack_perp_displacement(z_shift[id_below], Sill_thick; r=R)
+    end
+
+    # use WENO5 to advect the temperature field
+    T_adv = semilagrangian_advection(T, Displ, z)
+
+    # set sill temperature
+    ind = findall( abs.(z .- Sill_z0) .<= Sill_thick/2)
+    T_adv[ind]  .= Sill_T
+
+    # use WENO5 to advect the rock field
+    rock_adv = semilagrangian_advection(rocks, Displ, z)
+    rock_adv[ind]  .= Sill_phase
+    rock_adv    = ceil.(rock_adv)
+
+    return T_adv, rock_adv
+end
+
+"""
+    Tadv = semilagrangian_advection(T, Displ, z)
+Do semilagrangian_advection
+"""
+function semilagrangian_advection(T, Displ, z)
+
+    z_new = z + Displ # advect grid
+    interp_linear = linear_interpolation(z_new, T);
+    T_adv = interp_linear.(z)
+
+    return T_adv
+end
+
+
+
 
 #=
 nz          = 101

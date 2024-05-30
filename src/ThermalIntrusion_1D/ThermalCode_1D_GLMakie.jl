@@ -29,13 +29,13 @@ grid[1, 1:2] = but          = Button(fig, label = "  RUN SIMULATION  ", buttonco
 
 Box(grid[2:4, 1:2], color = :lightgrey, cornerradius = 10)
 grid[2, 1:2] = Δz_box       = add_textbox(fig,"Grid spacing Δz [m]:",40)
-grid[3, 1:2] = nt_box       = add_textbox(fig,"# timesteps nt:",50)
+grid[3, 1:2] = nt_box       = add_textbox(fig,"# timesteps nt:",150)
 grid[4, 1:2] = Δt_yrs_box   = add_textbox(fig,"timestep Δt [yrs]:",100.0)
 
 Box(grid[5:7, 1:2], color = :lightblue, cornerradius = 10)
 grid[5, 1:2] = H_box        = add_textbox(fig,"Crustal thickness [km]:",40.0)
-grid[6, 1:2] = Ttop_box     = add_textbox(fig,"Ttop [ᵒC]:",400.0)
-grid[7, 1:2] = γ_box        = add_textbox(fig,"Geotherm [ᵒC/km]:",0.0)
+grid[6, 1:2] = Ttop_box     = add_textbox(fig,"Ttop [ᵒC]:",0.0)
+grid[7, 1:2] = γ_box        = add_textbox(fig,"Geotherm [ᵒC/km]:",20.0)
 
 Box(grid[8:12, 1:2], color = :lightyellow, cornerradius = 10)
 grid[8, 1:2] = Tsill_box    = add_textbox(fig,"Sill Temperature [ᵒC]:",1200.0)
@@ -46,8 +46,8 @@ grid[12, 1:2] = Sill_interval_bot_box = add_textbox(fig,"Bottom sill injection [
 
 Box(grid[13:15, 1:2], color = (:red,0.3), cornerradius = 10 )
 grid[13, 1:2] = Ql_box = add_textbox(fig,"Latent heat [kJ/kg]:",255.0)
-grid[14, 1:2] = menu_conduct = Menu(fig, options = ["T-dependent conductivity", "Constant conductivity 3 W/m/K"], default = "T-dependent conductivity")
-grid[15, 1:2] = menu_melting = Menu(fig, options = ["MeltingParam_Assimilation", "MeltingParam_Basalt", "MeltingParam_Rhyolite"], default = "MeltingParam_Assimilation")
+grid[14, 1:2] = menu_conduct = Menu(fig, options = ["T-dependent conductivity", "Constant conductivity 3 W/m/K"], default = "Constant conductivity 3 W/m/K")
+grid[15, 1:2] = menu_melting = Menu(fig, options = ["MeltingParam_Assimilation", "MeltingParam_Basalt", "MeltingParam_Rhyolite"], default = "MeltingParam_Basalt")
 
 
 
@@ -69,6 +69,7 @@ on(but.clicks) do n
     Silltop     = get_valuebox(Sill_interval_top_box)
     Sillbot     = get_valuebox(Sill_interval_bot_box)
     Sillthick   = get_valuebox(Sill_thick_box)
+    Sill_int_yr = get_valuebox(Sill_interval_box)
     Ql          = get_valuebox(Ql_box)*1e3
 
 
@@ -104,6 +105,8 @@ on(but.clicks) do n
     # setup model
     Params, BC, N, Δ, T, z = init_model(nz=nz, L=H*1e3, Geotherm=γ, Ttop=Ttop, Tbot=Tbot, Δt=Δt, MatParam=MatParam)
     
+    rocks = zero(T) # will later contain locations with injected sills
+
     # add initial perturbation (if any)
     T_cen =  (Silltop + Sillbot)/2*1e3    
 
@@ -149,13 +152,32 @@ on(but.clicks) do n
     Tmax_vec = Float64[]
     ϕmax_vec = Float64[]
     
+    Sill_z0 = -20e3;
+    println("Injecting sill @ z=$Sill_z0")
+
+    T, rocks = insert_sill(T,rocks, z; 
+                Sill_thick=Sillthick, Sill_z0=Sill_z0, Sill_T=Tsill)
+
     # perform timestepping
     @async for t = 1:nt
         #sleep(0.1)
 
         T,  converged, its = nonlinear_solution(F, T, Jac, colors, verbose=false, Δ=Δ, N=N, BC=BC, Params=Params, MatParam=MatParam)
+       
+
+        if mod(time/SecYear, Sill_int_yr)==0
+            
+            Sill_z0 = rand(-Sillbot*1e3:1:-Silltop*1e3)
+
+
+            println("Injecting sill @ z=$Sill_z0")
+
+            T, rocks = insert_sill(T,rocks, z; 
+                        Sill_thick=Sillthick, Sill_z0=Sill_z0, Sill_T=Tsill)
+
+        end
+
         Params.Told .= T
-       # @show extrema(T), extrema(Params.ϕ)
 
         time += Params.Δt
         time_kyrs = time/SecYear/1e3
@@ -169,6 +191,14 @@ on(but.clicks) do n
             Tplot[] = T
             ϕplot[] = Params.ϕ
             time_val[] = time_kyrs
+
+            empty!(ax2)
+            rock_low  = Point2f.(zero(rocks), z/1e3)
+            rock_high = Point2f.(rocks, z/1e3)
+
+            band!(ax2, rock_low, rock_high, color=(:lightgrey,1.0))
+            lines!(ax2, Params.ϕ, z/1e3, color=:blue)
+            
             empty!(ax3)
             lines!(ax3, time_vec, Tmax_vec, color=:red)
             scatter!(ax3, time_vec[end], Tmax_vec[end], color=:red)
@@ -179,7 +209,8 @@ on(but.clicks) do n
             scatter!(ax4, time_vec[end], ϕmax_vec[end], color=:blue)
             ylims!(ax4, 0, 1.01)
 
-            println("Timestep $t, $time_kyrs kyrs")
+            @show extrema(rocks)
+            println("Timestep $t, $time_kyrs kyrs, nz=$(length(T))")
         end
 
     end
