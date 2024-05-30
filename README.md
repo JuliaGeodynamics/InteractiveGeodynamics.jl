@@ -3,7 +3,9 @@
 This package provides a range of graphical user interfaces (GUI's) to study and experiment with different geodynamic problems without need to program. It uses [julia](https://julialang.org) and [Dash](https://dash.plotly.com/julia) and automatically installs the required geodynamic software (such as [LaMEM](https://github.com/JuliaGeodynamics/LaMEM.jl)) in the background.
 
 This is particularly useful for teaching.
-We currently have the folloeing examples included:
+We currently have the following examples included:
+
+- `sill_intrusion_1D()` - 1D thermal model of sill intrusion in the crust
 - `convection()` - 2D mantle  (or magma chamber) convection
 - `rayleigh_taylor()` - density driven instability
 - `rising_sphere()` - rising stokes sphere example
@@ -79,8 +81,22 @@ Timestep 25
 
 
 ### Available examples
-We currently have the following GUI's available:
+We currently have the following LaMEM GUI's available, that can be started in the saame way:
 
 - `convection()` 
 - `rising_sphere()`
 - `rayleigh_taylor()`
+- `subduction()` - subduction of a single plate 
+- `folding()` - folding of one or more viscous layers
+
+### 1D thermal models following sill intrusion in the crust
+
+We also have a GUI that relies on [GLMakie](docs.makie.org), which is an optional dependency. 
+This implies that the examples become available once you load `GLMakie` as well.
+You can start this with:
+```julia
+julia> using InteractiveGeodynamics, GLMakie
+julia> sill_intrusion_1D()
+```
+
+![1D_Sill_Intrusion](./docs/src/assets/img/1D_sill_intrusion.png)
