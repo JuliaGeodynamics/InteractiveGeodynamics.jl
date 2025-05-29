@@ -13,12 +13,12 @@ add_togglebox(fig, label, active) = [Label(fig, label), Toggle(fig, active=activ
 get_valuebox(box::Vector) = parse(box[2].validator.val, box[2].stored_string.val)
 
 """
-    sill_intrusion_1D()
+    sill_intrusion_1D(; size=(900,900))
 
-Interactive GLMakie App for 1D thermal intrusion model
+Interactive GLMakie App for 1D thermal intrusion model. `size` is the size of the window in pixels.
 """
-function sill_intrusion_1D()
-    fig = Figure(size=(900,900))
+function sill_intrusion_1D(; size=(900,900))
+    fig = Figure(size=size)
 
     time_val = Observable(0.0)
 
@@ -122,6 +122,13 @@ function sill_intrusion_1D()
         # setup model
         Params, BC, N, Δ, T, z = init_model(nz=nz, L=H*1e3, Geotherm=γ, Ttop=Ttop, Tbot=Tbot, Δt=Δt, MatParam=MatParam)
         
+        #=
+        Params_anal = deepcopy(Params)  # use same parameters for analytical approximation
+        ind = findall(z.>-Sillbot*1e3 .&&   z.<-Silltop*1e3);
+        Params_anal.Q[ind] .= 5e-7      # mimic effect of dike intrusion
+        T_anal = deepcopy(T)
+        Params_anal.Told .= T_anal;
+        =#
         rocks = zero(T) # will later contain locations with injected sills
 
         # add initial perturbation (if any)
@@ -176,7 +183,7 @@ function sill_intrusion_1D()
         @async for t = 1:nt
         
             T,  converged, its = nonlinear_solution(F, T, Jac, colors, verbose=false, Δ=Δ, N=N, BC=BC, Params=Params, MatParam=MatParam)
-        
+            
             if mod(time/SecYear, Sill_int_yr)==0 && t>1
                 
                 Sill_z0 = rand(-Sillbot*1e3:1:-Silltop*1e3)
@@ -188,9 +195,15 @@ function sill_intrusion_1D()
                 crust_added_numerics = sum(rocks)*Δz/1e3
                 println("Injecting sill @ z=$Sill_z0")
             end
-
-
             Params.Told .= T
+
+            if 1==0
+                T_anal,  converged, its = nonlinear_solution(F, T, Jac, colors, verbose=false, Δ=Δ, N=N, BC=BC, Params=Params_anal, MatParam=MatParam)
+            
+                Params_anal.Told .= T_anal
+            end
+
+           
 
             time += Params.Δt
             time_kyrs = time/SecYear/1e3
@@ -204,7 +217,11 @@ function sill_intrusion_1D()
                 Tplot[] = T
                 ϕplot[] = Params.ϕ
                 time_val[] = time_kyrs
-
+                #empty!(ax1)
+                #lines!(ax1, T, z/1e3, color=:red)
+                #lines!(ax1, T_anal, z/1e3, color=:green)
+                
+            
                 empty!(ax2)
                 rock_low  = Point2f.(zero(rocks), z/1e3)
                 rock_high = Point2f.(rocks, z/1e3)
@@ -222,7 +239,7 @@ function sill_intrusion_1D()
                 scatter!(ax4, time_vec[end], ϕmax_vec[end], color=:blue)
                 ylims!(ax4, 0, 1.01)
 
-                println("Timestep $t, $time_kyrs kyrs, nz=$(length(T)) pts; crust added: $crust_added ($crust_added_numerics) km")
+                println("Timestep $t, $time_kyrs kyrs, nz=$(length(T)) pts; crust added: $crust_added km")
             end
 
         end
