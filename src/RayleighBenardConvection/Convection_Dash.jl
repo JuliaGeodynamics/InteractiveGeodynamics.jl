@@ -44,14 +44,17 @@ function convection(; host=HTTP.Sockets.localhost, port=8050, width="80vw", heig
             make_title(title_app),
             dbc_row([
                 dbc_col([
-                    make_plot("",cmaps, width=width, height=height),    # show graph
-                    make_plot_controls(),   # show media buttons
-                    make_id_label(),        # show user id
+                    make_plot("",cmaps, width=width, height=height),
+                    dbc_collapse(make_nu_ra_plot(width=width),          id="collapse-nu-ra",      is_open=true),
+                    dbc_collapse(make_temp_profile_plot(width=width),   id="collapse-temp-profile", is_open=false),
+                    make_plot_controls(),
+                    make_id_label(),
                 ]),
                 dbc_col([
-                    make_time_card(),                               # show simulation time info
-                    make_menu(cmaps, show_field="temperature [°C]"),     # show menu with simulation parameters, rheological parameters, and plotting parameters
-                    make_run_button()                               # show the run simulation button
+                    make_time_card(),
+                    make_extra_plot_controls(),
+                    make_menu(cmaps, show_field="temperature [°C]"),
+                    make_run_button()
                 ])
             ]),
 
@@ -62,6 +65,9 @@ function convection(; host=HTTP.Sockets.localhost, port=8050, width="80vw", heig
             dcc_store(id="current_timestep", data="0"),
             dcc_store(id="last_timestep", data="0"),
             dcc_store(id="update_fig", data="0"),
+
+            # Accumulates Nu values and Ra for the Nu/Ra chart
+            dcc_store(id="nu_ra_store", data=Dict("timesteps"=>[], "times"=>[], "nu"=>[], "ra"=>0.0)),
 
             # Start an interval that updates the number every second
             dcc_interval(id="session-interval", interval=100, n_intervals=0, disabled=true)
@@ -259,7 +265,7 @@ function convection(; host=HTTP.Sockets.localhost, port=8050, width="80vw", heig
             if  has_pvd_file(OutFile, user_dir)
                 Timestep, _, Time = read_LaMEM_simulation(OutFile, user_dir)      # all timesteps
                 id = findall(Timestep .== cur_t)[1]
-                if trigger == "button-start.n_clicks" || trigger == "button-play.n_clicks"
+                if trigger == "button-start.n_clicks"
                     cur_t = 0
                     id = 1
                 elseif trigger == "button-last.n_clicks"
@@ -318,7 +324,129 @@ function convection(; host=HTTP.Sockets.localhost, port=8050, width="80vw", heig
         return label_timestep, label_time, current_timestep, fig_cross, add_units(fields_available), add_units(fields_available)
     end
 
-    # 
+    # Accumulate Nu values for each new timestep; derive Ra from simulation output fields
+    callback!(app,
+        Dash.Output("nu_ra_store", "data"),
+        Input("last_timestep", "data"),
+        Input("button-run", "n_clicks"),
+        State("nu_ra_store", "data"),
+        State("session-id", "data"),
+        prevent_initial_call=true
+    ) do last_timestep, n_run, store_data, session_id
+
+        trigger = get_trigger()
+
+        if trigger == "button-run.n_clicks"
+            return Dict("timesteps"=>[], "times"=>[], "nu"=>[], "ra"=>0.0)
+        end
+
+        ts_list   = collect(Any, store_data["timesteps"])
+        time_list = collect(Any, store_data["times"])
+        nu_list   = collect(Any, store_data["nu"])
+        ra_stored = store_data["ra"]
+        last_computed = isempty(ts_list) ? -1 : Int(ts_list[end])
+        last_t    = parse(Int, last_timestep)
+
+        last_t <= last_computed && return store_data
+
+        user_dir = simulation_directory(session_id, clean=false)
+        !has_pvd_file(OutFile, user_dir) && return store_data
+
+        Timestep, _, Time = read_LaMEM_simulation(OutFile, user_dir)
+        Ra = ra_stored   # Ra is fixed once latched from the first timestep
+
+        for i in eachindex(Timestep)
+            t = Timestep[i]
+            t > last_computed && t <= last_t || continue
+
+            # Nu needs only temperature — always attempt this
+            nu = try
+                raw, _ = read_LaMEM_timestep(OutFile, t, user_dir)
+
+                T  = raw.fields.temperature[:, 1, :]'
+                z  = raw.z.val[1, 1, :]
+                nu_val = compute_nusselt(T, z)
+
+                # Ra: needs density + visc_total; latch once, fail gracefully
+                if Ra == 0.0
+                    try
+                        rho  = raw.fields.density[:, 1, :]'
+                        visc = raw.fields.visc_total[:, 1, :]'
+                        nx   = size(T, 2)
+                        ΔT_  = sum(T[1, :]) / nx - sum(T[end, :]) / nx
+                        d_   = (z[end] - z[1]) * 1e3
+                        ρ_   = sum(rho) / length(rho)
+                        η_   = 10^(sum(visc) / length(visc))
+                        if ΔT_ > 0
+                            Ra = ρ_ * 9.81 * 3e-5 * ΔT_ * d_^3 / (η_ * 8.7e-7)
+                        end
+                    catch e_ra
+                        println("Ra computation skipped at t=$t: ", e_ra)
+                    end
+                end
+
+                nu_val
+            catch e_nu
+                println("Nu computation error at t=$t: ", e_nu)
+                NaN
+            end
+
+            if isfinite(nu)
+                push!(ts_list,   t)
+                push!(time_list, Time[i])
+                push!(nu_list,   nu)
+            end
+        end
+
+        return Dict("timesteps"=>ts_list, "times"=>time_list, "nu"=>nu_list, "ra"=>Ra)
+    end
+
+    # Render the Nu / Ra chart whenever the store is updated
+    callback!(app,
+        Dash.Output("figure_nu_ra", "figure"),
+        Input("nu_ra_store", "data"),
+        State("n_timesteps", "value"),
+        prevent_initial_call=true
+    ) do store_data, n_timesteps
+        return create_nu_ra_figure(store_data, n_timesteps)
+    end
+
+    # Toggle visibility of the extra diagnostic plots
+    callback!(app,
+        Dash.Output("collapse-nu-ra",      "is_open"),
+        Dash.Output("collapse-temp-profile", "is_open"),
+        Input("switch-extra-plots", "value"),
+        prevent_initial_call=false
+    ) do switch_vals
+        show_nu = !isnothing(switch_vals) && "Nu/Ra over time"    in switch_vals
+        show_T  = !isnothing(switch_vals) && "Mean T(z) profile"  in switch_vals
+        return show_nu, show_T
+    end
+
+    # Update the mean T(z) profile for the currently displayed timestep
+    callback!(app,
+        Dash.Output("figure_temp_profile", "figure"),
+        Input("current_timestep", "data"),
+        State("session-id", "data"),
+        State("switch-extra-plots", "value"),
+        prevent_initial_call=true
+    ) do current_timestep, session_id, switch_vals
+        empty_fig = (data=[], layout=(autosize=true, margin=attr(t=45, b=40, l=55, r=10)))
+        !isnothing(switch_vals) && "Mean T(z) profile" in switch_vals || return empty_fig
+
+        cur_t    = parse(Int, current_timestep)
+        user_dir = simulation_directory(session_id, clean=false)
+        has_pvd_file(OutFile, user_dir) || return empty_fig
+
+        try
+            x, z, data2D, _, _ = get_data(OutFile, cur_t, "temperature [°C]", user_dir)
+            return create_temp_profile_figure(data2D, z)
+        catch
+            return empty_fig
+        end
+    end
+
+    #
     callback!(app,
         Dash.Output("contour_option", "disabled"),
         Input("switch-contour", "value")) do switch_contour
